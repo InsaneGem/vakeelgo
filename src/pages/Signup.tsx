@@ -431,7 +431,7 @@ bg-gradient-to-br from-background via-background to-muted/40">
             <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
 
               <Input
-                placeholder="Full Name"
+                placeholder="Manish Kumar"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
@@ -440,7 +440,7 @@ bg-gradient-to-br from-background via-background to-muted/40">
 
               <Input
                 type="email"
-                placeholder="Email"
+                placeholder="Manish@gmail.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -462,21 +462,54 @@ bg-gradient-to-br from-background via-background to-muted/40">
                   <Button
                     variant="outline"
                     className={cn(
-                      'w-full h-10 sm:h-12 justify-start rounded-lg sm:rounded-xl text-sm',
+                      'w-full justify-start text-left font-normal h-auto py-3 px-4 rounded-xl border border-input bg-background text-black hover:bg-background hover:text-black focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-black active:bg-background active:text-black',
                       !dateOfBirth && 'text-muted-foreground'
                     )}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateOfBirth ? format(dateOfBirth, 'PPP') : 'Date of Birth'}
+                    {/* <CalendarIcon className="mr-3 h-4 w-4 text-muted-foreground shrink-0" /> */}
+
+                    <div className="flex flex-col items-start">
+                      <span
+                        className={cn(
+                          'text-sm font-medium',
+                          !dateOfBirth && 'text-muted-foreground'
+                        )}
+                      >
+                        {dateOfBirth
+                          ? format(dateOfBirth, 'dd MMM yyyy')
+                          : 'Select date of birth'}
+                      </span>
+
+                      {/* <span className="text-xs text-muted-foreground">
+                        Day · Month · Year
+                      </span> */}
+                    </div>
                   </Button>
                 </PopoverTrigger>
 
-                <PopoverContent className="w-auto p-0">
+                <PopoverContent
+                  className="w-[320px] p-4 rounded-3xl border border-border bg-background shadow-lg"
+                  align="start"
+                >
+                  <div className="mb-3">
+                    <p className="text-sm font-semibold">
+                      Choose your birth date
+                    </p>
+
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Select the correct day, month and year.
+                    </p>
+                  </div>
+
                   <Calendar
                     mode="single"
                     selected={dateOfBirth}
                     onSelect={setDateOfBirth}
                     initialFocus
+                    className={cn('pointer-events-auto')}
+                    captionLayout="dropdown"
+                    fromYear={1900}
+                    toYear={new Date().getFullYear()}
                   />
                 </PopoverContent>
               </Popover>

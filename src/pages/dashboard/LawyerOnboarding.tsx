@@ -67,14 +67,10 @@ const LawyerOnboarding = () => {
     bio: profileData.bio.trim().length >= 50,
     specializations: profileData.specializations.length > 0,
     credentials: profileData.bar_council_number.trim().length > 0,
-    // pricing: profileData.price_per_minute >= 1 && profileData.session_price >= 10,
     pricing:
       profileData.chat_price_per_minute >= 1 &&
-      profileData.chat_price_per_minute <= 10 &&
       profileData.audio_price_per_minute >= 1 &&
-      profileData.audio_price_per_minute <= 10 &&
       profileData.video_price_per_minute >= 1 &&
-      profileData.video_price_per_minute <= 10 &&
       profileData.session_price >= 10,
     languages: profileData.languages.length > 0,
   }), [profileData]);
@@ -149,8 +145,16 @@ const LawyerOnboarding = () => {
       toast({ variant: 'destructive', title: 'Bar Council Number required', description: 'Please enter your registration number for verification.' });
       return;
     }
-    if (profileData.price_per_minute < 1) {
-      toast({ variant: 'destructive', title: 'Price per minute must be at least $1' });
+    if (
+      profileData.chat_price_per_minute < 1 || profileData.chat_price_per_minute > 100 ||
+      profileData.audio_price_per_minute < 1 || profileData.audio_price_per_minute > 100 ||
+      profileData.video_price_per_minute < 1 || profileData.video_price_per_minute > 100
+    ) {
+      toast({ variant: 'destructive', title: 'Each per-minute rate must be between ₹1 and ₹100' });
+      return;
+    }
+    if (profileData.session_price < 10) {
+      toast({ variant: 'destructive', title: 'Session price must be at least ₹10' });
       return;
     }
 
@@ -163,7 +167,6 @@ const LawyerOnboarding = () => {
         education: profileData.education.trim(),
         bar_council_number: profileData.bar_council_number.trim(),
         experience_years: profileData.experience_years,
-        // price_per_minute: profileData.price_per_minute,
         chat_price_per_minute: profileData.chat_price_per_minute,
         audio_price_per_minute: profileData.audio_price_per_minute,
         video_price_per_minute: profileData.video_price_per_minute,
@@ -840,7 +843,7 @@ const LawyerOnboarding = () => {
               <div className="space-y-3 sm:space-y-4">
 
                 <Textarea
-                  placeholder="Education background..."
+                  placeholder="BA LLB (Hons.) from National Law University, Odisha with specialization in Criminal and Corporate Law."
                   className="min-h-[80px] text-sm"
                   value={profileData.education}
                   onChange={(e) =>
@@ -892,63 +895,98 @@ const LawyerOnboarding = () => {
             {/* Pricing */}
             <OnboardingStepCard
               title="Pricing"
-              description="Set your rates"
+              description="Set price per minute for each consultation type"
               icon={<DollarSign className="h-5 w-5" />}
               isComplete={completion.pricing}
             >
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-
-                {/* {['chat', 'audio', 'video'].map((type) => (
-                  <Input
-                    key={type}
-                    placeholder={`${type} ₹/min`}
-                    value={profileData[`${type}_price_per_minute`]}
-                    onChange={(e) => {
-                      let val = parseFloat(e.target.value) || 1;
-                      if (val > 10) val = 10;
-
-                      setProfileData(prev => ({
-                        ...prev,
-                        [`${type}_price_per_minute`]: val
-                      }));
-                    }}
-                  />
-                ))} */}
                 {[
-                  { key: 'chat_price_per_minute', label: 'Chat' },
-                  { key: 'audio_price_per_minute', label: 'Audio' },
-                  { key: 'video_price_per_minute', label: 'Video' },
-                ].map(({ key, label }) => (
-                  <Input
-                    key={key}
-                    placeholder={`${label} ₹/min`}
-                    value={profileData[key as keyof typeof profileData] as number}
-                    onChange={(e) => {
-                      let val = parseFloat(e.target.value) || 1;
-                      if (val > 10) val = 10;
-
-                      setProfileData(prev => ({
-                        ...prev,
-                        [key]: val
-                      }));
-                    }}
-                  />
-                ))}
-
+                  { key: 'chat_price_per_minute', label: 'Chat', description: 'Instant message support' },
+                  { key: 'audio_price_per_minute', label: 'Audio', description: 'Voice consultation' },
+                  { key: 'video_price_per_minute', label: 'Video', description: 'Face-to-face call' },
+                ].map(({ key, label, description }) => {
+                  const value = profileData[key as keyof typeof profileData] as number;
+                  const hasError = value < 1 || value > 100;
+                  return (
+                    <div key={key} className="space-y-2">
+                      <Label>{label} Rate (₹ / min)</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={100}
+                        step={0.5}
+                        placeholder="Enter rate"
+                        value={value}
+                        className={hasError ? 'border-destructive' : ''}
+                        onChange={(e) => {
+                          const rawValue = e.target.value;
+                          const parsed = parseFloat(rawValue);
+                          const val = Number.isNaN(parsed) ? 0 : parsed;
+                          setProfileData(prev => ({
+                            ...prev,
+                            [key]: val
+                          }));
+                        }}
+                      />
+                      <p className="text-xs text-muted-foreground">{description}</p>
+                      {hasError && (
+                        <p className="text-xs text-destructive">Please enter a value between 1 and 100.</p>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
-              <Input
-                className="mt-3"
-                type="number"
-                placeholder="Session price"
-                value={profileData.session_price}
-                onChange={(e) =>
-                  setProfileData(prev => ({
-                    ...prev,
-                    session_price: parseFloat(e.target.value) || 10
-                  }))
-                }
-              />
+              <div className="mt-4 p-4 bg-muted/50 rounded-xl border border-border">
+                <p className="text-sm font-medium mb-3">Typical duration preview</p>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {[
+                    { label: 'Chat', minutes: [5, 10, 15, 30], rate: profileData.chat_price_per_minute },
+                    { label: 'Audio', minutes: [10, 15, 20, 30], rate: profileData.audio_price_per_minute },
+                    { label: 'Video', minutes: [15, 20, 30, 45], rate: profileData.video_price_per_minute },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-xl bg-background p-3 border border-border">
+                      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">{item.label}</p>
+                      <div className="space-y-1 text-sm">
+                        {item.minutes.map((minutes) => (
+                          <div key={minutes} className="flex items-center justify-between">
+                            <span>{minutes} min</span>
+                            <span className="font-semibold">₹{(item.rate * minutes).toFixed(0)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-2 opacity-60 cursor-not-allowed select-none">
+
+                <div className="flex items-center justify-between">
+                  <Label className="text-muted-foreground">
+                    Session price (₹)
+                  </Label>
+
+                  <span className="text-[10px] font-medium text-amber-600">
+                    Coming Soon
+                  </span>
+                </div>
+
+                <Input
+                  type="number"
+                  min={10}
+                  step={1}
+                  placeholder="Fixed session price"
+                  value={profileData.session_price}
+                  disabled
+                  className="bg-muted/50 border-border/60"
+                />
+
+                <p className="text-xs text-muted-foreground">
+                  Fixed pricing for scheduled sessions or packages.
+                </p>
+
+              </div>
             </OnboardingStepCard>
 
             {/* Actions */}

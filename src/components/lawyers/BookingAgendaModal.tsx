@@ -62,6 +62,9 @@ interface LawyerInfo {
     full_name: string;
     avatar_url?: string | null;
     price_per_minute: number | null;
+    chat_price_per_minute?: number | null;
+    audio_price_per_minute?: number | null;
+    video_price_per_minute?: number | null;
     rating: number | null;
     specializations: string[] | null;
 }
@@ -71,7 +74,6 @@ interface BookingAgendaModalProps {
     onClose: () => void;
     lawyer: LawyerInfo;
     consultationType: 'chat' | 'audio' | 'video';
-    // onSuccess?: () => void;
     onSuccess?: (bookingId: string) => void;
 }
 
@@ -101,19 +103,24 @@ export const BookingAgendaModal = ({
     const [payingNow, setPayingNow] = useState(false);
     const [selectedMinutes, setSelectedMinutes] = useState(10);
 
-    useEffect(() => {
-        setConsultationType(initialType);
-    }, [initialType]);
-
-
-    const minimumMinutes = selectedMinutes;
-    const pricePerMinute = lawyer.price_per_minute || 5;
-    const sessionCost = minimumMinutes * pricePerMinute;
-    const CONSULTATION_PRICING = {
-        chat: [5, 10, 15, 20],
+    const DURATION_OPTIONS = {
+        chat: [5, 10, 15, 30],
         audio: [10, 15, 20, 30],
         video: [15, 20, 30, 45],
-    };
+    } as const;
+
+    useEffect(() => {
+        setConsultationType(initialType);
+        setSelectedMinutes(DURATION_OPTIONS[initialType][0]);
+    }, [initialType]);
+
+    const minimumMinutes = selectedMinutes;
+    const pricePerMinute = consultationType === 'chat'
+        ? lawyer.chat_price_per_minute ?? lawyer.price_per_minute ?? 5
+        : consultationType === 'audio'
+            ? lawyer.audio_price_per_minute ?? lawyer.price_per_minute ?? 5
+            : lawyer.video_price_per_minute ?? lawyer.price_per_minute ?? 5;
+    const sessionCost = minimumMinutes * pricePerMinute;
 
     const getTypeIcon = (type: string) => {
         switch (type) {
@@ -667,65 +674,56 @@ scroll-smooth scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&
                                 </Label>
 
                                 <div className="grid grid-cols-3 gap-2">
-
                                     {(['chat', 'audio', 'video'] as const).map((type) => (
-
                                         <button
                                             key={type}
                                             onClick={() => {
                                                 setConsultationType(type);
-                                                setSelectedMinutes(CONSULTATION_PRICING[type][0]);
+                                                setSelectedMinutes(DURATION_OPTIONS[type][0]);
                                             }}
                                             className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${consultationType === type
                                                 ? 'border-primary bg-primary/5'
                                                 : 'border-border hover:border-primary/30'
                                                 }`}
                                         >
-
                                             {getTypeIcon(type)}
-
                                             <span className="text-xs font-medium capitalize">
                                                 {getTypeLabel(type)}
                                             </span>
-
                                         </button>
-
                                     ))}
-
                                 </div>
 
                                 <div className="p-3 rounded-xl border bg-secondary/30 space-y-3">
 
                                     <Label className="text-xs font-medium text-muted-foreground">
-                                        Select Per Minute Charges
+                                        Choose duration
                                     </Label>
 
                                     <div className="grid grid-cols-2 gap-2">
+                                        {DURATION_OPTIONS[consultationType].map((minutes) => {
+                                            const isSelected = selectedMinutes === minutes;
+                                            const label = isSelected
+                                                ? `₹${(minutes * pricePerMinute).toFixed(0)}`
+                                                : `${minutes} min`;
 
-                                        {CONSULTATION_PRICING[consultationType].map((price) => (
-
-                                            <button
-                                                key={price}
-                                                onClick={() => setSelectedMinutes(price)}
-                                                className={`h-10 rounded-lg text-sm font-semibold border transition-all ${selectedMinutes === price
-                                                    ? 'bg-primary text-white border-primary'
-                                                    : 'hover:border-primary/40'
-                                                    }`}
-                                            >
-                                                ₹{price}/min
-                                            </button>
-
-                                        ))}
-
+                                            return (
+                                                <button
+                                                    key={minutes}
+                                                    onClick={() => setSelectedMinutes(minutes)}
+                                                    className={`h-10 rounded-lg text-sm font-semibold border transition-all ${isSelected
+                                                        ? 'bg-primary text-white border-primary'
+                                                        : 'hover:border-primary/40'
+                                                        }`}
+                                                >
+                                                    {label}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
 
                                 </div>
-
                             </div>
-
-
-
-
                             {/* Category */}
 
                             <div className="space-y-2">

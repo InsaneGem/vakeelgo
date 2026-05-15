@@ -31,6 +31,9 @@ interface LawyerData {
   specializations: string[] | null;
   languages: string[] | null;
   price_per_minute: number | null;
+  chat_price_per_minute?: number | null;
+  audio_price_per_minute?: number | null;
+  video_price_per_minute?: number | null;
   session_price: number | null;
   rating: number | null;
   total_reviews: number | null;
@@ -40,11 +43,8 @@ interface LawyerData {
   education: string | null;
   bar_council_number: string | null;
   created_at: string | null;
-  // date_of_birth: string | null;
   date_of_birth?: string | null;
-  // onBooking?: () => void;
   onSuccess?: (bookingId: string) => void;
-
 }
 interface ProfileData {
   full_name: string;
@@ -88,17 +88,19 @@ const ClientLawyerDetail = () => {
   const REVIEWS_PER_PAGE = 3;
 
   const onBooking = (bookingId: string) => {
-    // Close modal
     setShowBookingModal(false);
 
-    // Show a success toast
     toast({
       title: 'Request Sent',
       description: 'Your consultation request has been sent to the lawyer.',
-      // variant: 'success',
     });
-
   };
+
+  const selectedRate = selectedType === 'chat'
+    ? lawyer?.chat_price_per_minute ?? lawyer?.price_per_minute ?? 5
+    : selectedType === 'audio'
+      ? lawyer?.audio_price_per_minute ?? lawyer?.price_per_minute ?? 5
+      : lawyer?.video_price_per_minute ?? lawyer?.price_per_minute ?? 5;
   const totalPages = Math.ceil(reviews.length / REVIEWS_PER_PAGE);
 
   const paginatedReviews = reviews.slice(
@@ -397,7 +399,7 @@ const ClientLawyerDetail = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground leading-relaxed text-[15px]">
+                  <p className="text-muted-foreground leading-relaxed text-[12px]">
                     {lawyer.bio || 'Experienced legal professional committed to providing excellent legal counsel and representation.'}
                   </p>
                 </CardContent>
@@ -407,7 +409,7 @@ const ClientLawyerDetail = () => {
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
                   <CardContent className="p-5 text-center">
                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                      <Clock className="h-5 w-5 text-primary" />
+                      <Briefcase className="h-5 w-5 text-primary" />
                     </div>
                     <p className="text-2xl font-bold">{lawyer.experience_years || 0}</p>
                     <p className="text-xs text-muted-foreground mt-1">Years Experience</p>
@@ -416,7 +418,7 @@ const ClientLawyerDetail = () => {
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
                   <CardContent className="p-5 text-center">
                     <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center mx-auto mb-3">
-                      <Globe className="h-5 w-5 text-blue-600" />
+                      <Languages className="h-5 w-5 text-blue-600" />
                     </div>
                     <p className="text-2xl font-bold">{lawyer.languages?.length || 0}</p>
                     <p className="text-xs text-muted-foreground mt-1">Languages</p>
@@ -425,10 +427,12 @@ const ClientLawyerDetail = () => {
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
                   <CardContent className="p-5 text-center">
                     <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-3">
-                      <DollarSign className="h-5 w-5 text-emerald-600" />
+                      <Star className="h-5 w-5 text-emerald-600" />
                     </div>
-                    <p className="text-2xl font-bold">₹{lawyer.price_per_minute || 5}</p>
-                    <p className="text-xs text-muted-foreground mt-1">Per Minute</p>
+                    <p className="text-2xl font-bold">{avgRating || 0}</p>
+                    {/* <p className="text-2xl font-bold">₹ {renderStars(review.rating || 0)}</p> */}
+                    <p className="text-xs text-muted-foreground mt-1">Average Rating</p>
+
                   </CardContent>
                 </Card>
                 <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
@@ -455,23 +459,10 @@ const ClientLawyerDetail = () => {
                   {/* GRID LAYOUT */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
-                    {/* EDUCATION */}
-                    {lawyer.education && (
-                      <div className="flex items-start gap-2 p-3 rounded-xl bg-secondary/40 hover:bg-secondary/60 transition">
-                        <GraduationCap className="h-4 w-4 text-primary mt-1 shrink-0" />
-                        <div className="min-w-0">
-                          <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
-                            Education
-                          </p>
-                          <p className="text-sm font-medium leading-snug truncate">
-                            {lawyer.education}
-                          </p>
-                        </div>
-                      </div>
-                    )}
+
 
                     {/* BAR COUNCIL */}
-                    {lawyer.bar_council_number && (
+                    {/* {lawyer.bar_council_number && (
                       <div className="flex items-start gap-2 p-3 rounded-xl bg-secondary/40 hover:bg-secondary/60 transition">
                         <BadgeCheck className="h-4 w-4 text-primary mt-1 shrink-0" />
                         <div>
@@ -483,7 +474,7 @@ const ClientLawyerDetail = () => {
                           </p>
                         </div>
                       </div>
-                    )}
+                    )} */}
 
                     {/* AGE + DOB (NEW) */}
                     {profile?.date_of_birth && (
@@ -526,11 +517,183 @@ const ClientLawyerDetail = () => {
                         </div>
                       </div>
                     )}
+                    {/* EDUCATION */}
+                    {lawyer.education && (
+                      <div className="flex items-start gap-2 p-3 rounded-xl bg-secondary/40 hover:bg-secondary/60 transition">
+                        <GraduationCap className="h-4 w-4 text-primary mt-1 shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+                            Education
+                          </p>
+                          {/* <p className="text-sm font-medium leading-snug truncate"> */}
+                          <p className="text-sm font-medium leading-snug break-words whitespace-pre-wrap">
+                            {lawyer.education}
+                          </p>
+                        </div>
+                      </div>
+                    )}
 
                   </div>
 
+                  <div className="border-t border-border/70 pt-4 mt-4 space-y-3">
 
+                    {/* Header */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                          Consultation Pricing
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Transparent pricing set individually by the lawyer.
+                        </p>
+                      </div>
 
+                      <div className="hidden sm:flex items-center gap-1 rounded-full border bg-secondary/40 px-3 py-1">
+                        <Shield className="h-3.5 w-3.5 text-primary" />
+                        <span className="text-[11px] font-medium text-muted-foreground">
+                          Secure Payment
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Pricing Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+
+                      {/* Chat */}
+                      <div className="group rounded-2xl border border-border/70 bg-secondary/30 p-3 hover:border-primary/30 transition-all">
+                        <div className="flex items-start justify-between gap-2">
+
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                              <MessageSquare className="h-4 w-4" />
+                            </span>
+
+                            <div>
+                              <p className="text-sm font-semibold leading-none">
+                                Chat
+                              </p>
+
+                              <p className="text-[11px] text-muted-foreground mt-1">
+                                5 • 10 • 15 • 30 mins
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="text-right">
+                            <p className="text-base font-bold leading-none">
+                              ₹{(lawyer.chat_price_per_minute ?? lawyer.price_per_minute ?? 0).toFixed(0)}
+                            </p>
+
+                            <p className="text-[11px] text-muted-foreground mt-1">
+                              per min
+                            </p>
+                          </div>
+
+                        </div>
+                      </div>
+
+                      {/* Audio */}
+                      <div className="group rounded-2xl border border-border/70 bg-secondary/30 p-3 hover:border-blue-500/30 transition-all">
+                        <div className="flex items-start justify-between gap-2">
+
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600">
+                              <Phone className="h-4 w-4" />
+                            </span>
+
+                            <div>
+                              <p className="text-sm font-semibold leading-none">
+                                Audio
+                              </p>
+
+                              <p className="text-[11px] text-muted-foreground mt-1">
+                                10 • 15 • 20 • 30 mins
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="text-right">
+                            <p className="text-base font-bold leading-none">
+                              ₹{(lawyer.audio_price_per_minute ?? lawyer.price_per_minute ?? 0).toFixed(0)}
+                            </p>
+
+                            <p className="text-[11px] text-muted-foreground mt-1">
+                              per min
+                            </p>
+                          </div>
+
+                        </div>
+                      </div>
+
+                      {/* Video */}
+                      <div className="group rounded-2xl border border-border/70 bg-secondary/30 p-3 hover:border-emerald-500/30 transition-all">
+                        <div className="flex items-start justify-between gap-2">
+
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
+                              <Video className="h-4 w-4" />
+                            </span>
+
+                            <div>
+                              <p className="text-sm font-semibold leading-none">
+                                Video
+                              </p>
+
+                              <p className="text-[11px] text-muted-foreground mt-1">
+                                15 • 20 • 30 • 45 mins
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="text-right">
+                            <p className="text-base font-bold leading-none">
+                              ₹{(lawyer.video_price_per_minute ?? lawyer.price_per_minute ?? 0).toFixed(0)}
+                            </p>
+
+                            <p className="text-[11px] text-muted-foreground mt-1">
+                              per min
+                            </p>
+                          </div>
+
+                        </div>
+                      </div>
+
+                    </div>
+
+                    {/* Session Price */}
+                    <div className="rounded-2xl border border-border/50 bg-muted/40 px-4 py-3 opacity-70 cursor-not-allowed select-none">
+
+                      <div className="flex items-center justify-between gap-3">
+
+                        <div>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                            Fixed Session Price
+                          </p>
+
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Complete consultation at a flat rate.
+                          </p>
+
+                          <p className="text-[10px] text-amber-600 font-medium mt-2">
+                            Feature not started yet
+                          </p>
+                        </div>
+
+                        <div className="text-right">
+                          <p className="text-xl font-bold text-muted-foreground">
+                            ₹{lawyer.session_price?.toFixed(0) || 0}
+                          </p>
+
+                          <p className="text-[11px] text-muted-foreground">
+                            full session
+                          </p>
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                  </div>
 
                 </CardContent>
               </Card>
@@ -679,16 +842,16 @@ const ClientLawyerDetail = () => {
                 <Card className="border-0 shadow-xl bg-gradient-to-b from-card to-secondary/20">
                   <CardContent className="p-6 space-y-5">
                     <div className="text-center">
-                      <p className="text-sm text-muted-foreground font-medium">Consultation Rate</p>
-                      <div className="flex items-baseline justify-center gap-1 mt-2">
+                      <p className="text-sm text-foreground font-medium">Flexible booking options for chat, audio and video consultations</p>
+                      {/* <div className="flex items-baseline justify-center gap-1 mt-2">
                         <span className="text-4xl font-bold text-primary">₹{lawyer.price_per_minute || 5}</span>
                         <span className="text-muted-foreground text-sm">/min</span>
-                      </div>
-                      {lawyer.session_price && (
+                      </div> */}
+                      {/* {lawyer.session_price && (
                         <p className="text-sm text-muted-foreground mt-1">
                           or ${lawyer.session_price} per session
                         </p>
-                      )}
+                      )} */}
                     </div>
                     <Separator />
                     {/* Quick Stats */}
@@ -804,8 +967,8 @@ const ClientLawyerDetail = () => {
           <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-card/95 backdrop-blur-lg border-t border-border p-4 z-50">
             <div className="flex items-center gap-3 max-w-6xl mx-auto">
               <div className="flex-1">
-                <p className="text-xs text-muted-foreground">Charges</p>
-                <p className="text-lg font-bold text-primary">₹{lawyer.price_per_minute || 5}/min</p>
+                <p className="text-xs text-muted-foreground">Flexible Consultation Pricing</p>
+                {/* <p className="text-lg font-bold text-primary">₹{selectedRate}/min</p> */}
               </div>
 
               <MessageSquare className="h-4 w-4" />
@@ -837,6 +1000,9 @@ const ClientLawyerDetail = () => {
             full_name: profile.full_name || 'Legal Professional',
             avatar_url: profile.avatar_url,
             price_per_minute: lawyer.price_per_minute,
+            chat_price_per_minute: lawyer.chat_price_per_minute,
+            audio_price_per_minute: lawyer.audio_price_per_minute,
+            video_price_per_minute: lawyer.video_price_per_minute,
             rating: lawyer.rating,
             specializations: lawyer.specializations,
           }}

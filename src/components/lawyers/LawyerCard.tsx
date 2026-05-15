@@ -19,6 +19,9 @@ interface LawyerWithProfile {
   specializations: string[] | null;
   languages: string[] | null;
   price_per_minute: number | null;
+  chat_price_per_minute?: number | null;
+  audio_price_per_minute?: number | null;
+  video_price_per_minute?: number | null;
   rating: number | null;
   total_reviews: number | null;
   is_available: boolean | null;
@@ -266,7 +269,7 @@ export const LawyerCard = ({
               {/* PRICE */}
               <div className="text-right shrink-0">
                 <span className="text-base sm:text-lg font-bold">
-                  ₹{lawyer.price_per_minute || 5}
+                  ₹{lawyer.chat_price_per_minute ?? lawyer.audio_price_per_minute ?? lawyer.video_price_per_minute ?? lawyer.price_per_minute ?? 5}
                 </span>
                 <span className="text-[10px] text-muted-foreground block -mt-0.5">
                   /min
@@ -335,6 +338,9 @@ export const LawyerCard = ({
           full_name: lawyer.full_name || 'Legal Professional',
           avatar_url: lawyer.avatar_url,
           price_per_minute: lawyer.price_per_minute,
+          chat_price_per_minute: lawyer.chat_price_per_minute,
+          audio_price_per_minute: lawyer.audio_price_per_minute,
+          video_price_per_minute: lawyer.video_price_per_minute,
           rating: lawyer.rating,
           specializations: lawyer.specializations,
         }}

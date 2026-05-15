@@ -361,30 +361,76 @@ const ClientManageAccount = () => {
                 </div>
                 <div className="space-y-2 md:col-span-2">
                   <Label className="flex items-center gap-2">
-                    <CalendarIcon className="h-4 w-4 text-muted-foreground" /> Date of Birth
+                    <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                    Date of Birth
                   </Label>
+
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
                         className={cn(
-                          'w-full justify-start text-left font-normal',
-                          !profile.date_of_birth && 'text-muted-foreground'
+                          'w-full justify-start text-left font-normal h-auto py-3 px-4 rounded-xl border border-input bg-background text-black hover:bg-background hover:text-black focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-black active:bg-background active:text-black',
+                          !profile.date_of_birth && 'text-black'
                         )}
                       >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {profile.date_of_birth ? format(parseISO(profile.date_of_birth), 'PPP') : <span>Select date of birth</span>}
+                        {/* <CalendarIcon className="mr-3 h-4 w-4 text-muted-foreground shrink-0" /> */}
+
+                        <div className="flex flex-col items-start">
+                          <span
+                            className={cn(
+                              'text-sm font-medium',
+                              !profile.date_of_birth && 'text-muted-foreground'
+                            )}
+                          >
+                            {profile.date_of_birth
+                              ? format(parseISO(profile.date_of_birth), 'dd MMM yyyy')
+                              : 'Select date of birth'}
+                          </span>
+
+                          {/* <span className="text-xs text-muted-foreground">
+                            Day · Month · Year
+                          </span> */}
+                        </div>
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+
+                    <PopoverContent
+                      className="w-[320px] p-4 rounded-3xl border border-border bg-background shadow-lg"
+                      align="start"
+                    >
+                      <div className="mb-3">
+                        <p className="text-sm font-semibold">
+                          Choose your birth date
+                        </p>
+
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Select the correct day, month and year for your profile.
+                        </p>
+                      </div>
+
                       <Calendar
                         mode="single"
-                        selected={profile.date_of_birth ? parseISO(profile.date_of_birth) : undefined}
-                        onSelect={(date) => setProfile(prev => ({ ...prev, date_of_birth: date ? format(date, 'yyyy-MM-dd') : null }))}
-                        disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
+                        selected={
+                          profile.date_of_birth
+                            ? parseISO(profile.date_of_birth)
+                            : undefined
+                        }
+                        onSelect={(date) =>
+                          setProfile(prev => ({
+                            ...prev,
+                            date_of_birth: date
+                              ? format(date, 'yyyy-MM-dd')
+                              : null
+                          }))
+                        }
+                        disabled={(date) =>
+                          date > new Date() ||
+                          date < new Date('1900-01-01')
+                        }
                         initialFocus
-                        className={cn('p-3 pointer-events-auto')}
-                        captionLayout="dropdown-buttons"
+                        className={cn('pointer-events-auto')}
+                        captionLayout="dropdown"
                         fromYear={1900}
                         toYear={new Date().getFullYear()}
                       />
@@ -401,7 +447,7 @@ const ClientManageAccount = () => {
             <Button variant="outline" onClick={() => navigate('/dashboard')}>
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={saving} className="gap-2 min-w-32">
+            <Button onClick={handleSave} disabled={saving} className="gap-2 min-w-30">
               {saving ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -410,14 +456,14 @@ const ClientManageAccount = () => {
               ) : (
                 <>
                   <Save className="h-4 w-4" />
-                  Save Changes
+                  Save
                 </>
               )}
             </Button>
           </div>
         </div>
       </div>
-    </ClientLayout>
+    </ClientLayout >
   );
 };
 export default ClientManageAccount;

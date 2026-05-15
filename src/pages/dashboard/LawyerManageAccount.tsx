@@ -24,7 +24,7 @@ import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
 import {
   ArrowLeft, Save, X, User, Mail, Phone as PhoneIcon, Shield,
-  Briefcase, GraduationCap, Languages, DollarSign, FileText, Award, Loader2, CalendarIcon
+  Briefcase, GraduationCap, Languages, DollarSign, FileText, Award, Loader2, CalendarIcon, Pencil, IndianRupee
 } from 'lucide-react';
 import { formatLawyerName } from '@/lib/lawyer-utils';
 const SPECIALIZATION_OPTIONS = [
@@ -53,12 +53,16 @@ interface ProfessionalInfo {
   bar_council_number: string;
   experience_years: number;
   price_per_minute: number;
+  chat_price_per_minute: number;
+  audio_price_per_minute: number;
+  video_price_per_minute: number;
   session_price: number;
   specializations: string[];
   languages: string[];
   status: string | null;
 }
 const LawyerManageAccount = () => {
+  const [editingBio, setEditingBio] = useState(false);
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -74,7 +78,8 @@ const LawyerManageAccount = () => {
   });
   const [professional, setProfessional] = useState<ProfessionalInfo>({
     bio: '', education: '', bar_council_number: '', experience_years: 0,
-    price_per_minute: 5, session_price: 100, specializations: [], languages: ['English'],
+    price_per_minute: 5, chat_price_per_minute: 5, audio_price_per_minute: 8, video_price_per_minute: 12,
+    session_price: 100, specializations: [], languages: ['English'],
     status: null,
   });
   useEffect(() => {
@@ -97,12 +102,16 @@ const LawyerManageAccount = () => {
       });
     }
     if (lawyerRes.data) {
+      const dbPrice = Number(lawyerRes.data.price_per_minute) || 5;
       setProfessional({
         bio: lawyerRes.data.bio || '',
         education: lawyerRes.data.education || '',
         bar_council_number: lawyerRes.data.bar_council_number || '',
         experience_years: lawyerRes.data.experience_years || 0,
-        price_per_minute: Number(lawyerRes.data.price_per_minute) || 5,
+        price_per_minute: dbPrice,
+        chat_price_per_minute: Number(lawyerRes.data.chat_price_per_minute ?? dbPrice) || dbPrice,
+        audio_price_per_minute: Number(lawyerRes.data.audio_price_per_minute ?? dbPrice) || dbPrice,
+        video_price_per_minute: Number(lawyerRes.data.video_price_per_minute ?? dbPrice) || dbPrice,
         session_price: Number(lawyerRes.data.session_price) || 100,
         specializations: lawyerRes.data.specializations || [],
         languages: lawyerRes.data.languages || ['English'],
@@ -120,6 +129,21 @@ const LawyerManageAccount = () => {
       profileResult.error.errors.forEach(err => { fieldErrors[err.path[0] as string] = err.message; });
       setErrors(fieldErrors);
       toast({ title: 'Validation Error', description: 'Please fix the errors below', variant: 'destructive' });
+      return;
+    }
+    const priceErrors: Record<string, string> = {};
+    if (professional.chat_price_per_minute < 1 || professional.chat_price_per_minute > 100) {
+      priceErrors.chat_price_per_minute = 'Enter a chat rate between ₹1 and ₹100';
+    }
+    if (professional.audio_price_per_minute < 1 || professional.audio_price_per_minute > 100) {
+      priceErrors.audio_price_per_minute = 'Enter an audio rate between ₹1 and ₹100';
+    }
+    if (professional.video_price_per_minute < 1 || professional.video_price_per_minute > 100) {
+      priceErrors.video_price_per_minute = 'Enter a video rate between ₹1 and ₹100';
+    }
+    if (Object.keys(priceErrors).length > 0) {
+      setErrors(priceErrors);
+      toast({ variant: 'destructive', title: 'Pricing values must be between ₹1 and ₹100' });
       return;
     }
     if (!professional.bio.trim()) {
@@ -144,7 +168,9 @@ const LawyerManageAccount = () => {
         education: professional.education.trim(),
         bar_council_number: professional.bar_council_number.trim(),
         experience_years: professional.experience_years,
-        price_per_minute: professional.price_per_minute,
+        chat_price_per_minute: professional.chat_price_per_minute,
+        audio_price_per_minute: professional.audio_price_per_minute,
+        video_price_per_minute: professional.video_price_per_minute,
         session_price: professional.session_price,
         specializations: professional.specializations,
         languages: professional.languages,
@@ -206,9 +232,7 @@ const LawyerManageAccount = () => {
                 <p className="text-sm text-muted-foreground">Your personal & professional details in one place</p>
               </div>
             </div>
-            <Button onClick={handleSaveAll} disabled={saving} className="gap-2 min-w-36 self-end sm:self-auto">
-              {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</> : <><Save className="h-4 w-4" /> Save All Changes</>}
-            </Button>
+
           </div>
           {/* Tabs */}
           <Tabs defaultValue="personal" className="space-y-6">
@@ -298,35 +322,67 @@ const LawyerManageAccount = () => {
                     </div>
                     <div className="space-y-2 md:col-span-2">
                       <Label className="flex items-center gap-2">
-                        <CalendarIcon className="h-4 w-4 text-muted-foreground" /> Date of Birth
+                        <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                        Date of Birth
                       </Label>
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
                             className={cn(
-                              'w-full justify-start text-left font-normal',
+                              'w-full justify-start text-left font-normal h-auto py-3 px-4 rounded-xl border border-input bg-background text-black hover:bg-background hover:text-black focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-black active:bg-background active:text-black',
                               !personal.date_of_birth && 'text-muted-foreground'
                             )}
                           >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {personal.date_of_birth ? format(parseISO(personal.date_of_birth), 'PPP') : <span>Select date of birth</span>}
+                            {/* <CalendarIcon className="mr-3 h-4 w-4 text-muted-foreground" /> */}
+                            <div className="flex flex-col items-start">
+                              <span className={cn('text-sm font-medium', !personal.date_of_birth && 'text-muted-foreground')}>
+                                {personal.date_of_birth ? format(parseISO(personal.date_of_birth), 'dd MMM yyyy') : 'Select date of birth'}
+                              </span>
+                              {/* <span className="text-xs text-muted-foreground">Day · Month · Year</span> */}
+                            </div>
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
+                        <PopoverContent className="w-[320px] p-4 rounded-3xl border border-border bg-background shadow-lg" align="start">
+                          <div className="mb-3">
+                            <p className="text-sm font-semibold">Choose your birth date</p>
+                            <p className="text-xs text-muted-foreground mt-1">Select the correct day, month and year for your profile.</p>
+                          </div>
                           <Calendar
                             mode="single"
                             selected={personal.date_of_birth ? parseISO(personal.date_of_birth) : undefined}
                             onSelect={(date) => setPersonal(prev => ({ ...prev, date_of_birth: date ? format(date, 'yyyy-MM-dd') : null }))}
                             disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
                             initialFocus
-                            className={cn('p-3 pointer-events-auto')}
-                            captionLayout="dropdown-buttons"
+                            className={cn('pointer-events-auto')}
+                            captionLayout="dropdown"
                             fromYear={1900}
                             toYear={new Date().getFullYear()}
                           />
                         </PopoverContent>
                       </Popover>
+                    </div>
+
+
+                    <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="phone" className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-muted-foreground" />About You
+                      </Label>
+                      <div className="space-y-2">
+                        <Label htmlFor="bio">Write a compelling bio that highlights your expertise *</Label>
+                        <Textarea
+                          id="bio"
+                          placeholder="Describe your experience, expertise, and approach to legal practice..."
+                          className={`min-h-[140px] text-xs sm:text-sm leading-5 ${errors.bio ? 'border-destructive' : ''}`}
+                          value={professional.bio}
+                          onChange={(e) => setProfessional(prev => ({ ...prev, bio: e.target.value }))}
+                          maxLength={1000}
+                        />
+                        <div className="flex justify-between">
+                          {errors.bio && <p className="text-xs text-destructive">{errors.bio}</p>}
+                          <p className="text-xs text-muted-foreground ml-auto">{professional.bio.length}/1000</p>
+                        </div>
+                      </div>
                     </div>
 
 
@@ -341,32 +397,6 @@ const LawyerManageAccount = () => {
 
             {/* ─── PROFESSIONAL TAB ─── */}
             <TabsContent value="professional" className="space-y-6">
-              {/* Bio */}
-              <Card className="border-0 shadow-lg">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <FileText className="h-5 w-5" /> About You
-                  </CardTitle>
-                  <CardDescription>Write a compelling bio that highlights your expertise</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <Label htmlFor="bio">Professional Bio *</Label>
-                    <Textarea
-                      id="bio"
-                      placeholder="Describe your experience, expertise, and approach to legal practice..."
-                      className={`min-h-[140px] ${errors.bio ? 'border-destructive' : ''}`}
-                      value={professional.bio}
-                      onChange={(e) => setProfessional(prev => ({ ...prev, bio: e.target.value }))}
-                      maxLength={1000}
-                    />
-                    <div className="flex justify-between">
-                      {errors.bio && <p className="text-xs text-destructive">{errors.bio}</p>}
-                      <p className="text-xs text-muted-foreground ml-auto">{professional.bio.length}/1000</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
               {/* Specializations */}
               <Card className="border-0 shadow-lg">
                 <CardHeader>
@@ -408,7 +438,7 @@ const LawyerManageAccount = () => {
                     <Textarea
                       id="education"
                       placeholder="e.g., LLB from Harvard Law School, LLM in Corporate Law..."
-                      className="min-h-[100px]"
+                      className="min-h-[140px] text-xs sm:text-sm leading-5"
                       value={professional.education}
                       onChange={(e) => setProfessional(prev => ({ ...prev, education: e.target.value }))}
                       maxLength={500}
@@ -462,59 +492,458 @@ const LawyerManageAccount = () => {
                   </div>
                 </CardContent>
               </Card>
+
+
               {/* Pricing */}
               <Card className="border-0 shadow-lg">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <DollarSign className="h-5 w-5" /> Pricing
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                    <IndianRupee className="h-4 w-4 sm:h-5 sm:w-5" />
+                    Pricing
                   </CardTitle>
-                  <CardDescription>Set your consultation ratess</CardDescription>
+
+                  <CardDescription className="text-xs sm:text-sm">
+                    Set your consultation rates and preview mode pricing
+                  </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="price_per_minute">Price per Minute ($)</Label>
-                      <Input
-                        id="price_per_minute"
-                        type="number"
-                        min={1}
-                        max={100}
-                        step={0.5}
-                        value={professional.price_per_minute}
-                        onChange={(e) => setProfessional(prev => ({ ...prev, price_per_minute: parseFloat(e.target.value) || 1 }))}
-                      />
-                      <p className="text-xs text-muted-foreground">For chat, audio, and video calls</p>
+
+                <CardContent className="p-3 sm:p-6">
+                  <div className="grid grid-cols-1 xl:grid-cols-[1fr,1.1fr] gap-4 sm:gap-6">
+
+                    {/* LEFT SIDE */}
+                    <div className="space-y-4">
+
+                      {/* INPUTS */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                        {/* CHAT */}
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="chat_price_per_minute"
+                            className="text-xs sm:text-sm"
+                          >
+                            Chat Rate (₹ / min)
+                          </Label>
+
+                          <Input
+                            id="chat_price_per_minute"
+                            type="number"
+                            min={1}
+                            max={100}
+                            step={0.5}
+                            value={professional.chat_price_per_minute === 0 ? '' : professional.chat_price_per_minute}
+                            className={`h-9 sm:h-10 text-sm ${errors.chat_price_per_minute ? 'border-destructive' : ''}`}
+                            onChange={(e) => {
+                              const input = e.target.value;
+                              const parsed = parseFloat(input);
+                              const value = input === '' ? 0 : Number.isNaN(parsed) ? 0 : parsed;
+
+                              setProfessional(prev => ({
+                                ...prev,
+                                chat_price_per_minute: value,
+                              }));
+
+                              setErrors(prev => {
+                                const next = { ...prev };
+
+                                if (value < 1 || value > 100) {
+                                  next.chat_price_per_minute = 'Enter a chat rate between ₹1 and ₹100';
+                                } else {
+                                  delete next.chat_price_per_minute;
+                                }
+
+                                return next;
+                              });
+                            }}
+                          />
+
+                          {errors.chat_price_per_minute && (
+                            <p className="text-[11px] text-destructive">
+                              {errors.chat_price_per_minute}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* AUDIO */}
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="audio_price_per_minute"
+                            className="text-xs sm:text-sm"
+                          >
+                            Audio Rate (₹ / min)
+                          </Label>
+
+                          <Input
+                            id="audio_price_per_minute"
+                            type="number"
+                            min={1}
+                            max={100}
+                            step={0.5}
+                            value={professional.audio_price_per_minute === 0 ? '' : professional.audio_price_per_minute}
+                            className={`h-9 sm:h-10 text-sm ${errors.audio_price_per_minute ? 'border-destructive' : ''}`}
+                            onChange={(e) => {
+                              const input = e.target.value;
+                              const parsed = parseFloat(input);
+                              const value = input === '' ? 0 : Number.isNaN(parsed) ? 0 : parsed;
+
+                              setProfessional(prev => ({
+                                ...prev,
+                                audio_price_per_minute: value,
+                              }));
+
+                              setErrors(prev => {
+                                const next = { ...prev };
+
+                                if (value < 1 || value > 100) {
+                                  next.audio_price_per_minute = 'Enter an audio rate between ₹1 and ₹100';
+                                } else {
+                                  delete next.audio_price_per_minute;
+                                }
+
+                                return next;
+                              });
+                            }}
+                          />
+
+                          {errors.audio_price_per_minute && (
+                            <p className="text-[11px] text-destructive">
+                              {errors.audio_price_per_minute}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* VIDEO */}
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="video_price_per_minute"
+                            className="text-xs sm:text-sm"
+                          >
+                            Video Rate (₹ / min)
+                          </Label>
+
+                          <Input
+                            id="video_price_per_minute"
+                            type="number"
+                            min={1}
+                            max={100}
+                            step={0.5}
+                            value={professional.video_price_per_minute === 0 ? '' : professional.video_price_per_minute}
+                            className={`h-9 sm:h-10 text-sm ${errors.video_price_per_minute ? 'border-destructive' : ''}`}
+                            onChange={(e) => {
+                              const input = e.target.value;
+                              const parsed = parseFloat(input);
+                              const value = input === '' ? 0 : Number.isNaN(parsed) ? 0 : parsed;
+
+                              setProfessional(prev => ({
+                                ...prev,
+                                video_price_per_minute: value,
+                              }));
+
+                              setErrors(prev => {
+                                const next = { ...prev };
+
+                                if (value < 1 || value > 100) {
+                                  next.video_price_per_minute = 'Enter a video rate between ₹1 and ₹100';
+                                } else {
+                                  delete next.video_price_per_minute;
+                                }
+
+                                return next;
+                              });
+                            }}
+                          />
+
+                          {errors.video_price_per_minute && (
+                            <p className="text-[11px] text-destructive">
+                              {errors.video_price_per_minute}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* SESSION */}
+                        <div className="space-y-1.5 opacity-60 pointer-events-none">
+                          <div className="flex items-center justify-between gap-2">
+                            <Label
+                              htmlFor="session_price"
+                              className="text-xs sm:text-sm"
+                            >
+                              Session Price
+                            </Label>
+
+                            <span className="text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground whitespace-nowrap">
+                              Coming Soon
+                            </span>
+                          </div>
+
+                          <Input
+                            id="session_price"
+                            type="number"
+                            min={10}
+                            step={5}
+                            value={professional.session_price}
+                            disabled
+                            className="h-9 sm:h-10 text-sm bg-muted cursor-not-allowed"
+                            onChange={(e) => setProfessional(prev => ({
+                              ...prev,
+                              session_price: parseFloat(e.target.value) || 10,
+                            }))}
+                          />
+
+                          <p className="text-[11px] text-muted-foreground leading-relaxed">
+                            This feature is not available yet.
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* SMALL PRICING CARDS */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                        {/* CHAT CARD */}
+                        <div className="rounded-xl border border-border bg-muted/40 p-3">
+                          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                            Chat pricing
+                          </p>
+
+                          <p className="mt-2 text-base sm:text-lg font-semibold">
+                            ₹{professional.chat_price_per_minute}/min
+                          </p>
+
+                          <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                            {[5, 10, 15, 30].map(minutes => (
+                              <div
+                                key={minutes}
+                                className="flex items-center justify-between"
+                              >
+                                <span>{minutes} min</span>
+                                <span>
+                                  ₹{(professional.chat_price_per_minute * minutes).toFixed(0)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* AUDIO CARD */}
+                        <div className="rounded-xl border border-border bg-muted/40 p-3">
+                          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                            Audio pricing
+                          </p>
+
+                          <p className="mt-2 text-base sm:text-lg font-semibold">
+                            ₹{professional.audio_price_per_minute}/min
+                          </p>
+
+                          <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                            {[10, 15, 20, 30].map(minutes => (
+                              <div
+                                key={minutes}
+                                className="flex items-center justify-between"
+                              >
+                                <span>{minutes} min</span>
+                                <span>
+                                  ₹{(professional.audio_price_per_minute * minutes).toFixed(0)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* VIDEO CARD */}
+                        <div className="rounded-xl border border-border bg-muted/40 p-3">
+                          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                            Video pricing
+                          </p>
+
+                          <p className="mt-2 text-base sm:text-lg font-semibold">
+                            ₹{professional.video_price_per_minute}/min
+                          </p>
+
+                          <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                            {[10, 15, 20, 30].map(minutes => (
+                              <div
+                                key={minutes}
+                                className="flex items-center justify-between"
+                              >
+                                <span>{minutes} min</span>
+                                <span>
+                                  ₹{(professional.video_price_per_minute * minutes).toFixed(0)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        {/* SESSION CARD */}
+                        <div className="rounded-xl bg-muted/50 border border-border/70 p-3 opacity-60 relative overflow-hidden">
+
+                          {/* Coming Soon Badge */}
+                          <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
+                            <span className="text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+                              Coming Soon
+                            </span>
+                          </div>
+
+                          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                            Session pricing
+                          </p>
+
+                          <p className="mt-2 text-base sm:text-lg font-semibold text-muted-foreground">
+                            ₹{professional.session_price}
+                          </p>
+
+                          <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                            {[30, 60, 120, 180].map(minutes => (
+                              <div
+                                key={minutes}
+                                className="flex items-center justify-between"
+                              >
+                                <span>{minutes} min</span>
+                                <span>
+                                  ₹{professional.session_price}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+
+                          <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-3 leading-relaxed">
+                            This feature is not available yet.
+                          </p>
+                        </div>
+
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="session_price">Session Price ($)</Label>
-                      <Input
-                        id="session_price"
-                        type="number"
-                        min={10}
-                        max={1000}
-                        step={5}
-                        value={professional.session_price}
-                        onChange={(e) => setProfessional(prev => ({ ...prev, session_price: parseFloat(e.target.value) || 10 }))}
-                      />
-                      <p className="text-xs text-muted-foreground">Fixed price for scheduled sessions</p>
+
+                    {/* RIGHT SIDE */}
+                    <div className="rounded-2xl sm:rounded-3xl border border-border bg-background p-3 sm:p-5">
+
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+
+                        <div>
+                          <p className="text-sm font-medium">
+                            Pricing chart
+                          </p>
+
+                          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
+                            Editable lawyer rates for all call modes.
+                          </p>
+                        </div>
+
+                        <div className="rounded-xl bg-secondary/80 px-3 py-2 text-[10px] sm:text-xs text-muted-foreground w-fit">
+                          Current rates saved live
+                        </div>
+                      </div>
+
+                      <div className="mt-4 sm:mt-5 space-y-3">
+
+                        <div className="grid grid-cols-2 gap-3">
+
+                          <div className="rounded-xl bg-card p-3 sm:p-4 border border-border">
+                            <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                              Chat
+                            </p>
+
+                            <p className="mt-2 text-lg sm:text-2xl font-semibold">
+                              ₹{professional.chat_price_per_minute}/min
+                            </p>
+
+                            <p className="text-[11px] sm:text-sm text-muted-foreground mt-1">
+                              5 / 10 / 15 / 30 min
+                            </p>
+                          </div>
+
+                          <div className="rounded-xl bg-card p-3 sm:p-4 border border-border">
+                            <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                              Audio
+                            </p>
+
+                            <p className="mt-2 text-lg sm:text-2xl font-semibold">
+                              ₹{professional.audio_price_per_minute}/min
+                            </p>
+
+                            <p className="text-[11px] sm:text-sm text-muted-foreground mt-1">
+                              10 / 15 / 20 / 30 min
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+
+                          <div className="rounded-xl bg-card p-3 sm:p-4 border border-border">
+                            <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                              Video
+                            </p>
+
+                            <p className="mt-2 text-lg sm:text-2xl font-semibold">
+                              ₹{professional.video_price_per_minute}/min
+                            </p>
+
+                            <p className="text-[11px] sm:text-sm text-muted-foreground mt-1">
+                              15 / 20 / 30 / 45 min
+                            </p>
+                          </div>
+
+                          <div className="rounded-xl bg-muted/50 border border-border/70 p-3 sm:p-4 opacity-60 relative overflow-hidden">
+
+                            <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
+                              <span className="text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+                                Coming Soon
+                              </span>
+                            </div>
+
+                            <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                              Session
+                            </p>
+
+                            <p className="mt-2 text-lg sm:text-2xl font-semibold text-muted-foreground">
+                              ₹{professional.session_price}
+                            </p>
+
+                            <p className="text-[11px] sm:text-sm text-muted-foreground mt-1">
+                              Flat session cost
+                            </p>
+
+                            <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-2 leading-relaxed">
+                              This feature is not available yet.
+                            </p>
+                          </div>
+
+                        </div>
+
+                      </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
+
+
+
             {/* ─── DOCUMENTS TAB ─── */}
             <TabsContent value="documents" className="space-y-6">
               {user && <LawyerDocuments userId={user.id} />}
             </TabsContent>
           </Tabs>
-          {/* Bottom Save Bar (mobile-friendly sticky) */}
-          <div className="sticky bottom-0 bg-background/80 backdrop-blur-lg border-t py-4 -mx-4 px-4 mt-8 flex justify-end gap-3 sm:hidden">
-            <Button variant="outline" onClick={() => navigate('/lawyer/dashboard')}>Cancel</Button>
-            <Button onClick={handleSaveAll} disabled={saving} className="gap-2 flex-1">
-              {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</> : <><Save className="h-4 w-4" /> Save All</>}
+
+          <div className="flex justify-end w-full sm:w-auto mt-3">
+            <Button
+              onClick={handleSaveAll}
+              disabled={saving}
+              className="gap-2 min-w-20"
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  Save
+                </>
+              )}
             </Button>
           </div>
         </div>
+
       </div>
       {/* </MainLayout> */}
     </LawyerLayout>
