@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { initiateRazorpayPayment } from '@/lib/razorpay';
 import {
@@ -138,6 +139,13 @@ export const BookingAgendaModal = ({
         }
     };
 
+    const formatCountdown = (seconds: number) => {
+        const safeSeconds = Math.max(0, seconds);
+        const m = Math.floor(safeSeconds / 60);
+        const s = safeSeconds % 60;
+        return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    };
+
     useEffect(() => {
         if (step !== 'waiting') return;
 
@@ -149,6 +157,18 @@ export const BookingAgendaModal = ({
         const timer = setTimeout(() => setCountdown(prev => prev - 1), 1000);
         return () => clearTimeout(timer);
 
+    }, [step, countdown]);
+
+    useEffect(() => {
+        if (step !== 'accepted') return;
+
+        if (countdown <= 0) {
+            handlePaymentTimeout();
+            return;
+        }
+
+        const timer = setTimeout(() => setCountdown(prev => prev - 1), 1000);
+        return () => clearTimeout(timer);
     }, [step, countdown]);
 
     useEffect(() => {
@@ -171,6 +191,7 @@ export const BookingAgendaModal = ({
 
                     if (updated.status === 'pending' && updated.accepted_at) {
                         // Lawyer accepted! Show pay button
+                        setCountdown(120);
                         setStep('accepted');
 
                         toast({
@@ -423,9 +444,34 @@ export const BookingAgendaModal = ({
         resetAndClose();
     };
 
+    const handlePaymentTimeout = async () => {
+        if (pendingConsultationId) {
+            await supabase
+                .from('consultations')
+                .update({ status: 'cancelled' })
+                .eq('id', pendingConsultationId);
+        }
+
+        toast({
+            variant: 'destructive',
+            title: 'Payment Timed Out',
+            description: 'The payment window expired and the consultation was cancelled.',
+        });
+        resetAndClose();
+        navigate('/dashboard');
+    };
+
     return (
 
-        <Dialog open={isOpen} onOpenChange={(open) => { if (!open && step === 'form') resetAndClose(); }}>
+        <Dialog open={isOpen} onOpenChange={(open) => {
+            if (!open) {
+                if (step === 'waiting') {
+                    handleCancelRequest();
+                } else {
+                    resetAndClose();
+                }
+            }
+        }}>
 
             <DialogContent
                 className="w-[95vw] sm:w-full sm:max-w-lg md:max-w-xl lg:max-w-2xl 
@@ -438,7 +484,7 @@ max-h-[92vh] overflow-hidden p-0 rounded-2xl"
 
                 {/* <div className="max-h-[90vh] overflow-y-auto p-6 scroll-smooth [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-primary/40 [&::-webkit-scrollbar-thumb]:rounded-full"> */}
                 <div className="max-h-[92vh] overflow-y-auto px-4 sm:px-6 md:px-8 py-5 sm:py-6 
-scroll-smooth scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    scroll-smooth scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     <DialogHeader>
 
                         <DialogTitle className="flex items-center gap-2">
@@ -501,13 +547,30 @@ scroll-smooth scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&
                                     {lawyer.full_name} is ready for your {getTypeLabel(consultationType).toLowerCase()} session
                                 </p>
                             </div>
-                            <div className="flex items-center justify-between p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
-                                <div className="flex items-center gap-2">
-                                    <CreditCard className="h-5 w-5 text-emerald-600" />
-                                    <span className="font-medium">Consultation Fee</span>
+                            <div className="flex items-center justify-between p-2.5 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                                <div className="flex items-center gap-1.5">
+                                    <CreditCard className="h-4 w-4 text-emerald-600" />
+                                    <span className="text-sm font-medium">Consultation Fee</span>
                                 </div>
-                                <span className="text-2xl font-bold text-emerald-600">₹{sessionCost.toFixed(2)}</span>
+
+                                <span className="text-lg font-semibold text-emerald-600">
+                                    ₹{sessionCost.toFixed(2)}
+                                </span>
                             </div>
+                            <div className="flex justify-center">
+                                <div
+                                    className={cn(
+                                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-mono text-sm font-semibold",
+                                        countdown <= 30
+                                            ? "bg-destructive/10 text-destructive animate-pulse"
+                                            : "bg-amber-500/10 text-amber-600"
+                                    )}
+                                >
+                                    <Timer className="h-4 w-4" />
+                                    {formatCountdown(countdown)}
+                                </div>
+                            </div>
+
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                 <Shield className="h-4 w-4 flex-shrink-0" />
                                 <span>The lawyer is waiting. Complete payment to start your {consultationType} session.</span>
@@ -673,7 +736,7 @@ scroll-smooth scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&
                                     Select The Consultation Mode
                                 </Label>
 
-                                <div className="grid grid-cols-3 gap-2">
+                                <div className="grid grid-cols-3 gap-1.5">
                                     {(['chat', 'audio', 'video'] as const).map((type) => (
                                         <button
                                             key={type}
@@ -681,26 +744,27 @@ scroll-smooth scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&
                                                 setConsultationType(type);
                                                 setSelectedMinutes(DURATION_OPTIONS[type][0]);
                                             }}
-                                            className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${consultationType === type
+                                            className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-all ${consultationType === type
                                                 ? 'border-primary bg-primary/5'
                                                 : 'border-border hover:border-primary/30'
                                                 }`}
                                         >
                                             {getTypeIcon(type)}
-                                            <span className="text-xs font-medium capitalize">
+
+                                            <span className="text-[11px] font-medium capitalize leading-none">
                                                 {getTypeLabel(type)}
                                             </span>
                                         </button>
                                     ))}
                                 </div>
 
-                                <div className="p-3 rounded-xl border bg-secondary/30 space-y-3">
+                                <div className="p-2.5 rounded-lg border bg-secondary/30 space-y-2">
 
-                                    <Label className="text-xs font-medium text-muted-foreground">
+                                    <Label className="text-[11px] font-medium text-muted-foreground">
                                         Choose duration
                                     </Label>
 
-                                    <div className="grid grid-cols-2 gap-2">
+                                    <div className="grid grid-cols-2 gap-1.5">
                                         {DURATION_OPTIONS[consultationType].map((minutes) => {
                                             const isSelected = selectedMinutes === minutes;
                                             const label = isSelected
@@ -711,7 +775,7 @@ scroll-smooth scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&
                                                 <button
                                                     key={minutes}
                                                     onClick={() => setSelectedMinutes(minutes)}
-                                                    className={`h-10 rounded-lg text-sm font-semibold border transition-all ${isSelected
+                                                    className={`h-8 rounded-md text-xs font-medium border transition-all ${isSelected
                                                         ? 'bg-primary text-white border-primary'
                                                         : 'hover:border-primary/40'
                                                         }`}
@@ -736,7 +800,11 @@ scroll-smooth scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&
                                         <SelectValue placeholder="Select category..." />
                                     </SelectTrigger>
 
-                                    <SelectContent>
+                                    {/* <SelectContent> */}
+                                    <SelectContent
+                                        className="z-[9999]"
+                                        position="popper"
+                                    >
 
                                         {AGENDA_CATEGORIES.map((cat) => (
 
@@ -776,14 +844,15 @@ scroll-smooth scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&
                             <Button
                                 onClick={handleSubmit}
                                 disabled={submitting || !agendaCategory || !agendaDetails.trim()}
-                                className="transition-all duration-300 hover:scale-[1.02]"
+                                className="h-9 text-sm px-4 rounded-lg transition-all duration-300 hover:scale-[1.01]"
                             >
                                 {submitting ? (
                                     <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
                                     <Send className="h-4 w-4" />
                                 )}
-                                Send Consultation Request
+
+                                <span className="ml-1">Send Request</span>
                             </Button>
 
                         </div>

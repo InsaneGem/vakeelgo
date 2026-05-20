@@ -1,49 +1,3 @@
-// import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-// import Razorpay from "npm:razorpay";
-
-// const RAZORPAY_KEY_ID = Deno.env.get("RAZORPAY_KEY_ID");
-// const RAZORPAY_KEY_SECRET = Deno.env.get("RAZORPAY_KEY_SECRET");
-
-// serve(async (req) => {
-//     try {
-//         const { action, consultation_id } = await req.json();
-
-//         const razorpay = new Razorpay({
-//             key_id: RAZORPAY_KEY_ID!,
-//             key_secret: RAZORPAY_KEY_SECRET!,
-//         });
-
-//         if (action === "create_order") {
-//             const order = await razorpay.orders.create({
-//                 amount: 500 * 100,
-//                 currency: "INR",
-//                 receipt: `receipt_${consultation_id}`,
-//             });
-
-//             return new Response(JSON.stringify({
-//                 order_id: order.id,
-//                 amount: order.amount,
-//                 currency: order.currency,
-//                 key_id: RAZORPAY_KEY_ID,
-//             }), {
-//                 headers: { "Content-Type": "application/json" },
-//             });
-//         }
-
-//         if (action === "verify_payment") {
-//             return new Response(JSON.stringify({ success: true }), {
-//                 headers: { "Content-Type": "application/json" },
-//             });
-//         }
-
-//         return new Response("Invalid action", { status: 400 });
-
-//     } catch (err: any) {
-//         return new Response(JSON.stringify({ error: err.message }), {
-//             status: 500,
-//         });
-//     }
-// });
 
 // supabase/functions/razorpay/index.ts
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
@@ -212,37 +166,62 @@ Deno.serve(async (req) => {
                 return respond(false, { error: "Invalid signature" }, 400);
             }
 
-            // Mark consultation as paid (only if caller is the client)
-            const { data: consultation, error: cErr } = await adminClient
+            console.log("✅ Signature verified for consultation:", consultation_id, "user:", userId);
+
+            // Fetch consultation with full details
+            const { data: fullConsultation, error: fullErr } = await adminClient
                 .from("consultations")
-                .select("id, client_id")
+                .select("id, client_id, total_amount, type")
                 .eq("id", consultation_id)
                 .single();
 
-            if (cErr || !consultation) {
+            if (fullErr || !fullConsultation) {
+                console.error("❌ Consultation not found:", fullErr);
                 return respond(false, { error: "Consultation not found" }, 404);
             }
-            if (consultation.client_id !== userId) {
+
+            if (fullConsultation.client_id !== userId) {
+                console.error("❌ Forbidden: user", userId, "is not client", fullConsultation.client_id);
                 return respond(false, { error: "Forbidden" }, 403);
             }
 
-            // NOTE: add `payment_status` and `razorpay_payment_id` columns to consultations
-            // for this update to persist. Until then this will silently no-op those fields.
+            console.log("📋 Consultation found:", fullConsultation);
+
+            // Update consultation status to active
             const { error: updErr } = await adminClient
                 .from("consultations")
                 .update({
                     status: "active",
-                    payment_status: "paid",
-                    razorpay_order_id,
-                    razorpay_payment_id,
                 })
                 .eq("id", consultation_id);
 
             if (updErr) {
-                return respond(false, { error: "DB update failed", details: updErr.message });
+                console.error("❌ Consultation update failed:", updErr);
+                return respond(false, { error: "Consultation update failed", details: updErr.message });
             }
 
-            return respond(true, { verified: true });
+            console.log("✅ Consultation status updated to active");
+
+            // CREATE TRANSACTION RECORD (no wallet involved)
+            const { data: txnData, error: txnErr } = await adminClient
+                .from("transactions")
+                .insert({
+                    user_id: userId,
+                    type: "consultation_fee",
+                    amount: -fullConsultation.total_amount,
+                    description: `${fullConsultation.type} consultation payment`,
+                    reference_id: consultation_id,
+                })
+                .select();
+
+            if (txnErr) {
+                console.error("❌ Transaction creation failed:", txnErr);
+                return respond(false, { error: "Transaction creation failed", details: txnErr.message });
+            }
+
+            console.log("✅ Transaction created:", txnData);
+
+            return respond(true, { verified: true, transaction_id: txnData?.[0]?.id });
         }
 
         return respond(false, { error: "Invalid action" }, 400);

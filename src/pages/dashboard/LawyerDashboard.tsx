@@ -134,12 +134,41 @@ const LawyerDashboard = () => {
   const { completionPercentage, missingFields } = useMemo(() => {
     if (!lawyerProfile) return { completionPercentage: 0, missingFields: ['All fields'] };
 
+    // const fields = [
+    //   { key: 'bio', label: 'Professional Bio', check: (lawyerProfile.bio?.trim().length || 0) >= 50 },
+    //   { key: 'specializations', label: 'Specializations', check: (lawyerProfile.specializations?.length || 0) > 0 },
+    //   { key: 'bar_council_number', label: 'Bar Council Number', check: (lawyerProfile.bar_council_number?.trim().length || 0) > 0 },
+    //   { key: 'price_per_minute', label: 'Pricing', check: (lawyerProfile.price_per_minute || 0) >= 1 },
+    //   { key: 'languages', label: 'Languages', check: (lawyerProfile.languages?.length || 0) > 0 },
+    // ];
     const fields = [
-      { key: 'bio', label: 'Professional Bio', check: (lawyerProfile.bio?.trim().length || 0) >= 50 },
-      { key: 'specializations', label: 'Specializations', check: (lawyerProfile.specializations?.length || 0) > 0 },
-      { key: 'bar_council_number', label: 'Bar Council Number', check: (lawyerProfile.bar_council_number?.trim().length || 0) > 0 },
-      { key: 'price_per_minute', label: 'Pricing', check: (lawyerProfile.price_per_minute || 0) >= 1 },
-      { key: 'languages', label: 'Languages', check: (lawyerProfile.languages?.length || 0) > 0 },
+      {
+        key: 'bio',
+        label: 'Professional Bio',
+        check: (lawyerProfile.bio?.trim().length || 0) >= 50
+      },
+      {
+        key: 'specializations',
+        label: 'Specializations',
+        check: (lawyerProfile.specializations?.length || 0) > 0
+      },
+      {
+        key: 'bar_council_number',
+        label: 'Bar Council Number',
+        check: (lawyerProfile.bar_council_number?.trim().length || 0) > 0
+      },
+      {
+        key: 'price_per_minute',
+        label: 'Pricing',
+        check:
+          lawyerProfile.price_per_minute !== null &&
+          lawyerProfile.price_per_minute !== undefined,
+      },
+      {
+        key: 'languages',
+        label: 'Languages',
+        check: (lawyerProfile.languages?.length || 0) > 0
+      },
     ];
 
     const completed = fields.filter(f => f.check).length;
@@ -238,7 +267,7 @@ const LawyerDashboard = () => {
 
 
     const totalEarnings =
-      allConsultations?.reduce(
+      allConsultations?.filter(c => c.status === 'completed').reduce(
         (sum, c) => sum + (c.total_amount || 0), 0) || 0;
 
     setStats({
@@ -997,7 +1026,7 @@ const LawyerDashboard = () => {
                                   ₹{c.total_amount || 0}
                                 </span>
                                 <p className="text-[10px] text-muted-foreground">
-                                  earned
+                                  {c.status === 'cancelled' ? 'cancelled' : 'earned'}
                                 </p>
                               </div>
 

@@ -75,6 +75,7 @@ interface LawyerWithProfile {
   full_name?: string;
   avatar_url?: string | null;
   date_of_birth?: string | null;
+
 }
 
 const ClientDashboard = () => {
@@ -192,7 +193,7 @@ const ClientDashboard = () => {
   const stats = {
     total: consultations.length,
     completed: consultations.filter(c => c.status === 'completed').length,
-    totalSpent: consultations.reduce((sum, c) => sum + (c.total_amount || 0), 0),
+    totalSpent: consultations.filter(c => c.status === 'completed').reduce((sum, c) => sum + (c.total_amount || 0), 0),
   };
   const fetchWallet = async () => {
     if (!user) return;
@@ -755,93 +756,6 @@ const ClientDashboard = () => {
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 
-            {/* Active Consultations */}
-            {/* {activeConsultations.length > 0 && (
-              <Card className="border border-blue-500/30 bg-blue-500/5 shadow-sm">
-
-                <CardHeader className="pb-2 pt-3 px-4">
-                  <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
-                    </span>
-                    Active Consultations
-                  </CardTitle>
-
-                  <CardDescription className="text-xs">
-                    Ongoing sessionss
-                  </CardDescription>
-                </CardHeader>
-
-                <CardContent className="px-3 pb-3">
-
-                  {(() => {
-
-                    const isMobile = window.innerWidth < 640
-                    const limit = isMobile ? 1 : 2
-
-                    const visible = showMore.active
-                      ? activeConsultations
-                      : activeConsultations.slice(0, limit)
-
-                    const remaining = activeConsultations.length - limit
-
-                    return (
-                      <>
-
-                        <div className="divide-y">
-
-                          {visible.map((consultation) => (
-
-                            <div
-                              key={consultation.id}
-                              onClick={() => navigate(`/consultation/${consultation.id}`)}
-                              className="flex items-center justify-between py-2 cursor-pointer hover:bg-blue-500/5 rounded-md px-1"
-                            >
-                              <div className="flex items-center gap-2 min-w-0">
-                                <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
-                                  <User className="h-3.5 w-3.5 text-primary" />
-                                </div>
-                                <div className="min-w-0">
-                                  <p className="text-xs font-medium truncate">
-                                    {consultation.lawyer_name}
-                                  </p>
-                                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                                    {getTypeIcon(consultation.type)}
-                                    <span className="capitalize">{consultation.type}</span>
-                                  </div>
-                                </div>
-                              </div>
-                              <Button size="sm" className="h-7 text-xs px-2">
-                                Continueee
-                              </Button>
-
-                            </div>
-
-                          ))}
-
-                        </div>
-
-                        {!showMore.active && remaining > 0 && (
-                          <button
-                            onClick={() => setShowMore(prev => ({ ...prev, active: true }))}
-                            className="mt-2 text-xs text-blue-600 flex items-center gap-1 hover:underline"
-                          >
-                            Show {remaining} more →
-                          </button>
-                        )}
-
-                      </>
-                    )
-
-                  })()}
-
-                </CardContent>
-              </Card>
-            )} */}
-
-
-
             {/* Accepted - Complete Payment */}
             {acceptedUnpaid.length > 0 && (
               <Card className="border border-emerald-500/30 bg-emerald-500/5 shadow-sm">
@@ -963,7 +877,7 @@ const ClientDashboard = () => {
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                   </span>
-                  Live Updates
+                  Live Updates | Available {onlineLawyers.length} lawyer{onlineLawyers.length !== 1 ? 's' : ''} online
                 </Badge>
               </div>
             </CardHeader>
@@ -985,16 +899,7 @@ const ClientDashboard = () => {
                   {/* Online Lawyers */}
                   {onlineLawyers.length > 0 && (
                     <div className="mb-8">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-600 px-3 py-1.5 rounded-full">
-                          <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                          </span>
-                          <span className="font-medium text-sm">Available {onlineLawyers.length} lawyer{onlineLawyers.length !== 1 ? 's' : ''} online</span>
-                        </div>
 
-                      </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {onlineLawyers.slice(0, 3).map((lawyer) => (
                           <LawyerCard
@@ -1092,11 +997,19 @@ const ClientDashboard = () => {
                           </div>
 
                           {/* Header */}
-                          <div className="p-4 pb-3">
+                          <div className="p-3 pb-2">
                             <div className="flex gap-3">
-                              <div className="w-14 h-14 shrink-0 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center text-lg font-bold border-2 border-background shadow-lg">
-                                <span className="text-primary">{consultation.lawyer_name?.charAt(0).toUpperCase() || 'L'}</span>
-                              </div>
+                              <Avatar className="w-12 h-12 shrink-0 border-2 border-background shadow-lg rounded-xl">
+                                <AvatarImage
+                                  src={consultation.lawyer_avatar || undefined}
+                                  alt={consultation.lawyer_name || 'Lawyer'}
+                                  className="object-cover"
+                                />
+
+                                <AvatarFallback className="rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 text-primary text-lg font-bold">
+                                  {consultation.lawyer_name?.charAt(0).toUpperCase() || 'L'}
+                                </AvatarFallback>
+                              </Avatar>
                               <div className="flex-1 min-w-0 pr-14">
                                 <h3 className="font-semibold text-sm truncate group-hover:text-primary transition-colors">
                                   {consultation.lawyer_name}
@@ -1117,7 +1030,7 @@ const ClientDashboard = () => {
 
                           {/* Specializations */}
                           {consultation.lawyer_profile?.specializations && consultation.lawyer_profile.specializations.length > 0 && (
-                            <div className="px-4 pb-2">
+                            <div className="px-3 pb-1">
                               <div className="flex flex-wrap gap-1">
                                 {consultation.lawyer_profile.specializations.slice(0, 2).map((spec) => (
                                   <Badge key={spec} variant="secondary" className="text-[10px] font-normal bg-secondary/80 px-1.5 py-0">{spec}</Badge>
@@ -1130,7 +1043,7 @@ const ClientDashboard = () => {
                           )}
 
                           {/* Agenda */}
-                          <div className="px-4 pb-3">
+                          <div className="px-3 pb-2">
                             <p className="text-xs text-muted-foreground line-clamp-2 min-h-[2rem]">
                               {/* {consultation.agenda || consultation.lawyer_profile?.bio || 'Legal consultation session'} */}
                               Agenda : {(consultation.agenda || consultation.lawyer_profile?.bio || 'Legal consultation session')
@@ -1139,11 +1052,11 @@ const ClientDashboard = () => {
                           </div>
 
                           {/* Footer */}
-                          <div className="px-4 py-2.5 border-t border-border bg-secondary/20">
+                          <div className="px-3 py-2 border-t border-border bg-secondary/20">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-1">
                                 <span className="text-lg font-bold">₹{consultation.total_amount?.toFixed(0) || '0'}</span>
-                                <span className="text-[10px] text-muted-foreground">paid</span>
+                                <span className="text-[10px] text-muted-foreground">{consultation.status === 'cancelled' ? 'cancelled' : 'paid'}</span>
                               </div>
                               <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
                             </div>

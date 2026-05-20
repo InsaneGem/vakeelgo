@@ -32,8 +32,11 @@ interface Document {
 }
 const DOCUMENT_TYPE_LABELS: Record<string, string> = {
   bar_certificate: 'Bar Certificate',
-  degree: 'Law Degree',
-  id_proof: 'ID Proof',
+  degree: 'Law Degree / Degree Certificate',
+  id_proof: 'ID Proof (Passport)',
+  adhar_card: 'Aadhar Card',
+  pan_card: 'PAN Card',
+  college_passout_certificate: 'College Passout Certificate',
   experience_certificate: 'Experience Certificate',
   other: 'Other',
 };

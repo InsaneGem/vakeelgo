@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogClose, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { RatingDialog } from '@/components/consultation/RatingDialog';
@@ -61,6 +61,10 @@ const ConsultationHistory = () => {
   const [recordings, setRecordings] = useState<Recording[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [downloadLoadingId, setDownloadLoadingId] = useState<string | null>(null);
+  const [playbackLoadingId, setPlaybackLoadingId] = useState<string | null>(null);
+  const [activeRecordingId, setActiveRecordingId] = useState<string | null>(null);
+  const [recordingUrls, setRecordingUrls] = useState<Record<string, string>>({});
   const [ratedConsultationIds, setRatedConsultationIds] = useState<Set<string>>(new Set());
   const [ratingTarget, setRatingTarget] = useState<ConsultationFull | null>(null);
   useEffect(() => {
@@ -109,13 +113,45 @@ const ConsultationHistory = () => {
     setSelectedConsultation(consultation);
     setDetailOpen(true);
     setDetailLoading(true);
+    setChatMessages([]);
+    setRecordings([]);
+    setActiveRecordingId(null);
+    setRecordingUrls({});
     const [{ data: msgs }, { data: recs }] = await Promise.all([
       supabase.from('messages').select('*').eq('consultation_id', consultation.id).order('created_at', { ascending: true }),
-      supabase.from('call_recordings').select('*').eq('consultation_id', consultation.id).order('created_at', { ascending: true }),
+      supabase.from('call_recordings').select('id, storage_path, duration_seconds, created_at').eq('consultation_id', consultation.id).order('created_at', { ascending: true }),
     ]);
     setChatMessages(msgs || []);
     setRecordings(recs || []);
     setDetailLoading(false);
+  };
+  const getRecordingUrl = async (rec: Recording) => {
+    if (recordingUrls[rec.id]) return recordingUrls[rec.id];
+    setPlaybackLoadingId(rec.id);
+    try {
+      const { data, error } = await supabase.storage.from('recordings').createSignedUrl(rec.storage_path, 3600);
+      if (error || !data?.signedUrl) {
+        console.error('Recording URL error', error);
+        return null;
+      }
+      const url = data.signedUrl;
+      setRecordingUrls(prev => ({ ...prev, [rec.id]: url }));
+      return url;
+    } finally {
+      setPlaybackLoadingId(null);
+    }
+  };
+  const downloadRecording = async (rec: Recording) => {
+    setDownloadLoadingId(rec.id);
+    const url = await getRecordingUrl(rec);
+    setDownloadLoadingId(null);
+    if (url) window.open(url, '_blank');
+  };
+  const playRecording = async (rec: Recording) => {
+    const url = await getRecordingUrl(rec);
+    if (url) {
+      setActiveRecordingId(rec.id);
+    }
   };
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -231,16 +267,27 @@ const ConsultationHistory = () => {
             </Card>
           </div>
           {/* Search & Filter */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-6">
-            <Tabs value={filterStatus} onValueChange={setFilterStatus}>
-              <TabsList className="h-10">
-                <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
-                <TabsTrigger value="completed" className="text-xs">Completed</TabsTrigger>
-                <TabsTrigger value="active" className="text-xs">Active</TabsTrigger>
-                <TabsTrigger value="pending" className="text-xs">Pending</TabsTrigger>
-                <TabsTrigger value="cancelled" className="text-xs">Cancelled</TabsTrigger>
-              </TabsList>
-            </Tabs>
+          <div className="grid gap-3 mb-6 sm:grid-cols-[1fr_auto]">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by lawyer or consultation"
+                className="pl-9"
+              />
+            </div>
+            <div className="overflow-x-auto">
+              <Tabs value={filterStatus} onValueChange={setFilterStatus}>
+                <TabsList className="h-10 min-w-max">
+                  <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
+                  <TabsTrigger value="completed" className="text-xs">Completed</TabsTrigger>
+                  <TabsTrigger value="active" className="text-xs">Active</TabsTrigger>
+                  <TabsTrigger value="pending" className="text-xs">Pending</TabsTrigger>
+                  <TabsTrigger value="cancelled" className="text-xs">Cancelled</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
           </div>
           {/* Consultation List */}
           {filtered.length === 0 ? (
@@ -414,57 +461,95 @@ const ConsultationHistory = () => {
         </div>
       </div>
       {/* Detail Dialog */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] p-0 overflow-hidden">
+      <Dialog
+        open={detailOpen}
+        onOpenChange={(open) => {
+          setDetailOpen(open);
+          if (!open) {
+            setSelectedConsultation(null);
+            setChatMessages([]);
+            setRecordings([]);
+            setActiveRecordingId(null);
+          }
+        }}
+      >
+        <DialogContent className="w-full max-w-[calc(100vw-1.5rem)] sm:max-w-3xl max-h-[92vh] p-0 overflow-y-auto overflow-x-hidden scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:rounded-3xl">
           {selectedConsultation && (
             <>
               {/* Detail Header */}
-              <div className="p-6 pb-4 border-b bg-gradient-to-r from-primary/5 to-accent/5">
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-3">
-                    <Avatar className="h-12 w-12 border-2 border-primary/20">
+              <div className="relative p-5 sm:p-6 border-b bg-gradient-to-r from-primary/5 to-accent/5">
+
+                <DialogHeader className="sm:flex sm:items-center sm:justify-between sm:gap-4">
+                  <div className="flex items-start gap-4">
+                    <Avatar className="h-14 w-14 border-2 border-primary/20">
                       <AvatarImage src={selectedConsultation.lawyer_avatar || undefined} />
                       <AvatarFallback className="bg-gradient-to-br from-primary/20 to-accent/20 font-semibold">
                         {selectedConsultation.lawyer_name.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="text-lg font-bold">{selectedConsultation.lawyer_name}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge className={`text-[10px] gap-1 ${getStatusConfig(selectedConsultation.status).className}`}>
-                          {getStatusConfig(selectedConsultation.status).icon}
-                          {selectedConsultation.status}
-                        </Badge>
-                        <Badge variant="outline" className="text-[10px] capitalize gap-1">
-                          {getTypeIcon(selectedConsultation.type)}
-                          {selectedConsultation.type}
-                        </Badge>
-                      </div>
+                      <DialogTitle className="text-xl sm:text-2xl flex flex-col gap-1">
+                        {selectedConsultation.lawyer_name}
+                      </DialogTitle>
+                      <DialogDescription className="text-sm text-muted-foreground max-w-xl">
+                        View complete session history for this consultation.
+                      </DialogDescription>
                     </div>
-                  </DialogTitle>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-4 sm:mt-0 sm:justify-end">
+                    <Badge className={`text-[11px] gap-1 ${getStatusConfig(selectedConsultation.status).className}`}>
+                      {getStatusConfig(selectedConsultation.status).icon}
+                      {selectedConsultation.status}
+                    </Badge>
+                    <Badge variant="outline" className="text-[11px] capitalize gap-1">
+                      {getTypeIcon(selectedConsultation.type)}
+                      {selectedConsultation.type}
+                    </Badge>
+                    <Badge variant="outline" className="text-[11px] gap-1">
+                      {selectedConsultation.lawyer_rating ? `${selectedConsultation.lawyer_rating.toFixed(1)} ★` : 'No rating'}
+                    </Badge>
+                  </div>
                 </DialogHeader>
                 {/* Info Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-                  <div className="bg-card p-3 rounded-lg border text-center">
-                    <Calendar className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
-                    <p className="text-xs text-muted-foreground">Date</p>
-                    <p className="text-sm font-semibold">{new Date(selectedConsultation.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+                <div className="grid grid-cols-3 gap-2 mt-4">
+
+                  <div className="bg-card border border-border rounded-xl px-2 py-2 flex flex-col justify-center min-h-[56px]">
+                    <p className="text-[9px] uppercase tracking-wide text-muted-foreground truncate">
+                      Session Date
+                    </p>
+
+                    <p className="text-[10px] sm:text-xs font-semibold leading-tight mt-1 truncate">
+                      {new Date(selectedConsultation.created_at).toLocaleDateString(
+                        'en-US',
+                        {
+                          month: 'short',
+                          day: 'numeric',
+                          year: '2-digit'
+                        }
+                      )}
+                    </p>
                   </div>
-                  <div className="bg-card p-3 rounded-lg border text-center">
-                    <Clock className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
-                    <p className="text-xs text-muted-foreground">Duration</p>
-                    <p className="text-sm font-semibold">{formatDuration(selectedConsultation.duration_minutes)}</p>
+
+                  <div className="bg-card border border-border rounded-xl px-2 py-2 flex flex-col justify-center min-h-[56px]">
+                    <p className="text-[9px] uppercase tracking-wide text-muted-foreground truncate">
+                      Duration
+                    </p>
+
+                    <p className="text-[10px] sm:text-xs font-semibold leading-tight mt-1 truncate">
+                      {formatDuration(selectedConsultation.duration_minutes)}
+                    </p>
                   </div>
-                  <div className="bg-card p-3 rounded-lg border text-center">
-                    <DollarSign className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
-                    <p className="text-xs text-muted-foreground">Cost</p>
-                    <p className="text-sm font-semibold">₹{(selectedConsultation.total_amount || 0).toFixed(2)}</p>
+
+                  <div className="bg-card border border-border rounded-xl px-2 py-2 flex flex-col justify-center min-h-[56px]">
+                    <p className="text-[9px] uppercase tracking-wide text-muted-foreground truncate">
+                      Fee
+                    </p>
+
+                    <p className="text-[10px] sm:text-xs font-semibold leading-tight mt-1 truncate">
+                      ₹{(selectedConsultation.total_amount || 0).toFixed(0)}
+                    </p>
                   </div>
-                  <div className="bg-card p-3 rounded-lg border text-center">
-                    <Star className="h-4 w-4 mx-auto text-amber-500 mb-1" />
-                    <p className="text-xs text-muted-foreground">Rating</p>
-                    <p className="text-sm font-semibold">{selectedConsultation.lawyer_rating?.toFixed(1) || '—'}</p>
-                  </div>
+
                 </div>
               </div>
               {/* Content Tabs */}
@@ -492,66 +577,177 @@ const ConsultationHistory = () => {
                           <p className="text-sm text-muted-foreground">No messages in this session</p>
                         </div>
                       ) : (
-                        <ScrollArea className="h-[300px] pr-3">
-                          <div className="space-y-3">
-                            {chatMessages.map(msg => {
+                        <ScrollArea className="h-[200px] pr-2">
+                          <div className="space-y-2">
+
+                            {chatMessages.map((msg) => {
                               const isOwn = msg.sender_id === user?.id;
+
                               return (
-                                <div key={msg.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
-                                  <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${isOwn
-                                    ? 'bg-primary text-primary-foreground rounded-br-md'
-                                    : 'bg-secondary text-secondary-foreground rounded-bl-md'
-                                    }`}>
-                                    <p className="text-sm leading-relaxed">{msg.content}</p>
-                                    <p className={`text-[10px] mt-1 ${isOwn ? 'text-primary-foreground/60' : 'text-muted-foreground'}`}>
-                                      {new Date(msg.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                                <div
+                                  key={msg.id}
+                                  className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+                                >
+                                  <div
+                                    className={`
+              max-w-[85%]
+              rounded-xl
+              px-2.5
+              py-1.5
+              break-words
+              overflow-hidden
+              text-wrap
+              shadow-sm
+              ${isOwn
+                                        ? 'bg-primary text-primary-foreground rounded-br-sm'
+                                        : 'bg-secondary text-secondary-foreground rounded-bl-sm'}
+            `}
+                                  >
+
+                                    <p className="text-[11px] sm:text-xs leading-relaxed whitespace-pre-wrap break-words">
+                                      {msg.content}
                                     </p>
+
+                                    <p
+                                      className={`
+                text-[9px]
+                mt-1
+                text-right
+                ${isOwn
+                                          ? 'text-primary-foreground/60'
+                                          : 'text-muted-foreground'}
+              `}
+                                    >
+                                      {new Date(msg.created_at).toLocaleTimeString(
+                                        'en-US',
+                                        {
+                                          hour: '2-digit',
+                                          minute: '2-digit'
+                                        }
+                                      )}
+                                    </p>
+
                                   </div>
                                 </div>
                               );
                             })}
+
                           </div>
                         </ScrollArea>
                       )}
                     </TabsContent>
                     <TabsContent value="recordings" className="mt-3">
-                      {recordings.length === 0 ? (
-                        <div className="text-center py-10">
-                          <Play className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                          <p className="text-sm text-muted-foreground">No recordings for this session</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {recordings.map((rec, i) => (
-                            <Card key={rec.id} className="border">
-                              <CardContent className="p-4 flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                    <Play className="h-4 w-4 text-primary" />
+
+                      <ScrollArea className="h-[200px] pr-2">
+
+                        {recordings.length === 0 ? (
+
+                          <div className="h-[180px] flex flex-col items-center justify-center text-center">
+                            <Play className="h-7 w-7 text-muted-foreground mb-2" />
+                            <p className="text-xs text-muted-foreground">
+                              No recordings for this session
+                            </p>
+                          </div>
+
+                        ) : (
+
+                          <div className="space-y-2">
+
+                            {recordings.map((rec, i) => (
+
+                              <Card
+                                key={rec.id}
+                                className="border shadow-none"
+                              >
+                                <CardContent className="p-3 space-y-2">
+
+                                  <div className="flex items-center justify-between gap-2">
+
+                                    <div className="flex items-center gap-2 min-w-0">
+
+                                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                        <Play className="h-3.5 w-3.5 text-primary" />
+                                      </div>
+
+                                      <div className="min-w-0">
+                                        <p className="text-xs font-medium truncate">
+                                          Recording {i + 1}
+                                        </p>
+
+                                        <p className="text-[10px] text-muted-foreground truncate">
+                                          {rec.duration_seconds
+                                            ? `${Math.floor(rec.duration_seconds / 60)}m ${rec.duration_seconds % 60}s`
+                                            : 'Unknown duration'}
+                                          {' · '}
+                                          {new Date(rec.created_at).toLocaleTimeString(
+                                            'en-US',
+                                            {
+                                              hour: '2-digit',
+                                              minute: '2-digit'
+                                            }
+                                          )}
+                                        </p>
+                                      </div>
+
+                                    </div>
+
+                                    <div className="flex items-center gap-1 flex-shrink-0">
+
+                                      <Button
+                                        size="sm"
+                                        variant={
+                                          activeRecordingId === rec.id
+                                            ? 'secondary'
+                                            : 'outline'
+                                        }
+                                        className="h-7 px-2 text-[10px]"
+                                        disabled={playbackLoadingId === rec.id}
+                                        onClick={() => playRecording(rec)}
+                                      >
+                                        <Play className="h-3 w-3 mr-1" />
+                                        Play
+                                      </Button>
+
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="h-7 px-2"
+                                        disabled={downloadLoadingId === rec.id}
+                                        onClick={() => downloadRecording(rec)}
+                                      >
+                                        <Download className="h-3 w-3" />
+                                      </Button>
+
+                                    </div>
+
                                   </div>
-                                  <div>
-                                    <p className="text-sm font-medium">Recording {i + 1}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                      {rec.duration_seconds ? `${Math.floor(rec.duration_seconds / 60)}m ${rec.duration_seconds % 60}s` : 'Unknown duration'}
-                                      {' · '}
-                                      {new Date(rec.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                                    </p>
-                                  </div>
-                                </div>
-                                <Button size="sm" variant="outline" className="gap-1.5">
-                                  <Download className="h-3.5 w-3.5" />
-                                  <span className="hidden sm:inline">Download</span>
-                                </Button>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      )}
+
+                                  {activeRecordingId === rec.id &&
+                                    recordingUrls[rec.id] && (
+                                      <audio
+                                        src={recordingUrls[rec.id]}
+                                        controls
+                                        autoPlay
+                                        className="w-full h-9"
+                                      />
+                                    )}
+
+                                </CardContent>
+                              </Card>
+
+                            ))}
+
+                          </div>
+
+                        )}
+
+                      </ScrollArea>
+
                     </TabsContent>
                   </Tabs>
                 )}
                 {/* Actions */}
-                <div className="flex gap-3 mt-4 pt-4 border-t">
+                <div className="flex flex-col gap-3 mt-4 pt-4 border-t sm:flex-row">
                   {selectedConsultation.status === 'completed' && !ratedConsultationIds.has(selectedConsultation.id) && (
                     <Button
                       className="flex-1 gap-2"

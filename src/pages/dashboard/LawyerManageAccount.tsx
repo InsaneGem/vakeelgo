@@ -69,6 +69,7 @@ const LawyerManageAccount = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [experienceInput, setExperienceInput] = useState('0');
   const [personal, setPersonal] = useState<PersonalInfo>({
     full_name: '',
     email: '',
@@ -103,11 +104,12 @@ const LawyerManageAccount = () => {
     }
     if (lawyerRes.data) {
       const dbPrice = Number(lawyerRes.data.price_per_minute) || 5;
+      const experienceYears = lawyerRes.data.experience_years ?? 0;
       setProfessional({
         bio: lawyerRes.data.bio || '',
         education: lawyerRes.data.education || '',
         bar_council_number: lawyerRes.data.bar_council_number || '',
-        experience_years: lawyerRes.data.experience_years || 0,
+        experience_years: experienceYears,
         price_per_minute: dbPrice,
         chat_price_per_minute: Number(lawyerRes.data.chat_price_per_minute ?? dbPrice) || dbPrice,
         audio_price_per_minute: Number(lawyerRes.data.audio_price_per_minute ?? dbPrice) || dbPrice,
@@ -117,6 +119,7 @@ const LawyerManageAccount = () => {
         languages: lawyerRes.data.languages || ['English'],
         status: lawyerRes.data.status,
       });
+      setExperienceInput(String(experienceYears));
     }
     setLoading(false);
   };
@@ -458,11 +461,20 @@ const LawyerManageAccount = () => {
                       <Label htmlFor="experience">Years of Experience</Label>
                       <Input
                         id="experience"
-                        type="number"
-                        min={0}
-                        max={50}
-                        value={professional.experience_years}
-                        onChange={(e) => setProfessional(prev => ({ ...prev, experience_years: parseInt(e.target.value) || 0 }))}
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={experienceInput}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/\D/g, '');
+                          const normalized = raw.replace(/^0+(?!$)/, '');
+                          setExperienceInput(normalized);
+                          setProfessional(prev => ({
+                            ...prev,
+                            experience_years: normalized === '' ? 0 : parseInt(normalized, 10),
+                          }));
+                        }}
+                        placeholder="0"
                       />
                     </div>
                   </div>

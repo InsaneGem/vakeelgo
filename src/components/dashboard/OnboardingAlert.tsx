@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useNavigate } from 'react-router-dom';
-import { 
-  AlertTriangle, Clock, Shield, XCircle, CheckCircle, 
+import {
+  AlertTriangle, Clock, Shield, XCircle, CheckCircle,
   ArrowRight, FileText, Briefcase, GraduationCap, DollarSign
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -15,14 +15,15 @@ interface OnboardingAlertProps {
   missingFields: string[];
 }
 
-export const OnboardingAlert = ({ 
-  status, 
-  completionPercentage, 
-  missingFields 
+export const OnboardingAlert = ({
+  status,
+  completionPercentage,
+  missingFields
 }: OnboardingAlertProps) => {
   const navigate = useNavigate();
 
-  if (status === 'approved' && completionPercentage >= 100) {
+  // if (status === 'approved' && completionPercentage >= 100) {
+  if (status === 'approved') {
     return null; // No alert needed for fully verified lawyers
   }
 
@@ -62,7 +63,7 @@ export const OnboardingAlert = ({
           bgClass: 'bg-amber-500/5 border-amber-500/30',
           iconBgClass: 'bg-amber-500/10 text-amber-600',
           title: completionPercentage < 100 ? 'Complete Your Profile' : 'Pending Verification',
-          description: completionPercentage < 100 
+          description: completionPercentage < 100
             ? 'Fill in all required information to submit for review.'
             : 'Your profile is under review. We\'ll notify you once approved.',
           showCta: completionPercentage < 100,
@@ -77,7 +78,7 @@ export const OnboardingAlert = ({
     if (field.includes('bio')) return <FileText className="h-3.5 w-3.5" />;
     if (field.includes('specialization')) return <Briefcase className="h-3.5 w-3.5" />;
     if (field.includes('credential') || field.includes('bar')) return <GraduationCap className="h-3.5 w-3.5" />;
-    if (field.includes('pricing') || field.includes('price')) return <DollarSign className="h-3.5 w-3.5" />;
+    if (field.includes('pricing') || field.includes('price')) return <IndianRupee className="h-3.5 w-3.5" />;
     return <AlertTriangle className="h-3.5 w-3.5" />;
   };
 
@@ -92,7 +93,7 @@ export const OnboardingAlert = ({
           )}>
             {config.icon}
           </div>
-          
+
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
@@ -103,23 +104,23 @@ export const OnboardingAlert = ({
                 </Badge>
               )}
             </div>
-            
+
             <p className="text-muted-foreground mb-4">{config.description}</p>
-            
+
             {/* Progress bar for incomplete profiles */}
             {completionPercentage < 100 && status !== 'approved' && (
               <div className="mb-4">
                 <Progress value={completionPercentage} className="h-2" />
               </div>
             )}
-            
+
             {/* Missing fields */}
             {missingFields.length > 0 && status !== 'approved' && (
               <div className="flex flex-wrap gap-2 mb-4">
                 {missingFields.map((field, index) => (
-                  <Badge 
-                    key={index} 
-                    variant="outline" 
+                  <Badge
+                    key={index}
+                    variant="outline"
                     className="gap-1.5 text-amber-600 border-amber-500/30"
                   >
                     {getFieldIcon(field)}
@@ -128,10 +129,10 @@ export const OnboardingAlert = ({
                 ))}
               </div>
             )}
-            
+
             {/* CTA Button */}
             {config.showCta && (
-              <Button 
+              <Button
                 className="gap-2"
                 onClick={() => navigate('/lawyer/profile-setup')}
               >

@@ -142,13 +142,15 @@ const ClientManageAccount = () => {
     ]);
     const consultations = consultRes.data || [];
 
+    const completedConsultations = consultations.filter(c => c.status === 'completed');
+
     setStats({
       walletBalance: Number(walletRes.data?.balance) || 0,
       totalConsultations: consultations.length,
       activeConsultations: consultations.filter(c => c.status === 'active').length,
       pendingConsultations: consultations.filter(c => c.status === 'pending').length,
-      completedConsultations: consultations.filter(c => c.status === 'completed').length,
-      totalSpent: consultations.reduce((sum, c) => sum + Number(c.total_amount || 0), 0),
+      completedConsultations: completedConsultations.length,
+      totalSpent: completedConsultations.reduce((sum, c) => sum + Number(c.total_amount || 0), 0),
 
     });
   };

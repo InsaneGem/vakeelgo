@@ -25,6 +25,7 @@ interface LawyerWithProfile {
   rating: number | null;
   total_reviews: number | null;
   is_available: boolean | null;
+  is_busy?: boolean | null;
   status: string | null;
   full_name?: string;
   avatar_url?: string | null;
@@ -35,20 +36,23 @@ interface LawyerCardProps {
   lawyer: LawyerWithProfile;
   showActions?: boolean;
   onBooking?: () => void;
-  isBusy?: boolean;
+  // isBusy?: boolean;
 }
 
 export const LawyerCard = ({
   lawyer,
   showActions = true,
   onBooking,
-  isBusy = false
+  // isBusy = false
 }: LawyerCardProps) => {
 
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
 
+  // const isOnline = lawyer.is_available;
+  // const isBusy = lawyer.is_busy;
+  const isBusy = !lawyer.is_available;
   const isOnline = lawyer.is_available;
   const isApproved = lawyer.status === 'approved';
 
@@ -142,7 +146,7 @@ export const LawyerCard = ({
         <div className="flex flex-col flex-1">
 
           {/* TOP */}
-          <div className="px-3 py-3 sm:px-4 sm:py-3">
+          <div className="px-3 py-3 sm:px-4 sm:py-3 ">
             <div className="flex items-start gap-3">
 
               {/* AVATAR */}
@@ -207,7 +211,7 @@ export const LawyerCard = ({
                     </span>
                   </div>
 
-                  {lawyer.experience_years && (
+                  {(lawyer.experience_years !== null && lawyer.experience_years !== undefined) && (
                     <>
                       <span className="text-muted-foreground/30">•</span>
                       <span className="text-[11px] text-muted-foreground flex items-center gap-1">
@@ -227,42 +231,12 @@ export const LawyerCard = ({
                     </>
                   )}
 
-                  {/* Heart */}
-                  <button
-                    onClick={handleToggleSave}
-                    className="ml-1 hover:scale-110 transition"
-                  >
-                    <Heart
-                      className={`h-4 w-4
-                      ${isSaved(lawyer.id)
-                          ? 'fill-rose-500 text-rose-500'
-                          : 'text-muted-foreground'
-                        }
-                      ${heartAnimating ? 'scale-125' : ''}
-                      `}
-                    />
-                  </button>
+
 
                 </div>
 
-                {/* STATUS */}
-                <div className="mt-1">
 
-                  {isBusy ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-red-600 bg-red-500/10 px-2 py-0.5 rounded-full">
-                      Busy
-                    </span>
-                  ) : isOnline ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full">
-                      Available
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                      Offline
-                    </span>
-                  )}
 
-                </div>
 
               </div>
 
@@ -276,23 +250,71 @@ export const LawyerCard = ({
                 </span>
               </div>
 
+
+
+
             </div>
           </div>
 
+          {/* BLUE DIVIDER */}
+          <div className="px-3 sm:px-4 py-2">
+            <div className="h-px bg-blue-500/30 w-full rounded-full" />
+          </div>
+          {/* SPECIALIZATIONS */}
           {/* SPECIALIZATIONS */}
           {lawyer.specializations && (
-            <div className="px-3 sm:px-4 pb-2 flex flex-wrap gap-1">
-              {lawyer.specializations.slice(0, 3).map((spec) => (
-                <Badge key={spec} variant="secondary" className="text-xs">
-                  {spec}
-                </Badge>
-              ))}
+            <div className="px-3 sm:px-4 pb-2">
+
+              {/* Mobile Screen */}
+              <div className="flex flex-wrap gap-1 sm:hidden">
+                {lawyer.specializations.slice(0, 2).map((spec) => (
+                  <Badge
+                    key={spec}
+                    variant="secondary"
+                    className="text-[9px] px-1.5 py-0 h-4"
+                  >
+                    {spec}
+                  </Badge>
+                ))}
+
+                {lawyer.specializations.length > 2 && (
+                  <Badge
+                    variant="outline"
+                    className="text-[9px] px-1.5 py-0 h-4"
+                  >
+                    +{lawyer.specializations.length - 2}
+                  </Badge>
+                )}
+              </div>
+
+              {/* Bigger Screen */}
+              <div className="hidden sm:flex flex-wrap gap-1">
+                {lawyer.specializations.slice(0, 4).map((spec) => (
+                  <Badge
+                    key={spec}
+                    variant="secondary"
+                    className="text-[9px] px-1.5 py-0 h-4"
+                  >
+                    {spec}
+                  </Badge>
+                ))}
+
+                {lawyer.specializations.length > 4 && (
+                  <Badge
+                    variant="outline"
+                    className="text-[9px] px-1.5 py-0 h-4"
+                  >
+                    +{lawyer.specializations.length - 4}
+                  </Badge>
+                )}
+              </div>
+
             </div>
           )}
 
           {/* BIO */}
           <div className="px-3 sm:px-4 pb-3 flex-grow">
-            <p className="text-[11px] sm:text-xs text-muted-foreground line-clamp-2">
+            <p className="text-[11px] sm:text-xs text-muted-foreground line-clamp-3">
               {lawyer.bio || 'Experienced legal professional ready to help.'}
             </p>
           </div>
@@ -303,24 +325,52 @@ export const LawyerCard = ({
         {showActions && (
           <div className="px-2 sm:px-3 py-2 border-t border-border bg-muted/30 flex items-center gap-1 mt-auto">
 
-            <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-              <MessageSquare className="h-3.5 w-3.5" />
-            </Button>
+            {/* Heart */}
+            <button
+              onClick={handleToggleSave}
+              className="ml-1 hover:scale-110 transition"
+            >
+              <Heart
+                className={`h-4 w-4
+                      ${isSaved(lawyer.id)
+                    ? 'fill-rose-500 text-rose-500'
+                    : 'text-muted-foreground'
+                  }
+                      ${heartAnimating ? 'scale-125' : ''}
+                      `}
+              />
+            </button>
 
-            <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-              <Phone className="h-3.5 w-3.5" />
-            </Button>
+            {/* STATUS */}
+            <div className="mt-1 px-2">
 
-            <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-              <Video className="h-3.5 w-3.5" />
-            </Button>
+              {isBusy ? (
+                <span className="inline-flex items-center gap-1 text-[10px] font-medium text-red-600 bg-red-500/10 px-2 py-0.5 rounded-full">
+                  Busy
+                </span>
+              ) : isOnline ? (
+                <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                  Available
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                  Offline
+                </span>
+              )}
+
+            </div>
+
 
             <Button
               size="sm"
               className="ml-auto h-8 text-xs px-3"
               onClick={(e) => handleBookClick('chat', e)}
             >
-              Book
+              Book Now
+              <Video className="h-3.5 w-3.5" />
+              <Phone className="h-3.5 w-3.5" />
+              <MessageSquare className="h-3.5 w-3.5" />
+
             </Button>
 
           </div>

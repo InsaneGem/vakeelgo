@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ClientLayout } from '@/components/layout/ClientLayout';
@@ -9,293 +10,872 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-    ArrowLeft, RefreshCw, Clock, DollarSign, Wallet, TrendingUp, TrendingDown,
-    ArrowDownLeft, ArrowUpRight, Filter, CheckCircle, XCircle, AlertCircle,
-    Banknote, CreditCard, RotateCcw, Receipt, ChevronDown,
-    IndianRupee
-} from 'lucide-react';
-type FilterType = 'all' | 'deposit' | 'withdrawal' | 'consultation_fee' | 'commission' | 'refund';
-interface Transaction {
-    id: string;
-    type: string;
-    amount: number;
-    description: string | null;
-    created_at: string;
-    reference_id: string | null;
-}
-const typeConfig: Record<string, { label: string; icon: typeof DollarSign; color: string; bg: string; border: string }> = {
-    deposit: { label: 'Deposit', icon: ArrowDownLeft, color: 'text-emerald-600', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
-    withdrawal: { label: 'Withdrawal', icon: ArrowUpRight, color: 'text-orange-600', bg: 'bg-orange-500/10', border: 'border-orange-500/20' },
-    consultation_fee: { label: 'Consultation', icon: CreditCard, color: 'text-blue-600', bg: 'bg-blue-500/10', border: 'border-blue-500/20' },
-    commission: { label: 'Commission', icon: Banknote, color: 'text-purple-600', bg: 'bg-purple-500/10', border: 'border-purple-500/20' },
-    refund: { label: 'Refund', icon: RotateCcw, color: 'text-teal-600', bg: 'bg-teal-500/10', border: 'border-teal-500/20' },
-};
-const filters: { key: FilterType; label: string }[] = [
-    { key: 'all', label: 'All' },
-    { key: 'deposit', label: 'Deposits' },
-    { key: 'withdrawal', label: 'Withdrawals' },
-    { key: 'consultation_fee', label: 'Consultations' },
-    { key: 'refund', label: 'Refunds' },
 
-];
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from '@/components/ui/dialog';
+
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+
+import { Textarea } from '@/components/ui/textarea';
+
+import {
+    ArrowLeft,
+    RefreshCw,
+    Clock,
+    DollarSign,
+    CheckCircle,
+    XCircle,
+    CreditCard,
+    RotateCcw,
+    Receipt,
+    IndianRupee,
+    User,
+    AlertCircle,
+    MessageSquareWarning
+} from 'lucide-react';
+
+type FilterType =
+    | 'all'
+    | 'completed'
+    | 'pending'
+    | 'refunded'
+    | 'failed';
+
+// interface PaymentTransaction {
+//     id: string;
+//     consultation_id: string | null;
+//     amount: number;
+//     payment_status: string;
+//     payment_method: string | null;
+//     razorpay_payment_id: string | null;
+//     razorpay_order_id: string | null;
+//     created_at: string;
+//     lawyer_id: string;
+//     lawyer_name?: string;
+//     lawyer_avatar?: string | null;
+// }
+
+interface PaymentTransaction {
+    id: string;
+    consultation_id: string | null;
+    amount: number;
+    payment_status: string;
+    payment_method: string | null;
+    razorpay_payment_id: string | null;
+    razorpay_order_id: string | null;
+    created_at: string;
+    lawyer_id: string;
+
+    lawyer_name?: string;
+    lawyer_avatar?: string | null;
+
+    // REPORT INFO
+    report_submitted?: boolean;
+    report_issue_type?: string | null;
+    report_description?: string | null;
+    report_status?: string | null;
+}
+
+const statusConfig: Record<
+    string,
+    {
+        label: string;
+        icon: typeof DollarSign;
+        color: string;
+        bg: string;
+        border: string;
+    }
+> = {
+    completed: {
+        label: 'Completed',
+        icon: CheckCircle,
+        color: 'text-emerald-600',
+        bg: 'bg-emerald-500/10',
+        border: 'border-emerald-500/20'
+    },
+
+    pending: {
+        label: 'Pending',
+        icon: Clock,
+        color: 'text-amber-600',
+        bg: 'bg-amber-500/10',
+        border: 'border-amber-500/20'
+    },
+
+    refunded: {
+        label: 'Refunded',
+        icon: RotateCcw,
+        color: 'text-blue-600',
+        bg: 'bg-blue-500/10',
+        border: 'border-blue-500/20'
+    },
+
+    failed: {
+        label: 'Failed',
+        icon: AlertCircle,
+        color: 'text-red-600',
+        bg: 'bg-red-500/10',
+        border: 'border-red-500/20'
+    }
+};
+
 const ClientTransactionHistory = () => {
+    // const [totalSpent, setTotalSpent] = useState(0);
     const { user, loading: authLoading } = useAuth();
+
     const navigate = useNavigate();
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
-    const [walletBalance, setWalletBalance] = useState(0);
+
+    const [transactions, setTransactions] = useState<
+        PaymentTransaction[]
+    >([]);
+
     const [loading, setLoading] = useState(true);
-    const [activeFilter, setActiveFilter] = useState<FilterType>('all');
-    // const [showAll, setShowAll] = useState(false);
-    const [filterType, setFilterType] = useState<FilterType>('all');
+
+    const [filterType, setFilterType] =
+        useState<FilterType>('all');
+
     const [currentPage, setCurrentPage] = useState(1);
-    const perPage = 4;
+
+    const perPage = 5;
+
+    const [totalSpent, setTotalSpent] = useState(0);
+
+    const [selectedPayment, setSelectedPayment] =
+        useState<PaymentTransaction | null>(null);
+
+    const [reportDialogOpen, setReportDialogOpen] =
+        useState(false);
+
+    const [reportReason, setReportReason] =
+        useState('');
+
+    const [reportMessage, setReportMessage] =
+        useState('');
+
+    const [submittingReport, setSubmittingReport] =
+        useState(false);
+
+    const [viewReportOpen, setViewReportOpen] =
+        useState(false);
+
+    const [selectedReport, setSelectedReport] =
+        useState<PaymentTransaction | null>(null);
+    const [reportError, setReportError] =
+        useState('');
+
     useEffect(() => {
-        if (!authLoading && !user) { navigate('/login'); return; }
+        if (!authLoading && !user) {
+            navigate('/login');
+            return;
+        }
+
         if (user) {
-            fetchAll();
+            fetchTransactions();
+
             const channel = supabase
-                .channel('txn-history')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions', filter: `user_id=eq.${user.id}` }, () => fetchTransactions())
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'wallets', filter: `user_id=eq.${user.id}` }, () => fetchWallet())
+                .channel('payment-history')
+
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: 'payments',
+                        filter: `client_id=eq.${user.id}`
+                    },
+                    () => fetchTransactions()
+                )
+
                 .subscribe();
-            return () => { supabase.removeChannel(channel); };
+
+            return () => {
+                supabase.removeChannel(channel);
+            };
         }
     }, [user, authLoading]);
-    const fetchAll = useCallback(async () => {
+
+    const fetchTransactions = useCallback(async () => {
         if (!user) return;
-        await Promise.all([fetchTransactions(), fetchWallet()]);
-        setLoading(false);
-    }, [user]);
-    const fetchWallet = async () => {
-        if (!user) return;
-        const { data } = await supabase.from('wallets').select('balance').eq('user_id', user.id).maybeSingle();
-        setWalletBalance(Number(data?.balance) || 0);
+
+        setReportError('');
+        try {
+            setLoading(true);
+
+            let query = supabase
+                .from('payments')
+                .select(`
+                    id,
+                    consultation_id,
+                    amount,
+                    payment_status,
+                    payment_method,
+                    razorpay_payment_id,
+                    razorpay_order_id,
+                    created_at,
+                    lawyer_id
+                `)
+                .eq('client_id', user.id)
+                .order('created_at', { ascending: false });
+
+            if (filterType !== 'all') {
+                query = query.eq(
+                    'payment_status',
+                    filterType
+                );
+            }
+
+            const { data, error } = await query;
+
+            if (error) {
+                console.error(error);
+                setTransactions([]);
+                return;
+            }
+
+            const payments =
+                (data as PaymentTransaction[]) || [];
+
+            if (payments.length > 0) {
+                const lawyerIds = [
+                    ...new Set(
+                        payments.map(p => p.lawyer_id)
+                    )
+                ];
+
+                const { data: profiles } = await supabase
+                    .from('profiles')
+                    .select(
+                        'id, full_name, avatar_url'
+                    )
+                    .in('id', lawyerIds);
+
+                // const merged = payments.map(payment => {
+                //     const lawyer = profiles?.find(
+                //         p => p.id === payment.lawyer_id
+                //     );
+
+                //     return {
+                //         ...payment,
+                //         lawyer_name:
+                //             lawyer?.full_name ||
+                //             'Legal Professional',
+
+                //         lawyer_avatar:
+                //             lawyer?.avatar_url || null
+                //     };
+                // });
+
+                const consultationIds = payments
+                    .map(p => p.consultation_id)
+                    .filter(Boolean);
+
+                const { data: reports } = await supabase
+                    .from('payment_reports')
+                    .select('*')
+                    .in('consultation_id', consultationIds);
+
+                const merged = payments.map(payment => {
+                    const lawyer = profiles?.find(
+                        p => p.id === payment.lawyer_id
+                    );
+
+                    const report = reports?.find(
+                        r =>
+                            r.consultation_id ===
+                            payment.consultation_id
+                    );
+
+                    return {
+                        ...payment,
+
+                        lawyer_name:
+                            lawyer?.full_name ||
+                            'Legal Professional',
+
+                        lawyer_avatar:
+                            lawyer?.avatar_url || null,
+
+                        report_submitted: !!report,
+
+                        report_issue_type:
+                            report?.issue_type || null,
+
+                        report_description:
+                            report?.issue_message || null,
+
+                        report_status:
+                            report?.status || 'pending'
+                    };
+                });
+
+                setTransactions(merged);
+
+                const spent = merged
+                    .filter(
+                        t =>
+                            t.payment_status ===
+                            'completed'
+                    )
+                    .reduce(
+                        (sum, t) =>
+                            sum + Number(t.amount || 0),
+                        0
+                    );
+
+                setTotalSpent(spent);
+            } else {
+                setTransactions([]);
+                setTotalSpent(0);
+            }
+        } catch (err) {
+            console.error(err);
+            setTransactions([]);
+        } finally {
+            setLoading(false);
+        }
+    }, [user, filterType]);
+
+    const submitReport = async () => {
+        if (!selectedPayment) return;
+
+        if (!reportReason) {
+            // alert('Please select issue type');
+            setReportError('Please select issue type');
+            return;
+        }
+
+        if (!reportMessage.trim()) {
+            // alert('Please explain the issue');
+            setReportError('Please explain the issue');
+            return;
+        }
+
+        setReportError('');
+        try {
+            setSubmittingReport(true);
+
+            const { error } = await supabase
+                .from('payment_reports')
+                .insert({
+                    payment_id: selectedPayment.id,
+                    consultation_id:
+                        selectedPayment.consultation_id,
+                    client_id: user?.id,
+                    lawyer_id: selectedPayment.lawyer_id,
+                    issue_type: reportReason,
+                    issue_message: reportMessage,
+                    payment_status:
+                        selectedPayment.payment_status,
+                });
+
+            if (error) {
+                console.error(error);
+                // alert('Failed to submit report');
+
+                console.log(error);
+
+                // alert(error?.message || 'Failed');
+                setReportError(
+                    error?.message || 'Failed to submit report'
+                );
+                return;
+            }
+
+            // alert('Report submitted successfully');
+            setReportError('Report submitted successfully');
+            await fetchTransactions();
+
+            setReportDialogOpen(false);
+
+            setReportReason('');
+
+            setReportMessage('');
+
+            setSelectedPayment(null);
+        } catch (err) {
+            console.error(err);
+            // alert('Something went wrong');
+            setReportError('Something went wrong');
+        } finally {
+            setSubmittingReport(false);
+        }
     };
-    const fetchTransactions = async () => {
-        if (!user) return;
-        const { data } = await supabase
-            .from('transactions')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: false });
-        setTransactions(data || []);
-    };
-    // const filtered = activeFilter === 'all' ? transactions : transactions.filter(t => t.type === activeFilter);
+
     const filtered =
         filterType === 'all'
             ? transactions
-            : transactions.filter(t => t.type === filterType);
-    // const displayed = showAll ? filtered : filtered.slice(0, 20);
-    const totalPages = Math.ceil(filtered.length / perPage);
+            : transactions.filter(
+                t => t.payment_status === filterType
+            );
+
+    const totalPages = Math.ceil(
+        filtered.length / perPage
+    );
+
     const displayed = filtered.slice(
         (currentPage - 1) * perPage,
         currentPage * perPage
     );
-    const totalIn = transactions.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
-    const totalOut = transactions.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
-    const getConfig = (type: string) => typeConfig[type] || { label: type, icon: DollarSign, color: 'text-muted-foreground', bg: 'bg-muted', border: 'border-border' };
+
+    const getConfig = (status: string) =>
+        statusConfig[status] || {
+            label: status,
+            icon: DollarSign,
+            color: 'text-muted-foreground',
+            bg: 'bg-muted',
+            border: 'border-border'
+        };
+
     if (authLoading || loading) {
         return (
             <ClientLayout>
                 <div className="container mx-auto px-3 sm:px-4 py-6 max-w-3xl overflow-x-hidden">
                     <Skeleton className="h-8 w-48 mb-4" />
-                    <div className="grid grid-cols-3 gap-3 mb-5">
-                        {[1, 2, 3].map(i => <Skeleton key={i} className="h-20 rounded-xl" />)}
+
+                    <div className="space-y-3">
+                        {[1, 2, 3, 4].map(i => (
+                            <Skeleton
+                                key={i}
+                                className="h-16 rounded-xl"
+                            />
+                        ))}
                     </div>
-                    <div className="space-y-3">{[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-16 rounded-xl" />)}</div>
                 </div>
             </ClientLayout>
         );
     }
+
     return (
         <ClientLayout>
-            {/* <div className="container mx-auto px-4 py-6 max-w-3xl"> */}
             <div className="container mx-auto px-4 py-6 max-w-3xl overflow-x-hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-5">
                     <div className="flex items-center gap-3">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate('/dashboard')}>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() =>
+                                navigate('/dashboard')
+                            }
+                        >
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
+
                         <div>
-                            <h1 className="font-serif text-xl sm:text-2xl font-bold flex items-center gap-2">
-                                {/* <Receipt className="h-5 w-5 text-primary" /> */}
-                                Transaction History
+                            <h1 className="font-serif text-xl sm:text-2xl font-bold">
+                                Payment History
                             </h1>
-                            <p className="text-muted-foreground text-xs mt-0.5">All your payment activity in one place</p>
+
+                            <p className="text-muted-foreground text-xs mt-0.5">
+                                All your Razorpay payment
+                                activity
+                            </p>
                         </div>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => fetchAll()} className="gap-1.5 h-8 text-xs">
+
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                            fetchTransactions()
+                        }
+                        className="gap-1.5 h-8 text-xs"
+                    >
                         <RefreshCw className="h-3 w-3" />
                     </Button>
                 </div>
-                {/* Summary Cards */}
 
                 {/* Filters */}
-                {/* <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1 scrollbar-none w-full max-w-full">
-                    <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                    {filters.map(f => (
-                        <Button
-                            key={f.key}
-                            variant={activeFilter === f.key ? 'default' : 'outline'}
-                            size="sm"
-                            className="h-7 text-xs px-3 shrink-0"
-                            onClick={() => setActiveFilter(f.key)}
-                        >
-                            {f.label}
-                            {f.key !== 'all' && (
-                                <span className="ml-1 opacity-70">
-                                    ({transactions.filter(t => t.type === f.key).length})
-                                </span>
-                            )}
-                        </Button>
-                    ))}
-                </div> */}
                 <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                    <Tabs value={filterType} onValueChange={(val) => setFilterType(val as FilterType)}>
-                        <TabsList className="h-10">
-                            <TabsTrigger value="all" className="text-xs flex-1 sm:flex-none">All</TabsTrigger>
-                            <TabsTrigger value="deposit" className="text-xs flex-1 sm:flex-none">Deposits</TabsTrigger>
-                            <TabsTrigger value="consultation_fee" className="text-xs flex-1 sm:flex-none">Consultations</TabsTrigger>
-                            <TabsTrigger value="refund" className="text-xs flex-1 sm:flex-none">Refunds</TabsTrigger>
+                    <Tabs
+                        value={filterType}
+                        onValueChange={val =>
+                            setFilterType(
+                                val as FilterType
+                            )
+                        }
+                    >
+                        <TabsList className="h-10 flex-wrap">
+                            <TabsTrigger
+                                value="all"
+                                className="text-xs"
+                            >
+                                All
+                            </TabsTrigger>
+
+                            <TabsTrigger
+                                value="completed"
+                                className="text-xs"
+                            >
+                                Completed
+                            </TabsTrigger>
+
+                            <TabsTrigger
+                                value="pending"
+                                className="text-xs"
+                            >
+                                Pending
+                            </TabsTrigger>
+
+                            <TabsTrigger
+                                value="refunded"
+                                className="text-xs"
+                            >
+                                Refunded
+                            </TabsTrigger>
+
+                            <TabsTrigger
+                                value="failed"
+                                className="text-xs"
+                            >
+                                Failed
+                            </TabsTrigger>
                         </TabsList>
                     </Tabs>
                 </div>
 
-
-                {/* Transaction Count */}
+                {/* Count */}
                 <p className="text-xs text-muted-foreground mb-3">
-                    Showing {displayed.length} of {filtered.length} transactions
+                    Showing {displayed.length} of{' '}
+                    {filtered.length} payments
                 </p>
-                {/* Transactions */}
+
+                {/* Empty */}
                 {filtered.length === 0 ? (
-                    <Card
-                        className="border-0 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden animate-fade-in max-w-full">
+                    <Card className="border-0 shadow-sm">
                         <CardContent className="py-14 text-center">
                             <div className="w-14 h-14 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
                                 <IndianRupee className="h-7 w-7 text-muted-foreground" />
                             </div>
-                            <h3 className="text-lg font-semibold font-serif">No Transactions Found</h3>
+
+                            <h3 className="text-lg font-semibold font-serif">
+                                No Payments Found
+                            </h3>
+
                             <p className="text-muted-foreground text-sm max-w-sm mx-auto mt-1">
-                                {activeFilter === 'all' ? "You haven't made any transactions yet." : `No ${activeFilter.replace('_', ' ')} transactions found.`}
+                                No payment records available.
                             </p>
                         </CardContent>
                     </Card>
                 ) : (
                     <div className="space-y-2 overflow-x-hidden">
-                        {displayed.map((txn, index) => {
-                            const cfg = getConfig(txn.type);
-                            const IconComp = cfg.icon;
-                            const isPositive = txn.amount > 0;
-                            return (
-                                <Card
-                                    key={txn.id}
-                                    className="border-0 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden animate-fade-in max-w-full"
-                                    style={{ animationDelay: `${index * 0.04}s` }}
-                                >
-                                    <CardContent className="p-3">
-                                        <div className="flex items-center gap-3">
-                                            {/* Icon */}
-                                            <div className={`w-9 h-9 rounded-lg ${cfg.bg} flex items-center justify-center shrink-0`}>
-                                                <IconComp className={`h-4 w-4 ${cfg.color}`} />
-                                            </div>
-                                            {/* Details */}
-                                            {/* <div className="min-w-0 flex-1"> */}
-                                            <div className="min-w-0 flex-1 break-words">
-                                                <div className="flex items-center gap-2">
-                                                    <h3 className="font-semibold text-sm truncate">{cfg.label}</h3>
-                                                    <Badge variant="outline" className={`text-[10px] px-1.5 py-0 h-4 ${cfg.bg} ${cfg.color} ${cfg.border}`}>
-                                                        {txn.type.replace('_', ' ')}
-                                                    </Badge>
-                                                </div>
-                                                <p className="text-[11px] text-muted-foreground truncate mt-0.5">
-                                                    {txn.description || 'No description'}
-                                                </p>
-                                            </div>
-                                            {/* Amount + Date */}
-                                            {/* <div className="text-right shrink-0"> */}
-                                            <div className="text-right shrink-0 min-w-[70px]">
-                                                <p className={`text-sm font-bold ${isPositive ? 'text-emerald-600' : 'text-red-600'}`}>
-                                                    {isPositive ? '+' : '-'}${Math.abs(txn.amount).toFixed(2)}
-                                                </p>
-                                                <p className="text-[10px] text-muted-foreground flex items-center gap-1 justify-end">
-                                                    <Clock className="h-2.5 w-2.5" />
-                                                    {new Date(txn.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            );
-                        })}
+                        {displayed.map(
+                            (txn, index) => {
+                                const cfg = getConfig(
+                                    txn.payment_status
+                                );
 
+                                const IconComp =
+                                    cfg.icon;
+
+                                return (
+                                    <Card
+                                        key={txn.id}
+                                        // onClick={() => {
+                                        //     setSelectedPayment(txn);
+                                        //     setReportDialogOpen(true);
+                                        // }}
+                                        onClick={() => {
+                                            if (txn.report_submitted) {
+                                                setSelectedReport(txn);
+                                                setViewReportOpen(true);
+                                            } else {
+                                                setSelectedPayment(txn);
+                                                setReportDialogOpen(true);
+                                            }
+                                        }}
+                                        className="border-0 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden animate-fade-in"
+                                        style={{
+                                            animationDelay: `${index * 0.04}s`
+                                        }
+                                        }
+                                    >
+                                        <CardContent className="p-3">
+                                            <div className="flex items-center gap-3">
+                                                {/* Icon */}
+                                                <div
+                                                    className={`w-9 h-9 rounded-lg ${cfg.bg} flex items-center justify-center shrink-0`}
+                                                >
+                                                    <IconComp
+                                                        className={`h-4 w-4 ${cfg.color}`}
+                                                    />
+                                                </div>
+
+                                                {/* Info */}
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <h3 className="font-semibold text-sm truncate">
+                                                            {
+                                                                txn.lawyer_name
+                                                            }
+                                                        </h3>
+
+                                                        <Badge
+                                                            variant="outline"
+                                                            className={`text-[10px] px-1.5 py-0 h-4 ${cfg.bg} ${cfg.color} ${cfg.border}`}
+                                                        >
+                                                            {
+                                                                cfg.label
+                                                            }
+                                                        </Badge>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-1 text-[11px] text-muted-foreground mt-1">
+                                                        <User className="h-3 w-3" />
+
+                                                        <span className="truncate">
+                                                            Payment
+                                                            via{' '}
+                                                            {txn.payment_method ||
+                                                                'Razorpay'}
+                                                        </span>
+                                                    </div>
+
+                                                    {txn.razorpay_payment_id && (
+                                                        <p className="text-[10px] text-muted-foreground mt-1 truncate">
+                                                            ID:{' '}
+                                                            {
+                                                                txn.razorpay_payment_id
+                                                            }
+                                                        </p>
+                                                    )}
+
+                                                    {/* <div className="flex items-center gap-1 mt-2 text-[10px] text-red-500">
+                                                        <MessageSquareWarning className="h-3 w-3" />
+                                                        Tap to report issue
+                                                    </div> */}
+                                                    <div
+                                                        className={`flex items-center gap-1 mt-2 text-[10px] ${txn.report_submitted
+                                                            ? 'text-emerald-600'
+                                                            : 'text-red-500'
+                                                            }`}
+                                                    >
+                                                        <MessageSquareWarning className="h-3 w-3" />
+
+                                                        {txn.report_submitted
+                                                            ? 'Report already submitted'
+                                                            : 'Tap to report issue'}
+                                                    </div>
+                                                </div>
+
+                                                {/* Amount */}
+                                                <div className="text-right shrink-0 min-w-[80px]">
+                                                    <p className="text-sm font-bold text-emerald-600">
+                                                        ₹
+                                                        {Number(
+                                                            txn.amount
+                                                        ).toFixed(
+                                                            2
+                                                        )}
+                                                    </p>
+
+                                                    <p className="text-[10px] text-muted-foreground flex items-center gap-1 justify-end">
+                                                        <Clock className="h-2.5 w-2.5" />
+
+                                                        {new Date(
+                                                            txn.created_at
+                                                        ).toLocaleDateString(
+                                                            [],
+                                                            {
+                                                                month: 'short',
+                                                                day: 'numeric'
+                                                            }
+                                                        )}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                );
+                            }
+                        )}
+
+                        {/* Pagination */}
                         {totalPages > 1 && (
                             <div className="flex justify-center items-center gap-2 mt-4 flex-wrap">
-
                                 <Button
                                     size="sm"
                                     variant="outline"
-                                    disabled={currentPage === 1}
-                                    onClick={() => setCurrentPage(p => p - 1)}
+                                    disabled={
+                                        currentPage === 1
+                                    }
+                                    onClick={() =>
+                                        setCurrentPage(
+                                            p => p - 1
+                                        )
+                                    }
                                     className="text-xs h-8"
                                 >
                                     Prev
                                 </Button>
 
-                                {[...Array(totalPages)].slice(0, 5).map((_, i) => {
-                                    const page = i + 1;
-                                    return (
-                                        <Button
-                                            key={page}
-                                            size="sm"
-                                            variant={currentPage === page ? "default" : "outline"}
-                                            onClick={() => setCurrentPage(page)}
-                                            className="text-xs h-8 w-8 p-0"
-                                        >
-                                            {page}
-                                        </Button>
-                                    );
-                                })}
+                                {[...Array(totalPages)]
+                                    .slice(0, 5)
+                                    .map((_, i) => {
+                                        const page =
+                                            i + 1;
+
+                                        return (
+                                            <Button
+                                                key={page}
+                                                size="sm"
+                                                variant={
+                                                    currentPage ===
+                                                        page
+                                                        ? 'default'
+                                                        : 'outline'
+                                                }
+                                                onClick={() =>
+                                                    setCurrentPage(
+                                                        page
+                                                    )
+                                                }
+                                                className="text-xs h-8 w-8 p-0"
+                                            >
+                                                {page}
+                                            </Button>
+                                        );
+                                    })}
 
                                 <Button
                                     size="sm"
                                     variant="outline"
-                                    disabled={currentPage === totalPages}
-                                    onClick={() => setCurrentPage(p => p + 1)}
+                                    disabled={
+                                        currentPage ===
+                                        totalPages
+                                    }
+                                    onClick={() =>
+                                        setCurrentPage(
+                                            p => p + 1
+                                        )
+                                    }
                                     className="text-xs h-8"
                                 >
                                     Next
                                 </Button>
-
                             </div>
                         )}
                     </div>
                 )}
-                {/* Monthly Summary */}
+
+                {/* Summary */}
                 {transactions.length > 0 && (
-                    <Card
-                        className="border-0 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden animate-fade-in max-w-full">
+                    <Card className="mt-6 border-0 shadow-sm">
                         <CardHeader className="pb-2 pt-4 px-4">
                             <CardTitle className="text-sm font-serif flex items-center gap-1.5">
-                                <DollarSign className="h-3.5 w-3.5 text-primary" /> Quick Summary
+                                {/* <DollarSign className="h-3.5 w-3.5 text-primary" /> */}
+                                Quick Summary
                             </CardTitle>
                         </CardHeader>
+
                         <CardContent className="px-4 pb-4">
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                                 {[
-                                    { label: 'Total Txns', value: transactions.length, icon: Receipt, color: 'text-primary', bg: 'bg-primary/10' },
-                                    { label: 'Deposits', value: transactions.filter(t => t.type === 'deposit').length, icon: ArrowDownLeft, color: 'text-emerald-600', bg: 'bg-emerald-500/10' },
-                                    { label: 'Payments', value: transactions.filter(t => t.type === 'consultation_fee').length, icon: CreditCard, color: 'text-blue-600', bg: 'bg-blue-500/10' },
-                                    { label: 'Refunds', value: transactions.filter(t => t.type === 'refund').length, icon: RotateCcw, color: 'text-teal-600', bg: 'bg-teal-500/10' },
+                                    {
+                                        label:
+                                            'Total Payments',
+
+                                        value:
+                                            transactions.length,
+
+                                        icon: Receipt,
+
+                                        color:
+                                            'text-primary',
+
+                                        bg: 'bg-primary/10'
+                                    },
+
+                                    {
+                                        label:
+                                            'Completed',
+
+                                        value:
+                                            transactions.filter(
+                                                t =>
+                                                    t.payment_status ===
+                                                    'completed'
+                                            ).length,
+
+                                        icon: CheckCircle,
+
+                                        color:
+                                            'text-emerald-600',
+
+                                        bg: 'bg-emerald-500/10'
+                                    },
+
+                                    {
+                                        label:
+                                            'Refunded',
+
+                                        value:
+                                            transactions.filter(
+                                                t =>
+                                                    t.payment_status ===
+                                                    'refunded'
+                                            ).length,
+
+                                        icon: RotateCcw,
+
+                                        color:
+                                            'text-blue-600',
+
+                                        bg: 'bg-blue-500/10'
+                                    },
+
+                                    {
+                                        label:
+                                            'Total Spent',
+
+                                        value: `₹${totalSpent.toFixed(
+                                            2
+                                        )}`,
+
+                                        icon: IndianRupee,
+
+                                        color:
+                                            'text-yellow-600',
+
+                                        bg: 'bg-yellow-500/10'
+                                    }
                                 ].map((item, i) => (
-                                    <div key={i} className="flex items-center gap-2">
-                                        <div className={`w-7 h-7 rounded-md ${item.bg} flex items-center justify-center shrink-0`}>
-                                            <item.icon className={`h-3.5 w-3.5 ${item.color}`} />
+                                    <div
+                                        key={i}
+                                        className="flex items-center gap-2"
+                                    >
+                                        <div
+                                            className={`w-7 h-7 rounded-md ${item.bg} flex items-center justify-center shrink-0`}
+                                        >
+                                            <item.icon
+                                                className={`h-3.5 w-3.5 ${item.color}`}
+                                            />
                                         </div>
+
                                         <div>
-                                            <p className="font-bold text-sm">{item.value}</p>
-                                            <p className="text-muted-foreground text-[10px]">{item.label}</p>
+                                            <p className="font-bold text-sm">
+                                                {
+                                                    item.value
+                                                }
+                                            </p>
+
+                                            <p className="text-muted-foreground text-[10px]">
+                                                {
+                                                    item.label
+                                                }
+                                            </p>
                                         </div>
                                     </div>
                                 ))}
@@ -304,7 +884,243 @@ const ClientTransactionHistory = () => {
                     </Card>
                 )}
             </div>
+
+
+            <Dialog
+                open={reportDialogOpen}
+                // onOpenChange={setReportDialogOpen}
+                onOpenChange={(open) => {
+                    setReportDialogOpen(open);
+
+                    if (!open) {
+                        setReportError('');
+                    }
+                }}
+            >
+                <DialogContent className="sm:max-w-md">
+                    {/* <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto scrollbar-none"> */}
+                    <DialogHeader>
+                        <DialogTitle>
+                            Report Payment Issue
+                        </DialogTitle>
+
+                        <DialogDescription>
+                            Tell us what went wrong?
+
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {selectedPayment && (
+                        <div className="space-y-4 mt-2">
+                            {/* Payment Info */}
+                            <div className="rounded-xl border p-3 bg-muted/30">
+                                <div className="flex justify-between text-sm">
+                                    <span>Lawyer</span>
+
+                                    <span className="font-medium">
+                                        {
+                                            selectedPayment.lawyer_name
+                                        }
+                                    </span>
+                                </div>
+
+                                <div className="flex justify-between text-sm mt-2">
+                                    <span>Amount</span>
+
+                                    <span className="font-semibold text-emerald-600">
+                                        ₹
+                                        {Number(
+                                            selectedPayment.amount
+                                        ).toFixed(2)}
+                                    </span>
+                                </div>
+
+                                <div className="flex justify-between text-sm mt-2">
+                                    <span>Status</span>
+
+                                    <span className="capitalize">
+                                        {
+                                            selectedPayment.payment_status
+                                        }
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Issue Type */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">
+                                    Select Issue
+                                </label>
+
+                                <Select
+                                    value={reportReason}
+                                    onValueChange={setReportReason}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Choose issue type" />
+                                    </SelectTrigger>
+
+                                    <SelectContent>
+                                        <SelectItem value="refund_request">
+                                            Refund Request
+                                        </SelectItem>
+
+                                        <SelectItem value="lawyer_abusive">
+                                            Lawyer was abusive
+                                        </SelectItem>
+
+                                        <SelectItem value="lawyer_not_receiving">
+                                            Lawyer not receiving calls
+                                        </SelectItem>
+
+                                        <SelectItem value="consultation_not_completed">
+                                            Consultation not completed
+                                        </SelectItem>
+
+                                        <SelectItem value="payment_issue">
+                                            Payment issue
+                                        </SelectItem>
+
+                                        <SelectItem value="other">
+                                            Other
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Message */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">
+                                    Explain Issue
+                                </label>
+
+                                <Textarea
+                                    placeholder="Explain your issue here..."
+                                    value={reportMessage}
+                                    onChange={e =>
+                                        setReportMessage(
+                                            e.target.value
+                                        )
+                                    }
+                                    className="min-h-[120px]"
+                                />
+                            </div>
+
+                            {/* Buttons */}
+                            {reportError && (
+                                <p
+                                    className={`text-[11px] text-center ${reportError.includes('successfully')
+                                        ? 'text-emerald-600'
+                                        : 'text-red-500'
+                                        }`}
+                                >
+                                    {reportError}
+                                </p>
+                            )}
+                            <div className="flex justify-end gap-2 pt-2">
+                                <Button
+                                    variant="outline"
+                                    onClick={() =>
+                                        setReportDialogOpen(false)
+                                    }
+                                >
+                                    Cancel
+                                </Button>
+
+                                <Button
+                                    onClick={submitReport}
+                                    disabled={submittingReport}
+                                >
+                                    {submittingReport
+                                        ? 'Submitting...'
+                                        : 'Send Report'}
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
+
+
+            <Dialog
+                open={viewReportOpen}
+                onOpenChange={setViewReportOpen}
+            >
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>
+                            Submitted Report
+                        </DialogTitle>
+
+                        <DialogDescription>
+                            Your submitted issue details
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {selectedReport && (
+                        <div className="space-y-4">
+                            {/* Issue Type */}
+                            <div>
+                                <p className="text-xs text-muted-foreground mb-1">
+                                    Issue Type
+                                </p>
+
+                                <div className="border rounded-lg p-3 text-sm font-medium capitalize">
+                                    {selectedReport.report_issue_type?.replaceAll(
+                                        '_',
+                                        ' '
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Description */}
+                            <div>
+                                <p className="text-xs text-muted-foreground mb-1">
+                                    Description
+                                </p>
+
+                                <div className="border rounded-lg p-3 text-sm whitespace-pre-wrap">
+                                    {
+                                        selectedReport.report_description
+                                    }
+                                </div>
+                            </div>
+
+                            {/* Status */}
+                            <div>
+                                <p className="text-xs text-muted-foreground mb-1">
+                                    Status
+                                </p>
+
+                                <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3">
+                                    <p className="text-sm font-medium text-amber-700">
+                                        Your issue is under review
+                                    </p>
+
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        Expected resolution within
+                                        4-5 working days.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Close */}
+                            <div className="flex justify-end pt-2">
+                                <Button
+                                    variant="outline"
+                                    onClick={() =>
+                                        setViewReportOpen(false)
+                                    }
+                                >
+                                    Close
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
         </ClientLayout>
     );
 };
+
 export default ClientTransactionHistory;

@@ -197,7 +197,6 @@ const Consultation = () => {
   const [paymentCountdown, setPaymentCountdown] = useState(120);
   const [sessionCountdown, setSessionCountdown] = useState(0);
   // const [sessionCountdown, setSessionCountdown] = useState<number | null>(null);
-  const [walletBalance, setWalletBalance] = useState(0);
   const [paying, setPaying] = useState(false);
 
   // Call state
@@ -293,15 +292,8 @@ const Consultation = () => {
 
     if (profile) setParticipant(profile);
 
-    // If client, fetch wallet
-    if (data.client_id === user.id) {
-      const { data: wallet } = await supabase
-        .from('wallets')
-        .select('balance')
-        .eq('user_id', user.id)
-        .single();
-      setWalletBalance(Number(wallet?.balance) || 0);
-    }
+    // Wallet payments not used - all payments are via Razorpay at booking time
+
 
     setLoading(false);
 
@@ -566,14 +558,21 @@ const Consultation = () => {
   useEffect(() => {
     if (!isWaitingForPayment || !acceptedAt) return;
 
+    let timedOut = false;
+
     const interval = setInterval(() => {
       const acceptTime = new Date(acceptedAt).getTime();
       const deadline = acceptTime + 2 * 60 * 1000;
       const remaining = Math.max(0, Math.floor((deadline - Date.now()) / 1000));
       setPaymentCountdown(remaining);
 
-      if (remaining <= 0 && isLawyer) {
-        setShowMoodDialog(true);
+      if (remaining <= 0 && !timedOut) {
+        timedOut = true;
+        if (isLawyer) {
+          handleCancelPaymentTimeout();
+        } else {
+          handleClientPaymentTimeout();
+        }
       }
     }, 1000);
 
@@ -670,6 +669,14 @@ const Consultation = () => {
         })
         .eq('id', id);
 
+      // 🔴 Mark lawyer as busy
+      await supabase
+        .from('lawyer_profile')
+        .update({
+          is_available: false,
+        })
+        .eq('id', user.id);
+
       await supabase
         .from('call_signals')
         .insert({
@@ -697,51 +704,8 @@ const Consultation = () => {
     }
   };
 
-  const handleClientPay = async () => {
-    if (!user || !id || !consultation) return;
-    const totalAmount = consultation.total_amount || 0;
-    const now = new Date().toISOString();
-
-
-    if (walletBalance < totalAmount) {
-      toast({ variant: 'destructive', title: 'Insufficient Balance', description: 'Please add funds to your wallet.' });
-      return;
-    }
-
-    setPaying(true);
-    try {
-      // Deduct wallet
-      await supabase
-        .from('wallets')
-        .update({ balance: walletBalance - totalAmount })
-        .eq('user_id', user.id);
-
-      // Create transaction
-      await supabase.from('transactions').insert({
-        user_id: user.id,
-        type: 'consultation_fee' as const,
-        amount: -totalAmount,
-        description: `${consultation.type} consultation`,
-        reference_id: id,
-      });
-
-      // Activate consultation
-      await supabase
-        .from('consultations')
-        .update({
-          status: 'active' as const,
-          started_at: new Date().toISOString(),
-        })
-        .eq('id', id);
-
-      setWalletBalance(prev => prev - totalAmount);
-      toast({ title: '✅ Payment Successful', description: 'Session is now active!' });
-    } catch (error) {
-      toast({ variant: 'destructive', title: 'Payment Failed', description: 'Please try again.' });
-    } finally {
-      setPaying(false);
-    }
-  };
+  // Payment is handled during booking via Razorpay
+  // No wallet payments in consultation
 
   const handleEndConsultation = async () => {
     if (!id || !consultation) return;
@@ -755,6 +719,14 @@ const Consultation = () => {
         ),
       })
       .eq('id', id);
+
+    // 🟢 Mark lawyer available again
+    await supabase
+      .from('lawyer_profile')
+      .update({
+        is_available: true,
+      })
+      .eq('id', consultation.lawyer_id);
     setShowRating(true);
   };
 
@@ -777,6 +749,44 @@ const Consultation = () => {
       .eq('id', id);
     setShowMoodDialog(false);
     navigate('/lawyer/dashboard');
+  };
+
+  const handleClientPaymentTimeout = async () => {
+    if (!id) return;
+    await supabase
+      .from('consultations')
+      .update({ status: 'cancelled' as const })
+      .eq('id', id);
+    toast({
+      variant: 'destructive',
+      title: 'Payment Timed Out',
+      description: 'The payment window expired and the consultation was cancelled.',
+    });
+    navigate('/dashboard');
+  };
+
+  const handleCancelRequest = async () => {
+    if (!id) return;
+
+    try {
+      await supabase
+        .from('consultations')
+        .update({ status: 'cancelled' as const })
+        .eq('id', id);
+
+      toast({
+        title: 'Request Cancelled',
+        description: 'The consultation request has been cancelled.',
+      });
+
+      navigate(isLawyer ? '/lawyer/dashboard' : '/dashboard');
+    } catch {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Could not cancel the consultation request.',
+      });
+    }
   };
 
   const handleSubmitRating = async () => {
@@ -1138,46 +1148,9 @@ const Consultation = () => {
 
         <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           {/* Session countdown */}
-          {isActive && (
-            <div className={cn(
-              "flex items-center gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full font-mono text-xs sm:text-sm font-semibold",
-              (sessionCountdown ?? 0) <= 60
-                ? "bg-destructive/10 text-destructive animate-pulse"
-                : "bg-primary/10 text-primary"
-            )}>
-              <Timer className="h-3.5 w-3.5" />
-              {/* {formatCountdown(sessionCountdown)} */}
-              {sessionCountdown !== null && formatCountdown(sessionCountdown)}
-            </div>
-          )}
 
-          {/* Audio/Video buttons - CLIENT ONLY */}
-          {/* {isActive && isClient && !isAudioCallActive && !isVideoCallActive && (
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 sm:h-9 text-xs sm:text-sm gap-1 px-2 sm:px-3"
-                // onClick={handleInitiateAudioCall}
-                onClick={() => { setCallInitiatedByMe(true); setIsAudioCallActive(true); }}
-                title="Start audio call with lawyer"
-              >
-                <Phone className="h-4 w-4" />
-                <span className="hidden sm:inline">Audio</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 sm:h-9 text-xs sm:text-sm gap-1 px-2 sm:px-3"
-                // onClick={handleInitiateVideoCall}
-                onClick={() => { setCallInitiatedByMe(true); setIsVideoCallActive(true); }}
-                title="Start video call with lawyer"
-              >
-                <Video className="h-4 w-4" />
-                <span className="hidden sm:inline">Video</span>
-              </Button>
-            </div>
-          )} */}
+
+
           {/* Audio/Video buttons - CLIENT ONLY */}
           {isActive && isClient && !isAudioCallActive && !isVideoCallActive && (
             <div className="flex items-center gap-1.5 sm:gap-2">
@@ -1233,7 +1206,7 @@ const Consultation = () => {
       </header >
 
       {/* ═══ MAIN CONTENT ═══ */}
-      <div div className="flex-1 flex overflow-hidden" >
+      <div div div className="flex-1 flex overflow-hidden" >
         {/* Desktop sidebar later add this content in nav bar */}
         {/* {isActive && (
           <div className="hidden lg:flex w-72 border-r border-border flex-col bg-card/30 flex-shrink-0 animate-fade-in">
@@ -1298,7 +1271,17 @@ const Consultation = () => {
           {/* ─── WAITING FOR ACCEPT ─── */}
           {isWaitingForAccept && (
             <div className="flex-1 flex items-center justify-center p-6 animate-fade-in">
-              <div className="text-center max-w-sm">
+              <div className="relative text-center max-w-sm">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 text-muted-foreground hover:text-foreground"
+                  onClick={handleCancelRequest}
+                >
+                  <XCircle className="h-4 w-4" />
+                </Button>
+
                 {isLawyer ? (
                   <>
                     <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6 animate-scale-in">
@@ -1315,10 +1298,15 @@ const Consultation = () => {
                         {' '}for {bookedMinutes} minutes
                       </p>
                     )}
-                    <Button size="lg" className="gap-2 px-8" onClick={handleLawyerAccept}>
-                      <CheckCircle className="h-5 w-5" />
-                      Accept Request
-                    </Button>
+                    <div className="flex flex-col items-center gap-3">
+                      <Button size="lg" className="gap-2 px-8" onClick={handleLawyerAccept}>
+                        <CheckCircle className="h-5 w-5" />
+                        Accept Request
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={handleCancelRequest}>
+                        Cancel Request
+                      </Button>
+                    </div>
                   </>
                 ) : (
                   <>
@@ -1334,6 +1322,9 @@ const Consultation = () => {
                       <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
                       <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
                     </div>
+                    <Button variant="outline" size="sm" className="mt-6" onClick={handleCancelRequest}>
+                      Cancel Request
+                    </Button>
                   </>
                 )}
               </div>
@@ -1363,62 +1354,31 @@ const Consultation = () => {
                         <span className="text-muted-foreground">Duration</span>
                         <span className="font-medium">{bookedMinutes} min</span>
                       </div>
-                      <div className="border-t border-border pt-3 flex justify-between">
-                        <span className="font-semibold">Total</span>
-                        <span className="text-xl font-bold text-primary">
-                          ${(consultation?.total_amount || 0).toFixed(2)}
-                        </span>
+                      <div className="border-t border-border pt-3 flex justify-between items-center gap-3">
+                        <div>
+                          <span className="font-semibold">Total</span>
+                          <div className="text-xl font-bold text-primary">
+                            ${(consultation?.total_amount || 0).toFixed(2)}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-sm">
+                          <CheckCircle className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+                          <span className="text-emerald-600">
+                            Payment completed via Razorpay. Consultation is active.
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex justify-between text-xs pt-1">
-                        <span className="text-muted-foreground flex items-center gap-1">
-                          <Wallet className="h-3 w-3" /> Wallet Balance
-                        </span>
-                        <span className={cn(
-                          "font-medium",
-                          walletBalance >= (consultation?.total_amount || 0) ? "text-emerald-600" : "text-destructive"
-                        )}>
-                          ${walletBalance.toFixed(2)}
-                        </span>
-                      </div>
+                      <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Shield className="h-3 w-3" /> Secure payment
+                      </p>
                     </div>
-
-                    {walletBalance < (consultation?.total_amount || 0) && (
-                      <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/5 border border-destructive/20 text-sm mb-4">
-                        <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0" />
-                        <span className="text-destructive">
-                          Insufficient balance.{' '}
-                          <button onClick={() => navigate('/dashboard')} className="underline font-medium">
-                            Add funds
-                          </button>
-                        </span>
-                      </div>
-                    )}
-
-                    <Button
-                      size="lg"
-                      className="w-full gap-2"
-                      disabled={paying || walletBalance < (consultation?.total_amount || 0)}
-                      onClick={handleClientPay}
-                    >
-                      {paying ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <CheckCircle className="h-4 w-4" />
-                      )}
-                      Pay ${(consultation?.total_amount || 0).toFixed(2)}
-                    </Button>
-
-                    <p className="text-xs text-muted-foreground mt-3 flex items-center justify-center gap-1">
-                      <Shield className="h-3 w-3" /> Secure payment
-                    </p>
                   </>
                 ) : (
-                  // Lawyer waiting for payment
                   <>
                     <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-5">
                       <Lock className="h-8 w-8 text-amber-600" />
                     </div>
-                    <h2 className="text-xl font-bold mb-2">Waiting for Paymenttt</h2>
+                    <h2 className="text-xl font-bold mb-2">Waiting for Payment</h2>
                     <p className="text-sm text-muted-foreground mb-4">
                       {participant?.full_name} is completing payment. Chat will unlock once paid.
                     </p>
@@ -1749,7 +1709,7 @@ const Consultation = () => {
       </div >
 
       {/* ═══ RATING DIALOG ═══ */}
-      <Dialog Dialog
+      <Dialog Dialog Dialog
         open={showRating && isClient}
         onOpenChange={(open) => {
           if (!open) {
@@ -1825,7 +1785,7 @@ const Consultation = () => {
       </Dialog >
 
       {/* ═══ MOOD DIALOG ═══ */}
-      <Dialog Dialog open={showMoodDialog} onOpenChange={() => { }}>
+      <Dialog Dialog Dialog open={showMoodDialog} onOpenChange={() => { }}>
         <DialogContent className="sm:max-w-[380px] p-0 gap-0 overflow-hidden rounded-2xl [&>button]:hidden">
           <div className="p-6 sm:p-8 text-center">
             <div className="w-14 h-14 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-4">

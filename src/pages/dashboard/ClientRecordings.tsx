@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import {
     ArrowLeft, Video, Phone, MessageSquare, Play, Clock,
@@ -38,6 +39,8 @@ const ClientRecordings = () => {
     const [recordings, setRecordings] = useState<RecordingWithDetails[]>([]);
     const [loading, setLoading] = useState(true);
     const [playingId, setPlayingId] = useState<string | null>(null);
+    const [loadingPlaybackId, setLoadingPlaybackId] = useState<string | null>(null);
+    const { toast } = useToast();
     useEffect(() => {
         if (!authLoading && !user) {
             navigate('/login');
@@ -78,29 +81,50 @@ const ClientRecordings = () => {
             .from('profiles')
             .select('id, full_name')
             .in('id', otherUserIds);
-        // Get playback URLs
-        const enriched: RecordingWithDetails[] = await Promise.all(
-            recordingsData.map(async (rec) => {
-                const consultation = userConsultations.find(c => c.id === rec.consultation_id);
-                const otherUserId = consultation
-                    ? consultation.client_id === user.id
-                        ? consultation.lawyer_id
-                        : consultation.client_id
-                    : null;
-                const participantName = profiles?.find(p => p.id === otherUserId)?.full_name || 'Unknown';
-                const { data: urlData } = await supabase.storage
-                    .from('recordings')
-                    .createSignedUrl(rec.storage_path, 3600);
-                return {
-                    ...rec,
-                    consultation: consultation || undefined,
-                    participant_name: participantName,
-                    playback_url: urlData?.signedUrl || undefined,
-                };
-            })
-        );
+        // Build enriched recordings but do NOT fetch signed URLs yet (on-demand)
+        const enriched: RecordingWithDetails[] = recordingsData.map((rec) => {
+            const consultation = userConsultations.find(c => c.id === rec.consultation_id);
+            const otherUserId = consultation
+                ? consultation.client_id === user.id
+                    ? consultation.lawyer_id
+                    : consultation.client_id
+                : null;
+            const participantName = profiles?.find(p => p.id === otherUserId)?.full_name || 'Unknown';
+            return {
+                ...rec,
+                consultation: consultation || undefined,
+                participant_name: participantName,
+                playback_url: undefined,
+            };
+        });
         setRecordings(enriched);
         setLoading(false);
+    };
+    const fetchPlaybackUrl = async (rec: RecordingWithDetails) => {
+        if (!rec.storage_path) {
+            toast({ title: 'Error', description: 'Recording path unavailable', variant: 'destructive' });
+            return null;
+        }
+        try {
+            setLoadingPlaybackId(rec.id);
+            const { data: urlData, error } = await supabase.storage
+                .from('recordings')
+                .createSignedUrl(rec.storage_path, 3600);
+            if (error || !urlData?.signedUrl) {
+                console.error('Failed to create signed url', error);
+                toast({ title: 'Error', description: 'Could not get playback URL', variant: 'destructive' });
+                return null;
+            }
+            const signedUrl = urlData.signedUrl;
+            setRecordings(prev => prev.map(r => r.id === rec.id ? { ...r, playback_url: signedUrl } : r));
+            return signedUrl;
+        } catch (err) {
+            console.error(err);
+            toast({ title: 'Error', description: 'Failed to fetch playback URL', variant: 'destructive' });
+            return null;
+        } finally {
+            setLoadingPlaybackId(null);
+        }
     };
     const formatDuration = (seconds: number | null) => {
         if (!seconds) return '0:00';
@@ -263,17 +287,29 @@ const ClientRecordings = () => {
                                                 size="sm"
                                                 variant={playingId === rec.id ? "secondary" : "default"}
                                                 className="gap-1.5 text-xs"
-                                                onClick={() => setPlayingId(playingId === rec.id ? null : rec.id)}
-                                                disabled={!rec.playback_url}
+                                                onClick={async () => {
+                                                    if (playingId === rec.id) {
+                                                        setPlayingId(null);
+                                                        return;
+                                                    }
+                                                    if (!rec.playback_url) {
+                                                        const url = await fetchPlaybackUrl(rec);
+                                                        if (!url) return;
+                                                        setPlayingId(rec.id);
+                                                        return;
+                                                    }
+                                                    setPlayingId(rec.id);
+                                                }}
+                                                disabled={loadingPlaybackId === rec.id}
                                             >
-                                                {!rec.playback_url ? (
+                                                {loadingPlaybackId === rec.id ? (
                                                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
                                                 ) : (
                                                     <Play className="h-3.5 w-3.5" />
                                                 )}
                                                 {playingId === rec.id ? 'Hide Player' : 'Play'}
                                             </Button>
-                                            {rec.playback_url && (
+                                            {rec.playback_url ? (
                                                 <Button
                                                     size="sm"
                                                     variant="outline"
@@ -284,6 +320,20 @@ const ClientRecordings = () => {
                                                         <Download className="h-3.5 w-3.5" />
                                                         Download
                                                     </a>
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="gap-1.5 text-xs"
+                                                    onClick={async () => {
+                                                        if (loadingPlaybackId === rec.id) return;
+                                                        const url = await fetchPlaybackUrl(rec);
+                                                        if (url) window.open(url, '_blank');
+                                                    }}
+                                                >
+                                                    <Download className="h-3.5 w-3.5" />
+                                                    Download
                                                 </Button>
                                             )}
                                         </div>
