@@ -50,15 +50,7 @@ const LawyerPendingRequests = () => {
     }
     setLoading(false);
   };
-  // const handleConsultation = async (id: string, action: 'accept' | 'reject') => {
-  //   const newStatus = action === 'accept' ? 'active' : 'cancelled';
-  //   const { error } = await supabase.from('consultations').update({ status: newStatus, started_at: action === 'accept' ? new Date().toISOString() : null }).eq('id', id);
-  //   if (!error) {
-  //     toast({ title: action === 'accept' ? '✅ Accepted!' : '❌ Declined' });
-  //     if (action === 'accept') navigate(`/consultation/${id}`);
-  //     else fetchData();
-  //   }
-  // };
+
   const handleConsultation = async (id: string, action: 'accept' | 'reject') => {
 
     if (!user) return;
@@ -83,6 +75,15 @@ const LawyerPendingRequests = () => {
           accepted_at: now          // ✅ IMPORTANT
         })
         .eq('id', id);
+
+      // ✅ SET LAWYER BUSY
+      await supabase
+        .from('lawyer_profiles')
+        .update({
+          is_busy: true,
+          is_available: true,
+        })
+        .eq('user_id', user.id);
 
       toast({
         title: 'Accepted',

@@ -23,6 +23,8 @@ import {
 import { formatLawyerName } from '@/lib/lawyer-utils';
 import { calculateAge } from '@/lib/ageUtils';
 import { BookingAgendaModal } from './../components/lawyers/BookingAgendaModal';
+import { cn } from '@/lib/utils';
+import { lawyerCardStyle, bookNowButtonStyle, rejectButtonStyle } from '@/lib/buttonStyles';
 interface LawyerData {
   id: string;
   user_id: string;
@@ -45,6 +47,7 @@ interface LawyerData {
   created_at: string | null;
   date_of_birth?: string | null;
   onSuccess?: (bookingId: string) => void;
+  is_busy?: boolean | null;
 }
 interface ProfileData {
   full_name: string;
@@ -86,6 +89,7 @@ const ClientLawyerDetail = () => {
   const [selectedReview, setSelectedReview] = useState<ReviewData | null>(null);
   const [totalConsultations, setTotalConsultations] = useState(0);
   const REVIEWS_PER_PAGE = 3;
+  const isBusy = lawyer?.is_busy === true;
 
   const onBooking = (bookingId: string) => {
     setShowBookingModal(false);
@@ -235,7 +239,7 @@ const ClientLawyerDetail = () => {
     ));
   if (loading) {
     return (
-      //   <MainLayout showFooter={false}>
+
       <ClientLayout>
         <div className="min-h-screen bg-gradient-to-br from-background via-secondary/10 to-background">
           <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -251,7 +255,7 @@ const ClientLawyerDetail = () => {
             </div>
           </div>
         </div>
-        {/* //   </MainLayout> */}
+
       </ClientLayout>
     );
   }
@@ -265,9 +269,8 @@ const ClientLawyerDetail = () => {
           </div>
           <h2 className="text-2xl font-semibold mb-2">Lawyer Not Found</h2>
           <p className="text-muted-foreground mb-6">This profile doesn't exist or has been removed.</p>
-          <Button onClick={() => navigate('/dashboard')}>Back to Dashboard</Button>
+          <Button onClick={() => navigate('/dashboard')}>Backk to Dashboard</Button>
         </div>
-        {/* </MainLayout> */}
       </ClientLayout>
     );
   }
@@ -277,17 +280,20 @@ const ClientLawyerDetail = () => {
     // <MainLayout showFooter={false}>
     <ClientLayout>
       <div className="min-h-screen bg-gradient-to-br from-background via-secondary/10 to-background">
-        <div className="container mx-auto px-4 py-6 max-w-6xl">
+        <div className="container mx-auto px-2 py-6 max-w-6xl ">
           {/* Back Button */}
-          <Button variant="ghost" className="mb-4 gap-2" onClick={() => navigate('/dashboard')}>
+          <Button variant="outline" className={cn(rejectButtonStyle)}
+
+            onClick={() => navigate('/dashboard')}>
 
             <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
+            Back
           </Button>
-          {/* Hero Profile Header */}
-          <Card className="border border-border rounded-2xl shadow-md mb-3 bg-card">
 
-            <CardContent className="p-5 sm:p-6">
+          {/* Hero Profile Header */}
+          <Card className={cn(lawyerCardStyle)}>
+
+            <CardContent className="p-1 sm:p-6">
 
               {/* GRID LAYOUT */}
               <div className="grid grid-cols-1 sm:grid-cols-[auto,1fr,auto] gap-3 sm:gap-5 items-center py-4 sm:py-6 text-center sm:text-left justify-items-center sm:justify-items-stretch">
@@ -876,11 +882,12 @@ const ClientLawyerDetail = () => {
                       </div>
                     </div>
                     <Separator />
+
                     {/* Booking Buttons - Premium Full Width */}
                     <div className="space-y-3">
 
                       {/* Main CTA */}
-                      <Button
+                      {/* <Button
                         onClick={(e) => handleBookClick('chat', e)}
                         className="
       w-full h-12 text-base font-semibold
@@ -896,12 +903,28 @@ const ClientLawyerDetail = () => {
 
                         <CreditCard className="h-5 w-5" />
                         Book Now
+                      </Button> */}
+                      <Button
+                        disabled={isBusy}
+                        onClick={(e) => handleBookClick('chat', e)}
+                        className={cn(
+                          bookNowButtonStyle,
+                          "w-full h-12 text-base flex items-center justify-center",
+
+                          isBusy &&
+                          "bg-gray-400 hover:bg-gray-400 text-white cursor-not-allowed opacity-70"
+                        )}
+                      >
+                        {/* <CreditCard className="h-5 w-5" /> */}
+                        {isBusy ? 'Lawyer is Busy With Client' : 'Book Now'}
                       </Button>
+
+
 
                       {/* Secondary Options */}
                       <div className="grid grid-cols-3 gap-2">
 
-                        <Button
+                        {/* <Button
                           variant="outline"
                           onClick={(e) => handleBookClick('chat', e)}
                           className="
@@ -912,9 +935,30 @@ const ClientLawyerDetail = () => {
                         >
                           <MessageSquare className="h-4 w-4" />
                           <span className="text-xs font-medium">Chat</span>
-                        </Button>
+                        </Button> */}
 
                         <Button
+                          variant="outline"
+                          disabled={isBusy}
+                          onClick={(e) => handleBookClick('chat', e)}
+                          className={`
+    h-11 rounded-xl flex flex-col gap-1
+    transition-all duration-200
+
+    ${isBusy
+                              ? 'opacity-60 cursor-not-allowed bg-muted'
+                              : ''
+                            }
+  `}
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                          <span className="text-xs font-medium">
+                            {isBusy ? 'Busy' : 'Chat'}
+                          </span>
+                        </Button>
+
+
+                        {/* <Button
                           variant="outline"
                           onClick={(e) => handleBookClick('audio', e)}
                           className="
@@ -925,9 +969,29 @@ const ClientLawyerDetail = () => {
                         >
                           <Phone className="h-4 w-4" />
                           <span className="text-xs font-medium">Audio</span>
-                        </Button>
+                        </Button> */}
 
                         <Button
+                          variant="outline"
+                          disabled={isBusy}
+                          onClick={(e) => handleBookClick('audio', e)}
+                          className={`
+    h-11 rounded-xl flex flex-col gap-1
+    transition-all duration-200
+
+    ${isBusy
+                              ? 'opacity-60 cursor-not-allowed bg-muted'
+                              : ''
+                            }
+  `}
+                        >
+                          <Phone className="h-4 w-4" />
+                          <span className="text-xs font-medium">
+                            {isBusy ? 'Busy' : 'Audio'}
+                          </span>
+                        </Button>
+
+                        {/* <Button
                           variant="outline"
                           onClick={(e) => handleBookClick('video', e)}
                           className="
@@ -938,6 +1002,26 @@ const ClientLawyerDetail = () => {
                         >
                           <Video className="h-4 w-4" />
                           <span className="text-xs font-medium">Video</span>
+                        </Button> */}
+
+                        <Button
+                          variant="outline"
+                          disabled={isBusy}
+                          onClick={(e) => handleBookClick('video', e)}
+                          className={`
+    h-11 rounded-xl flex flex-col gap-1
+    transition-all duration-200
+
+    ${isBusy
+                              ? 'opacity-60 cursor-not-allowed bg-muted'
+                              : ''
+                            }
+  `}
+                        >
+                          <Video className="h-4 w-4" />
+                          <span className="text-xs font-medium">
+                            {isBusy ? 'Busy' : 'Video'}
+                          </span>
                         </Button>
 
                       </div>
@@ -967,8 +1051,8 @@ const ClientLawyerDetail = () => {
           <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-card/95 backdrop-blur-lg border-t border-border p-4 z-50">
             <div className="flex items-center gap-3 max-w-6xl mx-auto">
               <div className="flex-1">
-                <p className="text-xs text-muted-foreground">Flexible Consultation Pricing</p>
-                {/* <p className="text-lg font-bold text-primary">₹{selectedRate}/min</p> */}
+                <p className="text-xs text-muted-foreground">Flexible Pricing</p>
+
               </div>
 
               <MessageSquare className="h-4 w-4" />
@@ -978,9 +1062,20 @@ const ClientLawyerDetail = () => {
 
               <Video className="h-4 w-4" />
 
-              <Button className="gap-2" onClick={(e) => handleBookClick('chat', e)}>
-                <CreditCard className="h-4 w-4" />
-                Book Now
+
+              <Button
+                disabled={isBusy}
+                onClick={(e) => handleBookClick('chat', e)}
+                className={cn(
+                  bookNowButtonStyle,
+
+
+                  isBusy &&
+                  "bg-gray-400 hover:bg-gray-400 text-white cursor-not-allowed opacity-70"
+                )}
+              >
+                {/* <CreditCard className="h-4 w-4" /> */}
+                {isBusy ? 'Busy' : 'Book Now'}
               </Button>
             </div>
           </div>

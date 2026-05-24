@@ -81,7 +81,12 @@ const ClientActiveSessions = () => {
     const handleEndSession = async (id: string) => {
         setEndingId(id);
         try {
-            await supabase.from('consultations').update({ status: 'completed', ended_at: new Date().toISOString() }).eq('id', id);
+            await supabase.from('consultations')
+                .update({ status: 'completed', ended_at: new Date().toISOString() })
+                .eq('id', id);
+
+
+
             toast({ title: 'Session Ended', description: 'The consultation has been completed.' });
             fetchSessions();
         } catch {
@@ -97,13 +102,7 @@ const ClientActiveSessions = () => {
             default: return <MessageSquare className="h-3.5 w-3.5" />;
         }
     };
-    // const getTypeColor = (type: string) => {
-    //     switch (type) {
-    //         case 'video': return 'bg-purple-500/10 text-purple-600 border-purple-500/20';
-    //         case 'audio': return 'bg-blue-500/10 text-blue-600 border-blue-500/20';
-    //         default: return 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20';
-    //     }
-    // };
+
     const getElapsedTime = (startedAt: string | null) => {
         if (!startedAt) return '< 1 min';
         const diff = Math.floor((Date.now() - new Date(startedAt).getTime()) / 60000);
@@ -229,7 +228,7 @@ const ClientActiveSessions = () => {
                                             >
                                                 Continue <ArrowRight className="h-3 w-3" />
                                             </Button>
-                                            <Button
+                                            {/* <Button
                                                 variant="outline"
                                                 size="sm"
                                                 className="gap-1 h-7 text-xs px-2 text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
@@ -238,7 +237,7 @@ const ClientActiveSessions = () => {
                                             >
                                                 {endingId === session.id ? <RefreshCw className="h-3 w-3 animate-spin" /> : <XCircle className="h-3 w-3" />}
                                                 End
-                                            </Button>
+                                            </Button> */}
                                         </div>
                                     </div>
                                     {/* Footer info */}

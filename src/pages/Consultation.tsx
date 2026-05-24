@@ -22,6 +22,7 @@ import { VideoCall } from '@/components/consultation/VideoCall';
 import { AudioCall } from '@/components/consultation/AudioCall';
 import { cn } from '@/lib/utils';
 import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
+import { rejectButtonStyle, acceptButtonStyle } from '@/lib/buttonStyles';
 
 interface Message {
   id: string;
@@ -671,11 +672,15 @@ const Consultation = () => {
 
       // 🔴 Mark lawyer as busy
       await supabase
-        .from('lawyer_profile')
+        .from('lawyer_profiles')
         .update({
-          is_available: false,
+          is_busy: true,
+          // is_available: false,
         })
-        .eq('id', user.id);
+        .eq('user_id', consultation.lawyer_id);
+
+
+
 
       await supabase
         .from('call_signals')
@@ -702,10 +707,12 @@ const Consultation = () => {
         description: 'Failed to accept consultation.',
       });
     }
+
+
+
   };
 
   // Payment is handled during booking via Razorpay
-  // No wallet payments in consultation
 
   const handleEndConsultation = async () => {
     if (!id || !consultation) return;
@@ -721,17 +728,44 @@ const Consultation = () => {
       .eq('id', id);
 
     // 🟢 Mark lawyer available again
-    await supabase
-      .from('lawyer_profile')
+    const { error } = await supabase
+      .from('lawyer_profiles')
       .update({
+        is_busy: false,
         is_available: true,
       })
-      .eq('id', consultation.lawyer_id);
+      .eq('user_id', consultation.lawyer_id);
+
+    console.log('RESET ERROR:', error);
+
+
+
     setShowRating(true);
   };
 
+  // const handleAutoComplete = async () => {
+  //   if (!id) return;
+  //   await supabase
+  //     .from('consultations')
+  //     .update({
+  //       status: 'completed' as const,
+  //       ended_at: new Date().toISOString(),
+  //     })
+  //     .eq('id', id);
+
+  //   // ✅ Reset lawyer status
+  //   await supabase
+  //     .from('lawyer_profiles')
+  //     .update({
+  //       is_busy: false,
+  //       is_available: true,
+  //     })
+  //     .eq('user_id', consultation.lawyer_id);
+  // };
+
   const handleAutoComplete = async () => {
-    if (!id) return;
+    if (!id || !consultation) return;
+
     await supabase
       .from('consultations')
       .update({
@@ -739,6 +773,16 @@ const Consultation = () => {
         ended_at: new Date().toISOString(),
       })
       .eq('id', id);
+
+    const { error } = await supabase
+      .from('lawyer_profiles')
+      .update({
+        is_busy: false,
+        is_available: true,
+      })
+      .eq('user_id', consultation.lawyer_id);
+
+    console.log('AUTO RESET ERROR:', error);
   };
 
   const handleCancelPaymentTimeout = async () => {
@@ -1206,7 +1250,7 @@ const Consultation = () => {
       </header >
 
       {/* ═══ MAIN CONTENT ═══ */}
-      <div div div className="flex-1 flex overflow-hidden" >
+      <div className="flex-1 flex overflow-hidden" >
         {/* Desktop sidebar later add this content in nav bar */}
         {/* {isActive && (
           <div className="hidden lg:flex w-72 border-r border-border flex-col bg-card/30 flex-shrink-0 animate-fade-in">
@@ -1379,24 +1423,24 @@ const Consultation = () => {
                       <Lock className="h-8 w-8 text-amber-600" />
                     </div>
                     <h2 className="text-xl font-bold mb-2">Waiting for Payment</h2>
-                    <p className="text-sm text-muted-foreground mb-4">
+                    <p className="text-sm text-muted-foreground mb-2">
                       {participant?.full_name} is completing payment. Chat will unlock once paid.
                     </p>
 
                     <div className={cn(
-                      "inline-flex items-center gap-2 px-4 py-2 rounded-full font-mono text-lg font-bold mb-4",
+                      "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-mono text-sm font-semibold mb-4",
                       paymentCountdown <= 30
                         ? "bg-destructive/10 text-destructive animate-pulse"
                         : "bg-amber-500/10 text-amber-600"
                     )}>
-                      <Timer className="h-5 w-5" />
+                      <Timer className="h-4 w-4" />
                       {formatCountdown(paymentCountdown)}
                     </div>
 
                     <div className="flex items-center justify-center gap-1 mt-2">
-                      <span className="w-2 h-2 rounded-full bg-amber-500 animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <span className="w-2 h-2 rounded-full bg-amber-500 animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <span className="w-2 h-2 rounded-full bg-amber-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-bounce" style={{ animationDelay: '300ms' }} />
                     </div>
                   </>
                 )}
@@ -1429,15 +1473,24 @@ const Consultation = () => {
 
                   {/* <div className="absolute inset-0 bg-black/10 dark:bg-black/50  pointer-events-none " /> */}
 
+                  {/* Premium badge */}
+                  <div className="flex justify-center my-3">
+                    <div className="rounded-full border border-emerald-500/20 bg-white/80 backdrop-blur-xl px-4 py-2 shadow-md flex items-center gap-2 text-xs sm:text-sm font-medium text-emerald-700">
+                      <Shield className="h-4 w-4" />
+                      <span>Secure Legal Consultation</span>
+                    </div>
+                  </div>
+
                   {/* Session countdown */}
                   {isActive && (
                     <div className="w-full flex justify-center sticky top-3 z-20 mb-3">
                       <div
                         className={cn(
-                          "flex items-center gap-1.5 px-4 py-2 rounded-full font-mono text-xs font-semibold shadow-lg backdrop-blur-md",
+                          // "flex items-center gap-1.5 px-4 py-2 rounded-full font-mono text-xs font-semibold shadow-lg backdrop-blur-md",
+                          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-mono text-sm font-semibold",
                           (sessionCountdown ?? 0) <= 60
                             ? "bg-destructive/90 text-white animate-pulse"
-                            : "bg-primary text-primary-foreground"
+                            : "bg-amber-500/10 text-amber-600"
                         )}
                       >
                         <Timer className="h-4 w-4" />
@@ -1447,14 +1500,7 @@ const Consultation = () => {
                   )}
 
 
-                  {/* Premium badge */}
-                  <div className="flex justify-center my-3">
-                    <div className="rounded-full border border-emerald-500/20 bg-white/80 backdrop-blur-xl px-4 py-2 shadow-md flex items-center gap-2 text-xs sm:text-sm font-medium text-emerald-700">
-                      <Shield className="h-4 w-4" />
-                      <span>Secure Legal Consultation</span>
-                    </div>
 
-                  </div>
 
                   {messages.length === 0 && isActive && (
                     <div className="text-center py-0">
@@ -1667,17 +1713,7 @@ const Consultation = () => {
                     navigate('/lawyer/dashboard');
                   }
                 }}
-                className="
-        bg-red-600
-        text-white
-        hover:bg-red-600
-        active:bg-red-600
-        focus:bg-red-600
-        focus-visible:bg-red-600
-        border-0
-        shadow-none
-        transition-none
-      "
+                className={cn(rejectButtonStyle)}
               >
                 Return to Dashboard
               </Button>
@@ -1758,7 +1794,7 @@ const Consultation = () => {
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                className="flex-1"
+                className={cn(rejectButtonStyle, "flex-1")}
                 onClick={() => {
                   setShowRating(false);
                   navigate('/dashboard');
@@ -1768,7 +1804,7 @@ const Consultation = () => {
               </Button>
 
               <Button
-                className="flex-1 gap-1.5"
+                className={cn(acceptButtonStyle, "flex-1 gap-1.5")}
                 disabled={selectedRating === 0 || submittingRating}
                 onClick={handleSubmitRating}
               >

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // import { MainLayout } from '@/components/layout/MainLayout';
+
 import { ClientLayout } from '@/components/layout/ClientLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import dashboardHeroBg from '@/assets/Client-lawyer-Header.jpg';
@@ -30,6 +31,9 @@ import { formatLawyerName } from '@/lib/lawyer-utils';
 import Consultation from './../Consultation';
 import { initiateRazorpayPayment } from '@/lib/razorpay';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+import { seeMoreButtonStyle, smallCardStyle, transactionCardStyle, lawyerCardStyle } from '@/lib/buttonStyles';
+
 
 interface ConsultationWithLawyer {
   id: string;
@@ -75,8 +79,19 @@ interface LawyerWithProfile {
   full_name?: string;
   avatar_url?: string | null;
   date_of_birth?: string | null;
-
+  is_busy?: boolean | null;
 }
+
+// Helper to strip out everything from "Issue Details:" onward
+const cleanAgendaForDisplay = (fullAgenda: string | null): string => {
+  if (!fullAgenda) return 'General Consultation';
+
+  // Splits the string at 'Issue Details:' (case-insensitive)
+  const parts = fullAgenda.split(/Issue Details:/i);
+
+  // Returns only the first part containing the categories, neatly trimmed
+  return parts[0].trim();
+};
 
 const ClientDashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -499,13 +514,16 @@ const ClientDashboard = () => {
             {/* Transaction */}
             <Card
               onClick={() => navigate("/dashboard/transactions")}
-              className="group relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-primary to-accent">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/90 to-accent opacity-90" />
-              <CardContent className="relative p-3 sm:p-5 text-primary-foreground h-full flex flex-col justify-between">
+              className={cn(transactionCardStyle)}>
+              {/* <div className="absolute inset-0 bg-gradient-to-br from-primary/90 to-accent opacity-90" /> */}
+              <CardContent className="relative p-3 sm:p-5  h-full flex flex-col justify-between">
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <p className="text-sm opacity-80 font-medium">Transactions</p>
-                    <p className="text-xs opacity-70">Your payment history</p>
+                    <p className="text-[10px] opacity-70"> • Track your payment history</p>
+                    <p className="text-[10px] opacity-70"> • Report issues</p>
+
+
                   </div>
                   <ArrowRight className="h-4 w-4 shrink-0" />
                 </div>
@@ -515,7 +533,7 @@ const ClientDashboard = () => {
             {/* Active Sessions */}
             <Card
               onClick={() => navigate('/dashboard/active-sessions')}
-              className="group border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-card"
+              className={cn(smallCardStyle)}
             >
               <CardContent className="p-3 sm:p-5">
                 <div className="flex items-start justify-between gap-2">
@@ -561,7 +579,7 @@ const ClientDashboard = () => {
             {/* Total Consultations */}
             <Card
               onClick={() => navigate("/consultation-history")}
-              className="group border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-card"
+              className={cn(smallCardStyle)}
             >
               <CardContent className="p-3 sm:p-5">
                 <div className="flex items-start justify-between gap-2">
@@ -592,7 +610,7 @@ const ClientDashboard = () => {
             {/* Available Lawyers */}
             <Card
               onClick={() => navigate("/lawyers")}
-              className="group border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-card"
+              className={cn(smallCardStyle)}
             >
               <CardContent className="p-3 sm:p-5">
                 <div className="flex items-start justify-between gap-2">
@@ -632,7 +650,7 @@ const ClientDashboard = () => {
             {/* Pending Requests */}
             <Card
               onClick={() => navigate('/dashboard/processing')}
-              className="group border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-card"
+              className={cn(smallCardStyle)}
             >
               <CardContent className="p-3 sm:p-5">
                 <div className="flex items-start justify-between gap-2">
@@ -669,7 +687,7 @@ const ClientDashboard = () => {
             {/* Accepted — Complete Payment */}
             <Card
               onClick={() => navigate("/dashboard/payments")}
-              className="group border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-card"
+              className={cn(smallCardStyle)}
             >
               <CardContent className="p-3 sm:p-5">
                 <div className="flex items-start justify-between gap-2">
@@ -718,7 +736,7 @@ const ClientDashboard = () => {
 
             <Card
               onClick={() => navigate('/dashboard/recordings')}
-              className="group border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-card"
+              className={cn(smallCardStyle)}
             >
               <CardContent className="p-3 sm:p-5">
                 <div className="flex items-start justify-between gap-2">
@@ -921,17 +939,10 @@ const ClientDashboard = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="
-        flex items-center gap-2
-        px-4 py-2
-        text-sm
-        hover:bg-primary
-        hover:text-white
-        transition-all
-      "
+                  className={cn(seeMoreButtonStyle)}
                   onClick={() => navigate("/lawyers")}
                 >
-                  See More...
+                  See More
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -971,11 +982,12 @@ const ClientDashboard = () => {
                 </div>
               ) : (
                 <>
-                  <div className={`grid gap-4 
-  ${consultations.length === 1
+                  <div className={`grid gap-4 item-start
+                     ${consultations.length === 1
                       ? "grid-cols-1 justify-items-center"
                       : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-                    }`}>
+                    }`}
+                  >
 
                     {consultations.slice(0, consultations.length === 1 ? 1 : 4).map((consultation) => {
                       const statusConfig = getStatusConfig(consultation.status);
@@ -985,8 +997,8 @@ const ClientDashboard = () => {
                       return (
                         <div
                           key={consultation.id}
-                          className="group relative bg-card rounded-2xl border border-border overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-primary/30 cursor-pointer"
-                          // onClick={() => navigate(`/client/consultation/${consultation.id}`)}
+                          className={cn(lawyerCardStyle, "!h-auto !min-h-0 !max-h-fit")}
+
                           onClick={() => navigate(`/consultation/${consultation.id}`)}
                         >
                           {/* Status badge */}
@@ -1027,36 +1039,19 @@ const ClientDashboard = () => {
                               </div>
                             </div>
                           </div>
-
-                          {/* Specializations */}
-                          {consultation.lawyer_profile?.specializations && consultation.lawyer_profile.specializations.length > 0 && (
-                            <div className="px-3 pb-1">
-                              <div className="flex flex-wrap gap-1">
-                                {consultation.lawyer_profile.specializations.slice(0, 2).map((spec) => (
-                                  <Badge key={spec} variant="secondary" className="text-[10px] font-normal bg-secondary/80 px-1.5 py-0">{spec}</Badge>
-                                ))}
-                                {consultation.lawyer_profile.specializations.length > 2 && (
-                                  <Badge variant="outline" className="text-[10px] font-normal px-1.5 py-0">+{consultation.lawyer_profile.specializations.length - 2}</Badge>
-                                )}
-                              </div>
-                            </div>
-                          )}
-
                           {/* Agenda */}
-                          <div className="px-3 pb-2">
-                            <p className="text-xs text-muted-foreground line-clamp-2 min-h-[2rem]">
-                              {/* {consultation.agenda || consultation.lawyer_profile?.bio || 'Legal consultation session'} */}
-                              Agenda : {(consultation.agenda || consultation.lawyer_profile?.bio || 'Legal consultation session')
-                                ?.replace(/[\[\]]/g, '')}
+                          <div className="mt-3 px-2 text-center w-full">
+                            <p className="text-xs text-muted-foreground line-clamp-2 min-h-[2rem] mx-auto max-w-[90%] leading-relaxed">
+                              <span className="font-medium text-foreground/80">Agenda:</span>{" "}
+                              {cleanAgendaForDisplay(consultation.agenda).replace(/[\[\]]/g, "")}
                             </p>
                           </div>
-
                           {/* Footer */}
                           <div className="px-3 py-2 border-t border-border bg-secondary/20">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-1">
                                 <span className="text-lg font-bold">₹{consultation.total_amount?.toFixed(0) || '0'}</span>
-                                <span className="text-[10px] text-muted-foreground">{consultation.status === 'cancelled' ? 'cancelled' : 'paid'}</span>
+                                <span className="text-[12px] text-muted-foreground">{consultation.status === 'cancelled' ? 'Not Paid' : 'Paid'}</span>
                               </div>
                               <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
                             </div>
@@ -1071,10 +1066,10 @@ const ClientDashboard = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-primary hover:text-white transition-all"
+                        className={cn(seeMoreButtonStyle)}
                         onClick={() => navigate("/consultation-history")}
                       >
-                        See more...
+                        See More
                         <ArrowRight className="h-4 w-4" />
                       </Button>
                     </div>
@@ -1175,7 +1170,7 @@ const ClientDashboard = () => {
           </div>
         </div>
       </div>
-    </ClientLayout>
+    </ClientLayout >
   );
 };
 

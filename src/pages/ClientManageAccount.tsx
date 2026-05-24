@@ -13,6 +13,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { rejectButtonStyle, acceptButtonStyle } from '@/lib/buttonStyles';
+// import { rejectButtonStyle, acceptButtonStyle } from '../lib/buttonStyles';
 
 import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
@@ -20,7 +22,7 @@ import {
   User, Mail, Phone, Camera, Save, Shield, ArrowLeft,
   Wallet, MessageSquare, Clock, Activity, Loader2, FileText, Star,
   CalendarIcon,
-  IndianRupee,
+  IndianRupee, XCircle, CheckCircle,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { z } from 'zod';
@@ -28,6 +30,7 @@ import { AvatarUpload } from '@/components/profile/AvatarUpload';
 import { ClientLayout } from '@/components/layout/ClientLayout';
 import { profile } from 'console';
 import { useCallRecording } from '@/hooks/useCallRecording';
+// import { cancelButtonStyle } from './../lib/buttonStyles';
 const profileSchema = z.object({
   full_name: z.string().trim().min(2, 'Name must be at least 2 characters').max(100, 'Name too long'),
   phone: z.string().trim().max(20, 'Phone number too long').optional().nullable(),
@@ -446,10 +449,11 @@ const ClientManageAccount = () => {
 
           {/* Save Button */}
           <div className="flex justify-end gap-4">
-            <Button variant="outline" onClick={() => navigate('/dashboard')}>
+            <Button variant="outline" onClick={() => navigate('/dashboard')} className={cn(rejectButtonStyle)}>
+              <XCircle className="h-4 w-4" />
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={saving} className="gap-2 min-w-30">
+            <Button onClick={handleSave} disabled={saving} className={cn(acceptButtonStyle)}>
               {saving ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -457,8 +461,8 @@ const ClientManageAccount = () => {
                 </>
               ) : (
                 <>
-                  <Save className="h-4 w-4" />
-                  Save
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Save Profile
                 </>
               )}
             </Button>

@@ -50,7 +50,7 @@ const Lawyers = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(filterParam === 'specialization');
-  const [busyLawyerIds, setBusyLawyerIds] = useState<Set<string>>(new Set());
+  // const [busyLawyerIds, setBusyLawyerIds] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [minRating, setMinRating] = useState(0);
   const [minExperience, setMinExperience] = useState(0);
@@ -66,35 +66,28 @@ const Lawyers = () => {
 
   useEffect(() => {
     fetchLawyers();
-    fetchBusyLawyers();
+    // fetchBusyLawyers();
     const lawyerChannel = supabase
       .channel('lawyer-availability')
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'lawyer_profiles' }, () => fetchLawyers())
       .subscribe();
-    const consultationChannel = supabase
-      .channel('consultation-status-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'consultations' }, () => fetchBusyLawyers())
-      .subscribe();
+    // const consultationChannel = supabase
+    //   .channel('consultation-status-changes')
+    //   .on('postgres_changes', { event: '*', schema: 'public', table: 'consultations' }, () => fetchBusyLawyers())
+    //   .subscribe();
     return () => {
       supabase.removeChannel(lawyerChannel);
-      supabase.removeChannel(consultationChannel);
+      // supabase.removeChannel(consultationChannel);
     };
   }, []);
-  const fetchBusyLawyers = async () => {
-    const { data } = await supabase
-      .from('consultations')
-      .select('lawyer_id')
-      .in('status', ['active', 'paid']);
-    if (data) {
-      setBusyLawyerIds(new Set(data.map(c => c.lawyer_id)));
-    }
-  };
+
   const fetchLawyers = async () => {
     const { data: lawyerData, error } = await supabase
       .from('lawyer_profiles')
       .select('*')
       // .order('is_available', { ascending: false })     // this will show both offline and online lawyers
-      .eq('is_available', true) // only available lawyers
+      // .eq('is_available', true) // only available lawyers
+      .eq('status', 'approved')
       .order('rating', { ascending: false });
 
     if (error) {
@@ -121,7 +114,15 @@ const Lawyers = () => {
     setLoading(false);
   };
 
-  ;
+  // const fetchBusyLawyers = async () => {
+  //   const { data } = await supabase
+  //     .from('consultations')
+  //     .select('lawyer_id')
+  //     .in('status', ['active', 'paid']);
+  //   if (data) {
+  //     setBusyLawyerIds(new Set(data.map(c => c.lawyer_id)));
+  //   }
+  // };
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (minRating > 0) count++;
@@ -476,7 +477,7 @@ const Lawyers = () => {
                     <div className="w-full h-full flex">
                       <LawyerCard
                         lawyer={lawyer}
-                        isBusy={busyLawyerIds.has(lawyer.user_id)}
+                      // isBusy={busyLawyerIds.has(lawyer.user_id)}
                       />
                     </div>
                   </div>

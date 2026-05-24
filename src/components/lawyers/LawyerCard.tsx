@@ -10,6 +10,11 @@ import { formatLawyerName } from '@/lib/lawyer-utils';
 import { calculateAge } from '@/lib/ageUtils';
 import { useSavedLawyers } from '@/hooks/useSavedLawyers';
 import { BookingAgendaModal } from './BookingAgendaModal';
+import { cn } from '@/lib/utils';
+import { bookNowButtonStyle, lawyerCardStyle } from '@/lib/buttonStyles';
+// import { lawyerCardStyle } from '@/lib/Styles';
+// import { lawyerCardStyle } from './../../lib/buttonStyles';
+
 
 interface LawyerWithProfile {
   id: string;
@@ -52,8 +57,12 @@ export const LawyerCard = ({
 
   // const isOnline = lawyer.is_available;
   // const isBusy = lawyer.is_busy;
-  const isBusy = !lawyer.is_available;
-  const isOnline = lawyer.is_available;
+  // const isBusy = !lawyer.is_available;
+  // const isBusy = lawyer.is_busy;
+  // const isOnline = lawyer.is_available;
+  const isBusy = lawyer.is_busy === true;
+  const isOnline =
+    lawyer.is_available === true && lawyer.is_busy !== true;
   const isApproved = lawyer.status === 'approved';
 
   const [showBookingModal, setShowBookingModal] = useState(false);
@@ -119,7 +128,7 @@ export const LawyerCard = ({
     <div className="group block w-full h-full">
 
       {/* CARD */}
-      <div
+      {/* <div
         onClick={handleCardClick}
         className={`
         relative bg-card rounded-lg border overflow-hidden
@@ -132,6 +141,17 @@ export const LawyerCard = ({
             : 'border-border hover:border-primary/30'
           }
         `}
+      > */}
+
+      <div
+        onClick={handleCardClick}
+        className={cn(
+          lawyerCardStyle,
+
+          isOnline
+            ? "border-emerald-500/30 hover:border-emerald-500/60"
+            : "border-border hover:border-primary/30"
+        )}
       >
 
         {/* Pending Banner */}
@@ -146,7 +166,7 @@ export const LawyerCard = ({
         <div className="flex flex-col flex-1">
 
           {/* TOP */}
-          <div className="px-3 py-3 sm:px-4 sm:py-3 ">
+          <div className="px-3 py-1.5 sm:px-4 sm:py-3 ">
             <div className="flex items-start gap-3">
 
               {/* AVATAR */}
@@ -180,7 +200,7 @@ export const LawyerCard = ({
                       ? 'bg-red-500'
                       : isOnline
                         ? 'bg-emerald-500'
-                        : 'bg-muted-foreground/40'
+                        : 'bg-gray-400'
                     }`}
                 />
 
@@ -230,14 +250,7 @@ export const LawyerCard = ({
                       </span>
                     </>
                   )}
-
-
-
                 </div>
-
-
-
-
               </div>
 
               {/* PRICE */}
@@ -249,18 +262,13 @@ export const LawyerCard = ({
                   /min
                 </span>
               </div>
-
-
-
-
             </div>
           </div>
 
           {/* BLUE DIVIDER */}
-          <div className="px-3 sm:px-4 py-2">
+          <div className="px-3 sm:px-4 py-1">
             <div className="h-px bg-blue-500/30 w-full rounded-full" />
           </div>
-          {/* SPECIALIZATIONS */}
           {/* SPECIALIZATIONS */}
           {lawyer.specializations && (
             <div className="px-3 sm:px-4 pb-2">
@@ -343,36 +351,46 @@ export const LawyerCard = ({
 
             {/* STATUS */}
             <div className="mt-1 px-2">
-
               {isBusy ? (
-                <span className="inline-flex items-center gap-1 text-[10px] font-medium text-red-600 bg-red-500/10 px-2 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200/60 bg-red-50 px-2.5 py-1 text-[10px] font-semibold text-red-700 shadow-sm backdrop-blur-sm transition-all">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+                  </span>
                   Busy
                 </span>
               ) : isOnline ? (
-                <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200/60 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700 shadow-sm backdrop-blur-sm transition-all">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-pulse rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                  </span>
                   Available
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/60 px-2.5 py-1 text-[10px] font-medium text-muted-foreground shadow-sm backdrop-blur-sm transition-all">
+                  <span className="h-2 w-2 rounded-full bg-gray-400" />
                   Offline
                 </span>
               )}
-
             </div>
-
 
             <Button
               size="sm"
-              className="ml-auto h-8 text-xs px-3"
+              disabled={isBusy}
+              className={cn(
+                "ml-auto h-8 text-xs px-1.5",
+                bookNowButtonStyle,
+                isBusy && "bg-gray-400 hover:bg-gray-400 cursor-not-allowed opacity-70"
+              )}
               onClick={(e) => handleBookClick('chat', e)}
             >
               Book Now
+
               <Video className="h-3.5 w-3.5" />
               <Phone className="h-3.5 w-3.5" />
               <MessageSquare className="h-3.5 w-3.5" />
-
             </Button>
-
           </div>
         )}
 

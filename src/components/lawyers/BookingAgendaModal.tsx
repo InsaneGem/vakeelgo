@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { rejectButtonStyle, acceptButtonStyle, bookNowButtonStyle } from '@/lib/buttonStyles';
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -44,18 +45,13 @@ const AGENDA_CATEGORIES = [
 
 ];
 
-const URGENCY_OPTIONS = [
-    { value: 'low', label: 'Not urgent — within a week' },
-    { value: 'medium', label: 'Moderately urgent — within 2-3 days' },
-    { value: 'high', label: 'Very urgent — need help today' },
-    { value: 'critical', label: 'Emergency — need help right now' },
-];
 const DOCUMENT_OPTIONS = [
     { value: 'yes', label: 'Yes, I have documents to share' },
     { value: 'no', label: 'No documents at this time' },
     { value: 'will_share', label: 'Will share during consultation' },
 
 ];
+const DRAFT_KEY = 'legalmate_booking_agenda_draft';
 
 interface LawyerInfo {
     id: string;
@@ -92,7 +88,7 @@ export const BookingAgendaModal = ({
 
     const [consultationType, setConsultationType] = useState<'chat' | 'audio' | 'video'>(initialType);
     const [agendaCategory, setAgendaCategory] = useState('');
-    const [urgency, setUrgency] = useState('');
+    // const [urgency, setUrgency] = useState('');
     const [agendaDetails, setAgendaDetails] = useState('');
     const [documentStatus, setDocumentStatus] = useState('');
     const [priorAction, setPriorAction] = useState('');
@@ -103,6 +99,55 @@ export const BookingAgendaModal = ({
     const [pendingConsultationId, setPendingConsultationId] = useState<string | null>(null);
     const [payingNow, setPayingNow] = useState(false);
     const [selectedMinutes, setSelectedMinutes] = useState(10);
+    // ✅ AUTO SAVE DRAFT LOCALLY
+    useEffect(() => {
+
+        const draft = {
+            agendaCategory,
+            agendaDetails,
+            documentStatus,
+            priorAction,
+            consultationType,
+            selectedMinutes,
+        };
+
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+
+    }, [
+        agendaCategory,
+        agendaDetails,
+        documentStatus,
+        priorAction,
+        consultationType,
+        selectedMinutes
+    ]);
+
+    // ✅ RESTORE DRAFT WHEN MODAL OPENS
+    useEffect(() => {
+
+        if (!isOpen) return;
+
+        const savedDraft = localStorage.getItem(DRAFT_KEY);
+
+        if (savedDraft) {
+
+            try {
+
+                const parsed = JSON.parse(savedDraft);
+
+                setAgendaCategory(parsed.agendaCategory || '');
+                setAgendaDetails(parsed.agendaDetails || '');
+                setDocumentStatus(parsed.documentStatus || '');
+                setPriorAction(parsed.priorAction || '');
+                setConsultationType(parsed.consultationType || initialType);
+                setSelectedMinutes(parsed.selectedMinutes || 10);
+
+            } catch (err) {
+                console.error('Draft restore failed:', err);
+            }
+        }
+
+    }, [isOpen]);
 
     const DURATION_OPTIONS = {
         chat: [5, 10, 15, 30],
@@ -115,13 +160,24 @@ export const BookingAgendaModal = ({
         setSelectedMinutes(DURATION_OPTIONS[initialType][0]);
     }, [initialType]);
 
+
     const minimumMinutes = selectedMinutes;
-    const pricePerMinute = consultationType === 'chat'
+
+    // ✅ 1. Get the raw base price per minute set by the lawyer
+    const lawyerBasePricePerMinute = consultationType === 'chat'
         ? lawyer.chat_price_per_minute ?? lawyer.price_per_minute ?? 5
         : consultationType === 'audio'
             ? lawyer.audio_price_per_minute ?? lawyer.price_per_minute ?? 5
             : lawyer.video_price_per_minute ?? lawyer.price_per_minute ?? 5;
-    const sessionCost = minimumMinutes * pricePerMinute;
+
+    // ✅ 2. Calculate raw session cost before platform markup
+    const rawSessionCost = minimumMinutes * lawyerBasePricePerMinute;
+
+    // ✅ 3. Add your 15% platform markup rule (Covers Razorpay's fee + your profit)
+    const totalMarkupMultiplier = 1.15;
+
+    // ✅ 4. Final rounded cost to show to the client and send to your DB/Razorpay
+    const sessionCost = Math.ceil(rawSessionCost * totalMarkupMultiplier);
 
     const getTypeIcon = (type: string) => {
         switch (type) {
@@ -239,6 +295,16 @@ export const BookingAgendaModal = ({
                 .from('consultations')
                 .update({ status: 'cancelled' })
                 .eq('id', pendingConsultationId);
+
+            // ✅ reset lawyer busy status
+            await supabase
+                .from('lawyer_profiles')
+                .update({
+                    is_busy: false,
+                    is_available: true,
+                })
+                .eq('user_id', lawyer.user_id);
+
         }
         setStep('timeout');
     }, [pendingConsultationId]);
@@ -248,6 +314,16 @@ export const BookingAgendaModal = ({
                 .from('consultations')
                 .update({ status: 'cancelled' })
                 .eq('id', pendingConsultationId);
+
+            // ✅ reset lawyer busy status
+            await supabase
+                .from('lawyer_profiles')
+                .update({
+                    is_busy: false,
+                    is_available: true,
+                })
+                .eq('user_id', lawyer.user_id);
+
         }
 
         toast({
@@ -257,14 +333,14 @@ export const BookingAgendaModal = ({
 
         resetAndClose();
 
-        // }, [pendingConsultationId]);
+
     };
 
     const resetAndClose = () => {
 
         setStep('form');
         setAgendaCategory('');
-        setUrgency('');
+
         setAgendaDetails('');
         setDocumentStatus('');
         setPriorAction('');
@@ -295,14 +371,26 @@ export const BookingAgendaModal = ({
             const categoryLabel =
                 AGENDA_CATEGORIES.find(c => c.value === agendaCategory)?.label || agendaCategory;
 
-            const urgencyLabel =
-                URGENCY_OPTIONS.find(u => u.value === urgency)?.label || urgency;
 
             const docLabel = DOCUMENT_OPTIONS.find(d => d.value === documentStatus)?.label || '';
 
-            let fullAgenda = `[${categoryLabel}] [${urgencyLabel}]`;
-            if (docLabel) fullAgenda += ` [Documents: ${docLabel}]`;
-            if (priorAction.trim()) fullAgenda += `\nPrior Action: ${priorAction.trim()}`;
+
+            let fullAgenda = '';
+
+            if (categoryLabel) {
+                fullAgenda += `[${categoryLabel}]`;
+            }
+
+            if (docLabel) {
+                fullAgenda += ` [Documents: ${docLabel}]`;
+            }
+
+            if (priorAction.trim()) {
+                fullAgenda += `\nPrior Action: ${priorAction.trim()}`;
+            }
+
+            // MAIN DESCRIPTION
+            fullAgenda += `\n\nIssue Details:\n${agendaDetails.trim()}`;
 
 
             const { data, error } = await supabase
@@ -325,6 +413,7 @@ export const BookingAgendaModal = ({
             setPendingConsultationId(data.id);
             setCountdown(60);
             setStep('waiting');
+            localStorage.removeItem(DRAFT_KEY);
 
         }
 
@@ -344,31 +433,7 @@ export const BookingAgendaModal = ({
             setSubmitting(false);
         }
     };
-    // const handlePayment = async () => {
-    //     if (!pendingConsultationId) return;
-    //     setPayingNow(true);
-    //     await initiateRazorpayPayment({
-    //         consultationId: pendingConsultationId,
-    //         onSuccess: (id) => {
-    //             toast({
-    //                 title: '✅ Payment Successful!',
-    //                 description: 'Redirecting to consultation...',
-    //             });
-    //             setPayingNow(false);
-    //             resetAndClose();
-    //             onSuccess?.(id);
-    //             navigate(`/consultation/${id}`);
-    //         },
-    //         onError: (error) => {
-    //             toast({
-    //                 variant: 'destructive',
-    //                 title: 'Payment Failed',
-    //                 description: error,
-    //             });
-    //             setPayingNow(false);
-    //         },
-    //     });
-    // };
+
     const handlePayment = async () => {
         if (!pendingConsultationId) return;
 
@@ -436,6 +501,16 @@ export const BookingAgendaModal = ({
                 .from('consultations')
                 .update({ status: 'cancelled' })
                 .eq('id', pendingConsultationId);
+
+            // ✅ reset lawyer busy status
+            await supabase
+                .from('lawyer_profiles')
+                .update({
+                    is_busy: false,
+                    is_available: true,
+                })
+                .eq('user_id', lawyer.user_id);
+
         }
         toast({
             title: 'Booking Cancelled',
@@ -450,6 +525,15 @@ export const BookingAgendaModal = ({
                 .from('consultations')
                 .update({ status: 'cancelled' })
                 .eq('id', pendingConsultationId);
+
+            // ✅ reset lawyer busy status
+            await supabase
+                .from('lawyer_profiles')
+                .update({
+                    is_busy: false,
+                    is_available: true,
+                })
+                .eq('user_id', lawyer.user_id);
         }
 
         toast({
@@ -478,11 +562,6 @@ export const BookingAgendaModal = ({
 max-h-[92vh] overflow-hidden p-0 rounded-2xl"
                 onPointerDownOutside={(e) => { if (step !== 'form') e.preventDefault(); }}
             >
-
-
-
-
-                {/* <div className="max-h-[90vh] overflow-y-auto p-6 scroll-smooth [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-primary/40 [&::-webkit-scrollbar-thumb]:rounded-full"> */}
                 <div className="max-h-[92vh] overflow-y-auto px-4 sm:px-6 md:px-8 py-5 sm:py-6 
                     scroll-smooth scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     <DialogHeader>
@@ -517,7 +596,7 @@ max-h-[92vh] overflow-hidden p-0 rounded-2xl"
                                     The lawyer didn't respond within 60 seconds. Please try another lawyer.
                                 </p>
                             </div>
-                            <Button onClick={resetAndClose} className="gap-2">
+                            <Button onClick={resetAndClose} className={cn(rejectButtonStyle)}>
                                 Try Another Lawyer
                             </Button>
                         </div>
@@ -532,7 +611,7 @@ max-h-[92vh] overflow-hidden p-0 rounded-2xl"
                                     The lawyer was unable to accept your request. Please try another lawyer.
                                 </p>
                             </div>
-                            <Button onClick={resetAndClose} className="gap-2">
+                            <Button onClick={resetAndClose} className={cn(rejectButtonStyle)}>
                                 Try Another Lawyer
                             </Button>
                         </div>
@@ -575,15 +654,17 @@ max-h-[92vh] overflow-hidden p-0 rounded-2xl"
                                 <Shield className="h-4 w-4 flex-shrink-0" />
                                 <span>The lawyer is waiting. Complete payment to start your {consultationType} session.</span>
                             </div>
-                            <div className="flex gap-3">
-                                <Button variant="outline" onClick={handleCancelAfterAccept} className="flex-1 gap-2">
+                            <div className="flex gap-3 ">
+                                <Button variant="outline" onClick={handleCancelAfterAccept} className={cn(rejectButtonStyle, "flex-1 gap-2 h-11 sm:h-12")}>
                                     <XCircle className="h-4 w-4" />
                                     Cancel
                                 </Button>
                                 <Button
                                     onClick={handlePayment}
                                     disabled={payingNow}
-                                    className="flex-1 gap-2"
+
+                                    className={cn(bookNowButtonStyle, "flex-1 gap-2 h-11 sm:h-12")}
+
                                 >
                                     {payingNow ? (
                                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -641,8 +722,15 @@ max-h-[92vh] overflow-hidden p-0 rounded-2xl"
                                 <span>Request will auto-cancel if not accepted in time</span>
                             </div>
 
-                            <Button variant="outline" onClick={handleCancelRequest} className="gap-2">
+
+                            <Button
+                                variant="outline"
+                                onClick={handleCancelRequest}
+                                className={cn(rejectButtonStyle)}
+                            >
+                                {/* <XCircle className="h-4 w-4 text-black" /> */}
                                 <XCircle className="h-4 w-4" />
+
                                 Cancel Request
                             </Button>
 
@@ -698,38 +786,6 @@ max-h-[92vh] overflow-hidden p-0 rounded-2xl"
 
                             {/* Consultation Type */}
 
-                            {/* <div className="space-y-2">
-
-                                <Label className="text-sm font-medium">
-                                    Select The Consultation Mode
-                                </Label>
-
-                                <div className="grid grid-cols-3 gap-2">
-
-                                    {(['chat', 'audio', 'video'] as const).map((type) => (
-
-                                        <button
-                                            key={type}
-                                            // type="button"
-                                            onClick={() => setConsultationType(type)}
-                                            className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all ${consultationType === type
-                                                ? 'border-primary bg-primary/5'
-                                                : 'border-border hover:border-primary/30'
-                                                }`}
-                                        >
-
-                                            {getTypeIcon(type)}
-
-                                            <span className="text-xs font-medium capitalize">{getTypeLabel(type)}</span>
-
-                                        </button>
-
-                                    ))}
-
-                                </div>
-
-                            </div> */}
-
                             <div className="space-y-3">
 
                                 <Label className="text-sm font-medium">
@@ -768,7 +824,9 @@ max-h-[92vh] overflow-hidden p-0 rounded-2xl"
                                         {DURATION_OPTIONS[consultationType].map((minutes) => {
                                             const isSelected = selectedMinutes === minutes;
                                             const label = isSelected
-                                                ? `₹${(minutes * pricePerMinute).toFixed(0)}`
+                                                // ? `₹${(minutes * pricePerMinute).toFixed(0)}`
+                                                //  Update it to this:
+                                                ? `₹${Math.ceil((minutes * lawyerBasePricePerMinute) * 1.15)}`
                                                 : `${minutes} min`;
 
                                             return (
@@ -824,27 +882,94 @@ max-h-[92vh] overflow-hidden p-0 rounded-2xl"
 
                                 <Label className="text-sm font-medium">Describe Your Issue *</Label>
 
+
                                 <Textarea
                                     placeholder="Briefly describe your legal issue so the lawyer can prepare..."
                                     value={agendaDetails}
-                                    onChange={(e) => setAgendaDetails(e.target.value)}
                                     rows={3}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        const words = value.trim().split(/\s+/).filter(Boolean);
+
+                                        if (words.length <= 40) {
+                                            setAgendaDetails(value);
+                                        } else {
+                                            setAgendaDetails(words.slice(0, 40).join(' '));
+                                        }
+                                    }}
+                                    onKeyDown={(e) => {
+                                        const words = agendaDetails.trim().split(/\s+/).filter(Boolean);
+
+                                        const allowedKeys = [
+                                            'Backspace',
+                                            'Delete',
+                                            'ArrowLeft',
+                                            'ArrowRight',
+                                            'ArrowUp',
+                                            'ArrowDown',
+                                            'Tab'
+                                        ];
+
+                                        // 🚫 Block typing if already 40 words
+                                        if (words.length >= 40 && !allowedKeys.includes(e.key)) {
+                                            e.preventDefault();
+                                        }
+                                    }}
                                 />
+
+                                <p className="text-xs text-gray-500 mt-1">
+                                    {agendaDetails.trim().split(/\s+/).filter(Boolean).length} / 40 words
+                                </p>
 
                             </div>
                             {/* Price Info */}
-                            <div className="flex items-center justify-between p-3 bg-primary/5 rounded-xl border border-primary/20">
-                                <div className="flex items-center gap-2 text-sm">
-                                    <CreditCard className="h-4 w-4 text-primary" />
-                                    <span>Session Fee ({selectedMinutes} mins)</span>
+
+                            {/* ✅ PASTE THIS NEW PREMIUM BREAKDOWN BLOCK */}
+                            {/* Premium Price Summary Breakdown */}
+                            <div className="p-4 bg-muted/30 rounded-xl border border-border/60 space-y-3">
+                                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                    <span className="flex items-center gap-1.5">
+                                        <Clock className="h-3.5 w-3.5 text-muted-foreground/70" />
+                                        Consultation Fee ({selectedMinutes} mins)
+                                    </span>
+                                    <span className="font-medium text-foreground">
+                                        ₹{rawSessionCost.toFixed(2)}
+                                    </span>
                                 </div>
-                                <span className="font-bold text-primary">₹{sessionCost.toFixed(2)}</span>
+
+                                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                    <span className="flex items-center gap-1.5">
+                                        <Shield className="h-3.5 w-3.5 text-muted-foreground/70" />
+                                        Platform & Payment Gateway Charges
+                                    </span>
+                                    <span className="font-medium text-foreground">
+                                        ₹{(sessionCost - rawSessionCost).toFixed(2)}
+                                    </span>
+                                </div>
+
+                                {/* Subtle Divider Line */}
+                                <div className="border-t border-border/80 my-1" />
+
+                                <div className="flex items-center justify-between pt-0.5">
+                                    <div className="flex items-center gap-2">
+                                        <div className="p-1 rounded bg-primary/10 text-primary">
+                                            <CreditCard className="h-4 w-4" />
+                                        </div>
+                                        <span className="text-sm font-semibold tracking-tight text-foreground">
+                                            Total Payable Amount
+                                        </span>
+                                    </div>
+                                    <span className="text-base font-bold text-primary tracking-tight">
+                                        ₹{sessionCost.toFixed(2)}
+                                    </span>
+                                </div>
                             </div>
                             {/* Submit */}
                             <Button
                                 onClick={handleSubmit}
                                 disabled={submitting || !agendaCategory || !agendaDetails.trim()}
-                                className="h-9 text-sm px-4 rounded-lg transition-all duration-300 hover:scale-[1.01]"
+                                // className="h-9 text-sm px-4 rounded-lg transition-all duration-300 hover:scale-[1.01]"
+                                className={cn(acceptButtonStyle)}
                             >
                                 {submitting ? (
                                     <Loader2 className="h-4 w-4 animate-spin" />

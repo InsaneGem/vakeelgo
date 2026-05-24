@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSavedLawyers } from '@/hooks/useSavedLawyers';
 import { ArrowLeft, Heart, Search, Users } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { ClientLayout } from '@/components/layout/ClientLayout';
 interface LawyerWithProfile {
     id: string;
     user_id: string;
@@ -94,7 +95,10 @@ const SavedLawyers = () => {
         );
     }
     return (
-        <MainLayout showFooter={false}>
+
+        <ClientLayout>
+
+
             <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background">
                 <div className="container mx-auto px-4 py-8">
                     {/* Header */}
@@ -173,7 +177,8 @@ const SavedLawyers = () => {
                     )}
                 </div>
             </div>
-        </MainLayout>
+        </ClientLayout>
+
     );
 };
 export default SavedLawyers;

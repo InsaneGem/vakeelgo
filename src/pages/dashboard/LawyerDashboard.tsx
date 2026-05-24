@@ -32,6 +32,9 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 // import LawyerConsultation from './../consultation/LawyerConsultation';
 import LawyerConsultations from './LawyerConsultations';
 import { LucideIcon } from 'lucide-react';
+// import {cn}
+import { cn } from '@/lib/utils';
+import { rejectButtonStyle, acceptButtonStyle, lawyerCardStyle, smallCardStyle, seeMoreButtonStyle, transactionCardStyle } from '@/lib/buttonStyles';
 
 type BadgeItem = {
   label: string;
@@ -39,10 +42,6 @@ type BadgeItem = {
   show?: boolean;
   className?: string;
 };
-
-
-
-
 
 interface ConsultationWithClient {
   id: string;
@@ -331,7 +330,7 @@ const LawyerDashboard = () => {
     if (!user) return;
     const newStatus = !stats.isAvailable;
 
-    const { error } = await supabase.from('lawyer_profiles').update({ is_available: newStatus }).eq('user_id', user.id);
+    const { error } = await supabase.from('lawyer_profiles').update({ is_available: newStatus, is_busy: false, }).eq('user_id', user.id);
 
     if (!error) {
       setStats(prev => ({ ...prev, isAvailable: newStatus }));
@@ -360,9 +359,25 @@ const LawyerDashboard = () => {
           : 'The client has been notified.',
       });
 
+
+      // 2. SET LAWYER BUSY
+      const { error: lawyerError } = await supabase
+        .from('lawyer_profiles')
+        .update({
+          is_busy: true,
+          is_available: false
+        })
+        .eq('user_id', user?.id);
+
       // Dismiss incoming booking dialog if it matches
       if (action === 'accept') {
         navigate(`/consultation/${consultationId}`);
+      }
+
+
+
+      if (lawyerError) {
+        console.error('Lawyer status update failed', lawyerError);
       }
 
 
@@ -517,7 +532,7 @@ const LawyerDashboard = () => {
                   </Avatar>
 
                   <div>
-                    <p className="text-sm text-gray-300">Welcome Back</p>
+                    {/* <p className="text-sm text-gray-300">Welcome Back</p> */}
 
                     <h1 className="font-serif text-2xl lg:text-3xl font-bold text-white tracking-tight">
                       {formatLawyerName(profile?.full_name)}
@@ -544,7 +559,7 @@ const LawyerDashboard = () => {
                   {stats.status === 'approved' && (
                     <div className="flex items-center gap-2 text-white/90">
                       <Shield className="h-4 w-4 text-emerald-400" />
-                      <span className="text-sm">Verified Lawyer</span>
+                      <span className="text-sm">Verified</span>
                     </div>
                   )}
 
@@ -651,9 +666,9 @@ const LawyerDashboard = () => {
             {/* Earnings */}
             <Card
               onClick={() => navigate('/lawyer/earnings')}
-              className="group relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-primary to-accent"
+              className={cn(transactionCardStyle)}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/90 to-accent opacity-90" />
+              {/* <div className="absolute inset-0 bg-gradient-to-br from-primary/90 to-accent opacity-90" /> */}
 
               <CardContent className="relative p-3 sm:p-5 text-primary-foreground h-full flex flex-col justify-between">
                 <div className="flex items-start justify-between">
@@ -679,7 +694,7 @@ const LawyerDashboard = () => {
             {/* Active Sessions */}
             <Card
               onClick={() => navigate('/dashboard/lawyer-active-sessions')}
-              className="group border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-card"
+              className={cn(smallCardStyle)}
             >
               <CardContent className="p-3 sm:p-5">
                 <div className="flex items-start justify-between gap-2">
@@ -725,7 +740,7 @@ const LawyerDashboard = () => {
             {/* lawyer Consultations */}
             <Card
               onClick={() => navigate("/lawyer/consultations")}
-              className="group border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-card"
+              className={cn(smallCardStyle)}
             >
               <CardContent className="p-3 sm:p-5">
                 <div className="flex items-start justify-between gap-2">
@@ -757,7 +772,7 @@ const LawyerDashboard = () => {
             {/* Rating */}
             <Card
               onClick={() => navigate('/lawyer/rating')}
-              className="group border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-card"
+              className={cn(smallCardStyle)}
             >
               <CardContent className="p-3 sm:p-5">
                 <div className="flex items-start justify-between gap-2">
@@ -792,7 +807,7 @@ const LawyerDashboard = () => {
             {/* Pending Requests */}
             <Card
               onClick={() => navigate('/lawyer/pending-requests')}
-              className="group border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-card"
+              className={cn(smallCardStyle)}
             >
               <CardContent className="p-3 sm:p-5">
                 <div className="flex items-center justify-between gap-2">
@@ -947,7 +962,7 @@ const LawyerDashboard = () => {
               ) : (
                 <>
                   <div
-                    className={`grid gap-4 
+                    className={`grid gap-4 item-start
           ${consultations.length === 1
                         ? "grid-cols-1 justify-items-center"
                         : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
@@ -962,11 +977,10 @@ const LawyerDashboard = () => {
                         return (
                           <div
                             key={c.id}
-                            className="group relative bg-card rounded-2xl border border-border overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-primary/30 cursor-pointer"
-                            onClick={() => navigate(`/consultation/${c.id}`)}
+                            className={cn(lawyerCardStyle, "!h-auto !min-h-0 !max-h-fit")}
                           >
                             {/* Status */}
-                            <div className="absolute top-3 right-3 z-10">
+                            <div className="absolute top-2 right-3 z-10">
                               <Badge
                                 className={`${statusConfig.className} text-[10px] font-medium px-2 py-0.5 rounded-full capitalize`}
                               >
@@ -989,7 +1003,7 @@ const LawyerDashboard = () => {
                                 </div>
 
                                 <div className="flex-1 min-w-0 pr-14">
-                                  <h3 className="font-semibold text-sm truncate">
+                                  <h3 className="font-bold text-sm truncate">
                                     {c.client_name}
                                   </h3>
 
@@ -1020,17 +1034,17 @@ const LawyerDashboard = () => {
                             </div>
 
                             {/* Footer */}
-                            <div className="px-4 py-2.5 border-t bg-secondary/20 flex justify-between items-center">
-                              <div>
-                                <span className="text-lg font-bold">
-                                  ₹{c.total_amount || 0}
-                                </span>
-                                <p className="text-[10px] text-muted-foreground">
-                                  {c.status === 'cancelled' ? 'cancelled' : 'earned'}
-                                </p>
+                            <div className="px-3 py-2 border-t border-border bg-secondary/20">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-1">
+                                  <span className="text-lg font-bold">₹{c.total_amount || 0}</span>
+                                  <span
+                                    className="text-[10px] text-muted-foreground">
+                                    {c.status === 'cancelled' ? 'Not Paid' : 'Earned'}
+                                  </span>
+                                </div>
+                                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition" />
                               </div>
-
-                              <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition" />
                             </div>
                           </div>
                         );
@@ -1042,9 +1056,10 @@ const LawyerDashboard = () => {
                       <Button
                         variant="outline"
                         size="sm"
+                        className={cn(seeMoreButtonStyle)}
                         onClick={() => navigate("/lawyer/consultations")}
                       >
-                        See more...
+                        See More
                         <ArrowRight className="h-4 w-4 ml-1" />
                       </Button>
                     </div>
@@ -1056,7 +1071,7 @@ const LawyerDashboard = () => {
 
         </div>
       </div>
-    </LawyerLayout>
+    </LawyerLayout >
   );
 };
 
