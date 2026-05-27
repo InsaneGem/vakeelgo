@@ -186,6 +186,19 @@ const LawyerConsultations = () => {
     earnings: consultations.reduce((sum, c) => sum + (c.total_amount || 0), 0),
   };
 
+  // Get unique clients who have booked consultations
+  const parseAgenda = (agenda: string | null | undefined) => {
+    if (!agenda) return { category: '', urgency: '', details: '' };
+    const categoryMatch = agenda.match(/^\[(.+?)\]/);
+    const urgencyMatch = agenda.match(/\]\s*\[(.+?)\]/);
+    const details = agenda.replace(/^\[.+?\]\s*\[.+?\]\n?/, '');
+    return {
+      category: categoryMatch?.[1] || '',
+      urgency: urgencyMatch?.[1] || '',
+      details: details || agenda,
+    };
+  };
+
   if (authLoading || loading) {
     return (
       <LawyerLayout>
@@ -262,6 +275,8 @@ const LawyerConsultations = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                 {paginated.map((c, index) => {
                   const sc = getStatusConfig(c.status);
+                  const { category, urgency, details } = parseAgenda(c.agenda);
+
 
                   return (
                     <Card
@@ -318,10 +333,10 @@ const LawyerConsultations = () => {
                               <p className="font-extrabold text-sm tracking-tight text-amber-950 truncate">
                                 {c.client_name || 'Client'}
                               </p>
-
-
                             </div>
+
                           </div>
+
 
                           {/* Top Right Status Metadata Badge Component */}
                           <Badge className={cn(
@@ -332,14 +347,16 @@ const LawyerConsultations = () => {
                             {c.status}
                           </Badge>
                         </div>
-
                         {/* Agenda */}
-                        <div className="mt-2">
-                          <p className="text-xs text-muted-foreground line-clamp-2 min-h-[2rem]">
-                            Agenda:{" "}
-                            {(c.agenda || "Legal consultation session").replace(/[\[\]]/g, "")}
-                          </p>
+                        <div className="flex justify-center w-full pt-4 pb-3 px-4">
+                          {category && (
+                            <Badge className="text-[10px] bg-primary/10 text-primary border-primary/20 tracking-wide font-semibold shadow-3xs">
+                              Agenda : {category}
+                            </Badge>
+                          )}
                         </div>
+
+
 
                         {/* Bottom Section Layout: Context Triggers & Ledger Values Row */}
                         <div className="pt-2.5 border-t border-amber-950/10 flex items-center justify-between w-full mt-auto">
@@ -348,10 +365,7 @@ const LawyerConsultations = () => {
                           <div className="flex items-center gap-2 text-[10px] text-amber-900/80 font-bold flex-wrap">
                             <span className="flex items-center gap-1 text-amber-950">
                               {getTypeIcon(c.type)}
-                              <span className="capitalize">
-                                {/* Clean up details text duplication inside the type pill icon frame text */}
-                                {c.type ? c.type.split(/issue details:/i)[0].split(/details:/i)[0].trim() : 'Chat'}
-                              </span>
+
                             </span>
 
                             <span className="w-0.5 h-0.5 rounded-full bg-amber-900/40" />

@@ -849,15 +849,7 @@ const ClientLawyerDetail = () => {
                   <CardContent className="p-6 space-y-5">
                     <div className="text-center">
                       <p className="text-sm text-foreground font-medium">Flexible booking options for chat, audio and video consultations</p>
-                      {/* <div className="flex items-baseline justify-center gap-1 mt-2">
-                        <span className="text-4xl font-bold text-primary">₹{lawyer.price_per_minute || 5}</span>
-                        <span className="text-muted-foreground text-sm">/min</span>
-                      </div> */}
-                      {/* {lawyer.session_price && (
-                        <p className="text-sm text-muted-foreground mt-1">
-                          or ${lawyer.session_price} per session
-                        </p>
-                      )} */}
+
                     </div>
                     <Separator />
                     {/* Quick Stats */}
