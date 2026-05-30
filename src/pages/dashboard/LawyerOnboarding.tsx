@@ -21,7 +21,7 @@ import { LanguageSelector } from '@/components/onboarding/LanguageSelector';
 import {
   ArrowLeft, Save, GraduationCap, Languages, Briefcase,
   DollarSign, FileText, Award, User, Clock, Shield,
-  CheckCircle, AlertTriangle, Loader2
+  CheckCircle, AlertTriangle, Loader2, IndianRupee, XCircle
 } from 'lucide-react';
 import { LawyerDocuments } from '@/components/profile/LawyerDocuments';
 interface LawyerProfileData {
@@ -63,15 +63,27 @@ const LawyerOnboarding = () => {
   });
 
   // Calculate completion status for each step
+  // const getStepCompletion = useCallback(() => ({
+  //   bio: profileData.bio.trim().length >= 50,
+  //   specializations: profileData.specializations.length > 0,
+  //   credentials: profileData.bar_council_number.trim().length > 0,
+  //   pricing:
+  //     profileData.chat_price_per_minute >= 1 &&
+  //     profileData.audio_price_per_minute >= 1 &&
+  //     profileData.video_price_per_minute >= 1 &&
+  //     profileData.session_price >= 10,
+  //   languages: profileData.languages.length > 0,
+  // }), [profileData]);
+
   const getStepCompletion = useCallback(() => ({
     bio: profileData.bio.trim().length >= 50,
     specializations: profileData.specializations.length > 0,
     credentials: profileData.bar_council_number.trim().length > 0,
     pricing:
-      profileData.chat_price_per_minute >= 1 &&
-      profileData.audio_price_per_minute >= 1 &&
-      profileData.video_price_per_minute >= 1 &&
-      profileData.session_price >= 10,
+      profileData.chat_price_per_minute >= 5 && profileData.chat_price_per_minute <= 100 &&
+      profileData.audio_price_per_minute >= 5 && profileData.audio_price_per_minute <= 100 &&
+      profileData.video_price_per_minute >= 5 && profileData.video_price_per_minute <= 100,
+    // profileData.session_price >= 10,
     languages: profileData.languages.length > 0,
   }), [profileData]);
 
@@ -114,9 +126,9 @@ const LawyerOnboarding = () => {
         bar_council_number: data.bar_council_number || '',
         experience_years: data.experience_years || 0,
         // price_per_minute: data.price_per_minute || 5,
-        chat_price_per_minute: data.chat_price_per_minute || 2,
-        audio_price_per_minute: data.audio_price_per_minute || 5,
-        video_price_per_minute: data.video_price_per_minute || 8,
+        chat_price_per_minute: data.chat_price_per_minute || 5,
+        audio_price_per_minute: data.audio_price_per_minute || 10,
+        video_price_per_minute: data.video_price_per_minute || 20,
         session_price: data.session_price || 100,
         specializations: data.specializations || [],
         languages: data.languages || ['English'],
@@ -237,507 +249,6 @@ const LawyerOnboarding = () => {
   }
 
   return (
-    // <MainLayout showFooter={false}>
-    // <LawyerLayout>
-    //   <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background">
-    //     <div className="container mx-auto px-4 py-8 max-w-4xl">
-    //       {/* Header */}
-    //       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-    //         <Button
-    //           variant="ghost"
-    //           className="gap-2 w-fit"
-    //           onClick={() => navigate('/lawyer/dashboard')}
-    //         >
-    //           <ArrowLeft className="h-4 w-4" />
-    //           Back to Dashboard
-    //         </Button>
-    //         {getStatusBadge()}
-    //       </div>
-
-    //       {/* Title & Description */}
-    //       <div className="mb-8">
-    //         <h1 className="font-serif text-3xl md:text-4xl font-bold mb-2">
-    //           Complete Your Profile
-    //         </h1>
-    //         <p className="text-muted-foreground text-lg">
-    //           Fill in all required information to get verified and start accepting consultations
-    //         </p>
-    //       </div>
-
-    //       {/* Progress Tracker */}
-    //       <Card className="mb-8 border-2">
-    //         <CardContent className="p-6">
-    //           <OnboardingProgress steps={steps} currentStep={completedSteps} />
-
-    //           {isProfileComplete ? (
-    //             <div className="mt-6 p-4 bg-emerald-500/10 rounded-lg border border-emerald-500/20 flex items-center gap-3">
-    //               <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0" />
-    //               <div>
-    //                 <p className="font-medium text-emerald-700">Profile Complete!</p>
-    //                 <p className="text-sm text-muted-foreground">
-    //                   {profileData.status === 'pending'
-    //                     ? 'Your profile is under review. We\'ll notify you once approved.'
-    //                     : profileData.status === 'approved'
-    //                       ? 'You\'re verified and can accept consultations.'
-    //                       : 'Please update your profile and resubmit.'}
-    //                 </p>
-    //               </div>
-    //             </div>
-    //           ) : (
-    //             <div className="mt-6 p-4 bg-amber-500/10 rounded-lg border border-amber-500/20 flex items-center gap-3">
-    //               <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0" />
-    //               <div>
-    //                 <p className="font-medium text-amber-700">Profile Incomplete</p>
-    //                 <p className="text-sm text-muted-foreground">
-    //                   Complete all required fields to submit your profile for verification.
-    //                 </p>
-    //               </div>
-    //             </div>
-    //           )}
-    //         </CardContent>
-    //       </Card>
-
-    //       <div className="space-y-6">
-    //         {/* Bio Section */}
-    //         <OnboardingStepCard
-    //           title="Professional Bio"
-    //           description="Write a compelling bio that highlights your expertise and experience"
-    //           icon={<FileText className="h-6 w-6" />}
-    //           isComplete={completion.bio}
-    //         >
-    //           <div className="space-y-4">
-    //             <div className="space-y-2">
-    //               <Label htmlFor="bio">About You *</Label>
-    //               <Textarea
-    //                 id="bio"
-    //                 placeholder="I am a seasoned legal professional with expertise in... Describe your experience, notable cases, and approach to helping clients."
-    //                 className="min-h-[150px] resize-none"
-    //                 value={profileData.bio}
-    //                 onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
-    //                 maxLength={1000}
-    //               />
-    //               <div className="flex justify-between text-xs text-muted-foreground">
-    //                 <span>Minimum 50 characters required</span>
-    //                 <span className={profileData.bio.length < 50 ? 'text-amber-600' : 'text-emerald-600'}>
-    //                   {profileData.bio.length}/1000
-    //                 </span>
-    //               </div>
-    //             </div>
-    //           </div>
-    //         </OnboardingStepCard>
-
-    //         {/* Specializations */}
-    //         <OnboardingStepCard
-    //           title="Areas of Expertise"
-    //           description="Select your practice areas to help clients find you"
-    //           icon={<Briefcase className="h-6 w-6" />}
-    //           isComplete={completion.specializations}
-    //         >
-    //           <SpecializationSelector
-    //             selected={profileData.specializations}
-    //             onChange={(specs) => setProfileData(prev => ({ ...prev, specializations: specs }))}
-    //           />
-    //         </OnboardingStepCard>
-
-    //         {/* Credentials */}
-    //         <OnboardingStepCard
-    //           title="Education & Credentials"
-    //           description="Verify your qualifications for client trust"
-    //           icon={<GraduationCap className="h-6 w-6" />}
-    //           isComplete={completion.credentials}
-    //         >
-    //           <div className="space-y-6">
-    //             <div className="space-y-2">
-    //               <Label htmlFor="education">Education Background</Label>
-    //               <Textarea
-    //                 id="education"
-    //                 placeholder="e.g., LLB from Harvard Law School (2015), LLM in Corporate Law from Yale (2017)"
-    //                 className="min-h-[100px] resize-none"
-    //                 value={profileData.education}
-    //                 onChange={(e) => setProfileData(prev => ({ ...prev, education: e.target.value }))}
-    //                 maxLength={500}
-    //               />
-    //             </div>
-
-    //             <Separator />
-
-    //             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-    //               <div className="space-y-2">
-    //                 <Label htmlFor="bar_council">Bar Council Number *</Label>
-    //                 <Input
-    //                   className="w-full"
-    //                   id="bar_council"
-    //                   placeholder="Enter your bar registration number"
-    //                   value={profileData.bar_council_number}
-    //                   onChange={(e) => setProfileData(prev => ({ ...prev, bar_council_number: e.target.value }))}
-    //                 />
-    //                 <p className="text-xs text-muted-foreground">
-    //                   Required for verification by admin
-    //                 </p>
-    //               </div>
-    //               <div className="space-y-2">
-    //                 <Label htmlFor="experience">Years of Experience</Label>
-    //                 <Input
-    //                   className="w-full"
-    //                   id="experience"
-    //                   type="number"
-    //                   min="0"
-    //                   max="50"
-    //                   value={profileData.experience_years}
-    //                   onChange={(e) => setProfileData(prev => ({ ...prev, experience_years: parseInt(e.target.value) || 0 }))}
-    //                 />
-    //                 <p className="text-xs text-muted-foreground">
-    //                   Total years in legal practice
-    //                 </p>
-    //               </div>
-    //             </div>
-    //           </div>
-    //         </OnboardingStepCard>
-
-    //         {/* Languages */}
-    //         <OnboardingStepCard
-    //           title="Languages"
-    //           description="Select languages you can consult in"
-    //           icon={<Languages className="h-6 w-6" />}
-    //           isComplete={completion.languages}
-    //         >
-    //           <LanguageSelector
-    //             selected={profileData.languages}
-    //             onChange={(langs) => setProfileData(prev => ({ ...prev, languages: langs }))}
-    //           />
-    //         </OnboardingStepCard>
-
-    //         {/* Pricing */}
-    //         {/* <OnboardingStepCard
-    //           title="Consultation Rates"
-    //           description="Set your pricing for different consultation types"
-    //           icon={<DollarSign className="h-6 w-6" />}
-    //           isComplete={completion.pricing}
-    //         >
-    //           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-    //             <div className="space-y-2">
-    //               <Label htmlFor="price_per_minute">Price per Minute ($) *</Label>
-    //               <div className="relative">
-    //                 <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-    //                 <Input
-    //                   id="price_per_minute"
-    //                   type="number"
-    //                   min="1"
-    //                   max="100"
-    //                   step="0.5"
-    //                   className="pl-9"
-    //                   value={profileData.price_per_minute}
-    //                   onChange={(e) => setProfileData(prev => ({ ...prev, price_per_minute: parseFloat(e.target.value) || 1 }))}
-    //                 />
-    //               </div>
-    //               <p className="text-xs text-muted-foreground">
-    //                 For chat, audio, and video calls
-    //               </p>
-    //             </div>
-    //             <div className="space-y-2">
-    //               <Label htmlFor="session_price">Session Price ($) *</Label>
-    //               <div className="relative">
-    //                 <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-    //                 <Input
-    //                   id="session_price"
-    //                   type="number"
-    //                   min="10"
-    //                   max="1000"
-    //                   step="5"
-    //                   className="pl-9"
-    //                   value={profileData.session_price}
-    //                   onChange={(e) => setProfileData(prev => ({ ...prev, session_price: parseFloat(e.target.value) || 10 }))}
-    //                 />
-    //               </div>
-    //               <p className="text-xs text-muted-foreground">
-    //                 Fixed price for scheduled sessions
-    //               </p>
-    //             </div>
-    //           </div> */}
-
-    //         {/* Pricing Preview */}
-    //         {/* <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-    //             <p className="text-sm font-medium mb-3">Pricing Preview</p>
-    //             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-    //               <div className="p-3 bg-background rounded-lg">
-    //                 <p className="text-xs text-muted-foreground">10 min call</p>
-    //                 <p className="font-semibold">${(profileData.price_per_minute * 10).toFixed(2)}</p>
-    //               </div>
-    //               <div className="p-3 bg-background rounded-lg">
-    //                 <p className="text-xs text-muted-foreground">30 min call</p>
-    //                 <p className="font-semibold">${(profileData.price_per_minute * 30).toFixed(2)}</p>
-    //               </div>
-    //               <div className="p-3 bg-background rounded-lg">
-    //                 <p className="text-xs text-muted-foreground">60 min call</p>
-    //                 <p className="font-semibold">${(profileData.price_per_minute * 60).toFixed(2)}</p>
-    //               </div>
-    //               <div className="p-3 bg-background rounded-lg border-2 border-primary/20">
-    //                 <p className="text-xs text-muted-foreground">Session</p>
-    //                 <p className="font-semibold text-primary">${profileData.session_price.toFixed(2)}</p>
-    //               </div>
-    //             </div>
-    //           </div>
-    //         </OnboardingStepCard> */}
-
-    //         {/* Pricing */}
-    //         <OnboardingStepCard
-    //           title="Consultation Rates"
-    //           description="Set your pricing for Chat, Audio & Video"
-    //           icon={<DollarSign className="h-6 w-6" />}
-    //           isComplete={completion.pricing}
-    //         >
-    //           {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6"> */}
-    //           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-
-    //             {/* Chat */}
-    //             <div className="space-y-2">
-    //               <Label>Chat (₹ / min)</Label>
-    //               {/* <Input
-    //                 type="number"
-    //                 min="1"
-    //                 value={profileData.chat_price_per_minute}
-    //                 onChange={(e) =>
-    //                   setProfileData(prev => ({
-    //                     ...prev,
-    //                     // chat_price_per_minute: parseFloat(e.target.value) || 1
-    //                     chat_price_per_minute: e.target.value === '' ? 0 : parseFloat(e.target.value)
-    //                   }))
-    //                 }
-    //               /> */}
-    //               <Input
-    //                 className="w-full"
-    //                 type="text"
-    //                 inputMode="decimal"
-    //                 placeholder="1 - 10"
-    //                 value={profileData.chat_price_per_minute}
-    //                 onChange={(e) => {
-    //                   const value = e.target.value;
-
-    //                   // allow only numbers + decimal
-    //                   if (!/^\d*\.?\d*$/.test(value)) return;
-
-    //                   let num = value === '' ? '' : parseFloat(value);
-
-    //                   // enforce max = 10
-    //                   if (num > 10) num = 10;
-
-    //                   setProfileData(prev => ({
-    //                     ...prev,
-    //                     chat_price_per_minute: num === '' ? '' : num
-    //                   }));
-    //                 }}
-    //                 onBlur={(e) => {
-    //                   let num = parseFloat(e.target.value);
-
-    //                   // enforce min = 1
-    //                   if (isNaN(num) || num < 1) num = 1;
-
-    //                   setProfileData(prev => ({
-    //                     ...prev,
-    //                     chat_price_per_minute: num
-    //                   }));
-    //                 }}
-    //               />
-    //             </div>
-
-    //             {/* Audio */}
-    //             <div className="space-y-2">
-    //               <Label>Audio (₹ / min)</Label>
-    //               <Input
-    //                 className="w-full"
-    //                 type="text"
-    //                 inputMode="decimal"
-    //                 placeholder="1 - 10"
-    //                 value={profileData.audio_price_per_minute}
-    //                 onChange={(e) => {
-    //                   const value = e.target.value;
-
-    //                   // allow only numbers + decimal
-    //                   if (!/^\d*\.?\d*$/.test(value)) return;
-
-    //                   let num = value === '' ? '' : parseFloat(value);
-
-    //                   // enforce max = 10
-    //                   if (num > 10) num = 10;
-
-    //                   setProfileData(prev => ({
-    //                     ...prev,
-    //                     audio_price_per_minute: num === '' ? '' : num
-    //                   }));
-    //                 }}
-    //                 onBlur={(e) => {
-    //                   let num = parseFloat(e.target.value);
-
-    //                   // enforce min = 1
-    //                   if (isNaN(num) || num < 1) num = 1;
-
-    //                   setProfileData(prev => ({
-    //                     ...prev,
-    //                     audio_price_per_minute: num
-    //                   }));
-    //                 }}
-    //               />
-    //             </div>
-
-    //             {/* Video */}
-    //             <div className="space-y-2">
-    //               <Label>Video (₹ / min)</Label>
-    //               <Input
-    //                 className="w-full"
-    //                 type="text"
-    //                 inputMode="decimal"
-    //                 placeholder="1 - 10"
-    //                 value={profileData.video_price_per_minute}
-    //                 onChange={(e) => {
-    //                   const value = e.target.value;
-
-    //                   // allow only numbers + decimal
-    //                   if (!/^\d*\.?\d*$/.test(value)) return;
-
-    //                   let num = value === '' ? '' : parseFloat(value);
-
-    //                   // enforce max = 10
-    //                   if (num > 10) num = 10;
-
-    //                   setProfileData(prev => ({
-    //                     ...prev,
-    //                     video_price_per_minute: num === '' ? '' : num
-    //                   }));
-    //                 }}
-    //                 onBlur={(e) => {
-    //                   let num = parseFloat(e.target.value);
-
-    //                   // enforce min = 1
-    //                   if (isNaN(num) || num < 1) num = 1;
-
-    //                   setProfileData(prev => ({
-    //                     ...prev,
-    //                     video_price_per_minute: num
-    //                   }));
-    //                 }}
-    //               />
-    //             </div>
-    //           </div>
-
-    //           {/* Session Price */}
-    //           <div className="mt-6 space-y-2">
-    //             <Label>Session Price (₹)</Label>
-    //             <Input
-    //               className="w-full"
-    //               type="number"
-    //               min="10"
-    //               value={profileData.session_price}
-    //               onChange={(e) =>
-    //                 setProfileData(prev => ({
-    //                   ...prev,
-    //                   session_price: parseFloat(e.target.value) || 10
-    //                 }))
-    //               }
-    //             />
-    //           </div>
-
-    //           {/* Pricing Preview */}
-    //           <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-    //             <p className="text-sm font-medium mb-3">Pricing Preview</p>
-
-    //             {/* <div className="grid md:grid-cols-3 gap-4 text-center"> */}
-    //             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 text-center">
-
-    //               {/* CHAT */}
-    //               {/* <div className="p-3 bg-background rounded-lg"> */}
-    //               <div className="p-3 bg-background rounded-lg break-words text-xs sm:text-sm">
-    //                 <p className="text-xs mb-2 text-muted-foreground">Chat</p>
-    //                 {[5, 10, 15, 20].map(time => (
-    //                   <p key={time} className="text-sm">
-    //                     {time} min →
-    //                     {/* <b>₹{(profileData.chat_price_per_minute * time).toFixed(2)}</b> */}
-    //                     <b className="whitespace-nowrap">
-    //                       ₹{(profileData.chat_price_per_minute * time).toFixed(2)}
-    //                     </b>
-    //                   </p>
-    //                 ))}
-    //               </div>
-
-    //               {/* AUDIO */}
-    //               <div className="p-3 bg-background rounded-lg">
-    //                 <p className="text-xs mb-2 text-muted-foreground">Audio</p>
-    //                 {[10, 15, 20, 30].map(time => (
-    //                   <p key={time} className="text-sm">
-    //                     {time} min → <b>₹{(profileData.audio_price_per_minute * time).toFixed(2)}</b>
-    //                   </p>
-    //                 ))}
-    //               </div>
-
-    //               {/* VIDEO */}
-    //               <div className="p-3 bg-background rounded-lg border border-primary/20">
-    //                 <p className="text-xs mb-2 text-muted-foreground">Video</p>
-    //                 {[15, 20, 30, 45].map(time => (
-    //                   <p key={time} className="text-sm">
-    //                     {time} min → <b>₹{(profileData.video_price_per_minute * time).toFixed(2)}</b>
-    //                   </p>
-    //                 ))}
-    //               </div>
-
-    //             </div>
-
-    //             <div className="mt-4 text-center">
-    //               <p className="text-sm">
-    //                 Session → <b className="text-primary">${profileData.session_price.toFixed(2)}</b>
-    //               </p>
-    //             </div>
-    //           </div>
-    //         </OnboardingStepCard>
-
-    //         {/* Actions */}
-    //         <Card className="border-2">
-    //           <CardContent className="p-6">
-    //             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-    //               <div>
-    //                 <p className="font-medium">
-    //                   {isProfileComplete ? 'Ready to submit!' : `${totalSteps - completedSteps} step${totalSteps - completedSteps > 1 ? 's' : ''} remaining`}
-    //                 </p>
-    //                 <p className="text-sm text-muted-foreground">
-    //                   {isProfileComplete
-    //                     ? 'Save your profile to submit for admin review'
-    //                     : 'Complete all required fields to submit'}
-    //                 </p>
-    //               </div>
-    //               <div className="flex gap-3 w-full sm:w-auto">
-    //                 <Button
-    //                   variant="outline"
-    //                   onClick={() => navigate('/lawyer/dashboard')}
-    //                   className="flex-1 sm:flex-initial"
-    //                 >
-    //                   Cancel
-    //                 </Button>
-    //                 <Button
-    //                   onClick={handleSave}
-    //                   disabled={saving || !isProfileComplete}
-    //                   className="flex-1 sm:flex-initial gap-2"
-    //                 >
-    //                   {saving ? (
-    //                     <>
-    //                       <Loader2 className="h-4 w-4 animate-spin" />
-    //                       Saving...
-    //                     </>
-    //                   ) : (
-    //                     <>
-    //                       <Save className="h-4 w-4" />
-    //                       Save & Submit
-    //                     </>
-    //                   )}
-    //                 </Button>
-    //               </div>
-    //             </div>
-    //           </CardContent>
-    //         </Card>
-    //         {/* Documents
-    //         {user && <LawyerDocuments userId={user.id} />} */}
-    //       </div>
-    //     </div>
-    //   </div>
-    //   {/* </MainLayout> */}
-    // </LawyerLayout>
 
     <LawyerLayout>
       <div className="min-h-screen bg-gradient-to-br from-background via-secondary/10 to-background">
@@ -896,7 +407,7 @@ const LawyerOnboarding = () => {
             <OnboardingStepCard
               title="Pricing"
               description="Set price per minute for each consultation type"
-              icon={<DollarSign className="h-5 w-5" />}
+              icon={<IndianRupee className="h-5 w-5" />}
               isComplete={completion.pricing}
             >
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -906,15 +417,15 @@ const LawyerOnboarding = () => {
                   { key: 'video_price_per_minute', label: 'Video', description: 'Face-to-face call' },
                 ].map(({ key, label, description }) => {
                   const value = profileData[key as keyof typeof profileData] as number;
-                  const hasError = value < 1 || value > 100;
+                  const hasError = value < 5 || value > 100;
                   return (
                     <div key={key} className="space-y-2">
                       <Label>{label} Rate (₹ / min)</Label>
                       <Input
                         type="number"
-                        min={1}
+                        min={5}
                         max={100}
-                        step={0.5}
+                        step={1}
                         placeholder="Enter rate"
                         value={value}
                         className={hasError ? 'border-destructive' : ''}
@@ -930,7 +441,7 @@ const LawyerOnboarding = () => {
                       />
                       <p className="text-xs text-muted-foreground">{description}</p>
                       {hasError && (
-                        <p className="text-xs text-destructive">Please enter a value between 1 and 100.</p>
+                        <p className="text-xs text-destructive">Please enter a value between 5 and 100.</p>
                       )}
                     </div>
                   );

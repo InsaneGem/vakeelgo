@@ -163,6 +163,11 @@ export const LawyerDocuments = ({ userId }: LawyerDocumentsProps) => {
               </SelectContent>
             </Select>
           </div>
+          {/* 2. INSERT THE RED MANDATORY MESSAGE DIRECTLY HERE: */}
+          <div className="w-full text-xs font-semibold text-destructive mt-1 sm:hidden">
+            * Mandatory to upload: Bar Council Number, Law Degree, ID Proof.
+          </div>
+
           <div>
             <Button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="gap-2">
               {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
@@ -170,6 +175,10 @@ export const LawyerDocuments = ({ userId }: LawyerDocumentsProps) => {
             </Button>
             <input ref={fileInputRef} type="file" accept=".pdf,image/*" className="hidden" onChange={handleUpload} />
           </div>
+        </div>
+        {/* 3. ALSO ADD IT HERE SO IT REMAINS CLEAN ON WIDER/DESKTOP SCREENS */}
+        <div className="hidden sm:block text-xs font-semibold text-destructive px-1">
+          * Mandatory to upload: Bar Council Number, Law Degree, ID Proof.
         </div>
 
         {/* Documents List */}

@@ -174,10 +174,12 @@ export const BookingAgendaModal = ({
     const rawSessionCost = minimumMinutes * lawyerBasePricePerMinute;
 
     // ✅ 3. Add your 15% platform markup rule (Covers Razorpay's fee + your profit)
-    const totalMarkupMultiplier = 1.15;
+    // const totalMarkupMultiplier = 1.15;
 
     // ✅ 4. Final rounded cost to show to the client and send to your DB/Razorpay
-    const sessionCost = Math.ceil(rawSessionCost * totalMarkupMultiplier);
+    // const sessionCost = Math.ceil(rawSessionCost * totalMarkupMultiplier);
+
+    const sessionCost = Math.ceil((rawSessionCost * 1.05) / 0.9764);
 
     const getTypeIcon = (type: string) => {
         switch (type) {
@@ -826,7 +828,8 @@ max-h-[92vh] overflow-hidden p-0 rounded-2xl"
                                             const label = isSelected
                                                 // ? `₹${(minutes * pricePerMinute).toFixed(0)}`
                                                 //  Update it to this:
-                                                ? `₹${Math.ceil((minutes * lawyerBasePricePerMinute) * 1.15)}`
+                                                // ? `₹${Math.ceil((minutes * lawyerBasePricePerMinute) * 1.15)}`
+                                                ? `₹${Math.ceil(((minutes * lawyerBasePricePerMinute) * 1.05) / 0.9764)}`
                                                 : `${minutes} min`;
 
                                             return (

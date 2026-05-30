@@ -117,7 +117,10 @@ const LawyerDashboard = () => {
     bio: string | null;
     specializations: string[] | null;
     bar_council_number: string | null;
-    price_per_minute: number | null;
+    // price_per_minute: number | null;
+    chat_price_per_minute: number | null;
+    audio_price_per_minute: number | null;
+    video_price_per_minute: number | null;
     languages: string[] | null;
   } | null>(null);
   // const [profile, setProfile] = useState<{ full_name: string } | null>(null);
@@ -133,13 +136,6 @@ const LawyerDashboard = () => {
   const { completionPercentage, missingFields } = useMemo(() => {
     if (!lawyerProfile) return { completionPercentage: 0, missingFields: ['All fields'] };
 
-    // const fields = [
-    //   { key: 'bio', label: 'Professional Bio', check: (lawyerProfile.bio?.trim().length || 0) >= 50 },
-    //   { key: 'specializations', label: 'Specializations', check: (lawyerProfile.specializations?.length || 0) > 0 },
-    //   { key: 'bar_council_number', label: 'Bar Council Number', check: (lawyerProfile.bar_council_number?.trim().length || 0) > 0 },
-    //   { key: 'price_per_minute', label: 'Pricing', check: (lawyerProfile.price_per_minute || 0) >= 1 },
-    //   { key: 'languages', label: 'Languages', check: (lawyerProfile.languages?.length || 0) > 0 },
-    // ];
     const fields = [
       {
         key: 'bio',
@@ -156,12 +152,20 @@ const LawyerDashboard = () => {
         label: 'Bar Council Number',
         check: (lawyerProfile.bar_council_number?.trim().length || 0) > 0
       },
+      // {
+      //   key: 'price_per_minute',
+      //   label: 'Pricing',
+      //   check:
+      //     lawyerProfile.price_per_minute !== null &&
+      //     lawyerProfile.price_per_minute !== undefined,
+      // },
       {
-        key: 'price_per_minute',
+        key: 'pricing',
         label: 'Pricing',
         check:
-          lawyerProfile.price_per_minute !== null &&
-          lawyerProfile.price_per_minute !== undefined,
+          lawyerProfile.chat_price_per_minute !== null && lawyerProfile.chat_price_per_minute >= 5 &&
+          lawyerProfile.audio_price_per_minute !== null && lawyerProfile.audio_price_per_minute >= 5 &&
+          lawyerProfile.video_price_per_minute !== null && lawyerProfile.video_price_per_minute >= 5,
       },
       {
         key: 'languages',
@@ -284,7 +288,10 @@ const LawyerDashboard = () => {
         bio: lawyerProfileData.bio,
         specializations: lawyerProfileData.specializations,
         bar_council_number: lawyerProfileData.bar_council_number,
-        price_per_minute: lawyerProfileData.price_per_minute,
+        // price_per_minute: lawyerProfileData.price_per_minute,
+        chat_price_per_minute: lawyerProfileData.chat_price_per_minute,
+        audio_price_per_minute: lawyerProfileData.audio_price_per_minute,
+        video_price_per_minute: lawyerProfileData.video_price_per_minute,
         languages: lawyerProfileData.languages,
       });
     }

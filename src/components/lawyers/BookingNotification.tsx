@@ -140,7 +140,7 @@ export const BookingNotificationProvider = ({ children }: BookingNotificationPro
                 // Automatically filters out description details, leaving only bracketed categories
                 agenda: cleanAgendaForDisplay(consultation.agenda),
                 // Reverse the 15% markup to show the lawyer's actual earnings
-                amount: consultation.total_amount ? Math.floor(consultation.total_amount / 1.15) : 0,
+                amount: consultation.total_amount ? Math.round(consultation.total_amount / 1.15) : 0,
                 agenda: consultation.agenda,
                 countdown: 60,
               };
