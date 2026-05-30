@@ -209,12 +209,22 @@ const ClientManageAccount = () => {
         <div className="container max-w-4xl mx-auto px-4 py-8">
           {/* Header */}
           <div className="flex items-center gap-4 mb-8">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="h-5 w-5" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden md:flex h-8 w-8"
+              onClick={() => navigate('/dashboard')}
+            >
+              <ArrowLeft className="h-4 w-4" />
             </Button>
+
             <div>
-              <h1 className="font-serif text-3xl font-bold">Manage Account</h1>
-              <p className="text-muted-foreground">Manage your personal information and view account activity</p>
+              <h1 className="font-serif text-3xl font-bold">
+                Manage Account
+              </h1>
+              <p className="text-muted-foreground">
+                Manage your personal information and view account activity
+              </p>
             </div>
           </div>
           {/* Account Overview Stats */}

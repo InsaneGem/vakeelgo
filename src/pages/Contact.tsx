@@ -1,10 +1,9 @@
-import { MainLayout } from '@/components/layout/MainLayout';
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Mail,
@@ -12,8 +11,7 @@ import {
   MapPin,
   Clock,
   Send,
-  MessageSquare,
-  Building2
+  MessageSquare, ArrowLeft
 } from 'lucide-react';
 
 const Contact = () => {
@@ -51,206 +49,229 @@ const Contact = () => {
   };
 
   return (
-    <MainLayout>
+    <div className="bg-slate-50/60 min-h-screen text-slate-600 font-sans antialiased selection:bg-slate-900 selection:text-white">
+      {/* BACK BUTTON: Changed to absolute so it scrolls away with the header */}
+      <button
+        onClick={() => navigate(-1)}
+        className="hidden md:flex absolute top-20 left-8 z-50 items-center gap-2 text-slate-400 hover:text-white transition-colors bg-slate-900/50 px-4 py-2 rounded-full backdrop-blur-sm border border-slate-800"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span>Back</span>
+      </button>
+      {/* EXOTIC PREMIUM DARK HERO SECTION */}
+      <section className="relative bg-slate-950 py-16 sm:py-24 overflow-hidden border-b border-slate-900">
+        {/* Ambient Grid Lines & Glow Layer */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-40 pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[250px] bg-gradient-to-b from-slate-800/10 to-transparent blur-3xl pointer-events-none" />
 
-      <section className="hero-gradient py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="font-serif text-4xl md:text-5xl font-bold text-white mb-6 animate-fade-in">
+        <div className="container mx-auto px-4 max-w-3xl relative z-10 text-center">
+          <div className="inline-block px-4 py-1.5 bg-slate-900/90 border border-slate-800/60 text-slate-400 rounded-full text-[10px] font-mono tracking-widest uppercase mb-4">
+            Communications Desk
+          </div>
+          <h1 className="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-white mb-5">
             Contact Us
           </h1>
-          <p className="text-white/80 text-lg max-w-2xl mx-auto animate-fade-in">
-            Have questions? We're here to help. Reach out to our team and we'll
-            respond as soon as possible.
+          <p className="text-slate-400 text-xs sm:text-base max-w-xl mx-auto leading-relaxed font-light tracking-wide">
+            Initialize communication pathways to our support network or log direct inquiries regarding custom platform configurations.
           </p>
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Contact Info */}
-            <div className="space-y-6">
-              <div>
-                <h2 className="font-serif text-2xl font-bold mb-6">Get in Touch</h2>
-                <p className="text-muted-foreground mb-8">
-                  Whether you have a question about our services, pricing, or anything else,
-                  our team is ready to answer all your questions.
-                </p>
-              </div>
+      {/* MAIN PREMIUM LIGHT CANVAS AREA */}
+      <main className="container mx-auto px-4 max-w-6xl py-16 sm:py-24">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-              <Card className="card-premium">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Mail className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-1">Email</h3>
-                      <p className="text-muted-foreground text-sm">support@legalmate.com</p>
-                      <p className="text-muted-foreground text-sm">info@legalmate.com</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="card-premium">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Phone className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-1">Phone</h3>
-                      <p className="text-muted-foreground text-sm">+1 (800) 123-4567</p>
-                      <p className="text-muted-foreground text-sm">+1 (800) 987-6543</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="card-premium">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <MapPin className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-1">Office</h3>
-                      <p className="text-muted-foreground text-sm">
-                        123 Legal Avenue, Suite 500<br />
-                        New York, NY 10001<br />
-                        United States
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="card-premium">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Clock className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-1">Business Hours</h3>
-                      <p className="text-muted-foreground text-sm">
-                        Monday - Friday: 9:00 AM - 6:00 PM<br />
-                        Saturday: 10:00 AM - 4:00 PM<br />
-                        Sunday: Closed
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          {/* Informational Channel Parameters */}
+          <div className="space-y-4">
+            <div className="pb-2">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400 block mb-1">Directory Channels</span>
+              <h2 className="font-serif text-xl font-bold text-slate-900 tracking-tight mb-3">
+                Get in Touch
+              </h2>
+              <p className="text-slate-500 text-xs sm:text-sm leading-relaxed font-light">
+                Whether diagnosing technical runtime anomalies or processing account parameters, select your optimized contact point.
+              </p>
             </div>
 
-            {/* Contact Form */}
-            <div className="lg:col-span-2">
-              <Card className="card-premium">
-                <CardContent className="p-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <MessageSquare className="h-6 w-6 text-primary" />
-                    <h2 className="font-serif text-2xl font-bold">Send us a Message</h2>
+            {/* Email Card */}
+            <Card className="bg-white border border-slate-200/80 rounded-2xl shadow-2xs hover:border-slate-300 transition-all duration-300">
+              <CardContent className="p-5">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center justify-center shrink-0 shadow-3xs">
+                    <Mail className="h-4 w-4 text-slate-700" />
                   </div>
+                  <div className="space-y-1">
+                    <h3 className="text-xs sm:text-sm font-serif font-bold text-slate-900 tracking-tight">Email Network</h3>
+                    <p className="text-slate-600 text-xs font-mono font-light tracking-tight select-all">support@legalmate.com</p>
+                    <p className="text-slate-400 text-xs font-mono font-light tracking-tight select-all">info@legalmate.com</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="name">Full Name *</Label>
-                        <Input
-                          id="name"
-                          name="name"
-                          placeholder="John Doe"
-                          value={formData.name}
-                          onChange={handleChange}
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email Address *</Label>
-                        <Input
-                          id="email"
-                          name="email"
-                          type="email"
-                          placeholder="john@example.com"
-                          value={formData.email}
-                          onChange={handleChange}
-                          required
-                        />
-                      </div>
-                    </div>
+            {/* Phone Card */}
+            <Card className="bg-white border border-slate-200/80 rounded-2xl shadow-2xs hover:border-slate-300 transition-all duration-300">
+              <CardContent className="p-5">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center justify-center shrink-0 shadow-3xs">
+                    <Phone className="h-4 w-4 text-slate-700" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-xs sm:text-sm font-serif font-bold text-slate-900 tracking-tight">Voice Hotline</h3>
+                    <p className="text-slate-600 text-xs font-mono font-light tracking-tight">+1 (800) 123-4567</p>
+                    <p className="text-slate-400 text-xs font-mono font-light tracking-tight">+1 (800) 987-6543</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="phone">Phone Number</Label>
-                        <Input
-                          id="phone"
-                          name="phone"
-                          type="tel"
-                          placeholder="+1 (555) 000-0000"
-                          value={formData.phone}
-                          onChange={handleChange}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="subject">Subject *</Label>
-                        <Input
-                          id="subject"
-                          name="subject"
-                          placeholder="How can we help?"
-                          value={formData.subject}
-                          onChange={handleChange}
-                          required
-                        />
-                      </div>
-                    </div>
+            {/* Physical Location Card */}
+            <Card className="bg-white border border-slate-200/80 rounded-2xl shadow-2xs hover:border-slate-300 transition-all duration-300">
+              <CardContent className="p-5">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center justify-center shrink-0 shadow-3xs">
+                    <MapPin className="h-4 w-4 text-slate-700" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-xs sm:text-sm font-serif font-bold text-slate-900 tracking-tight">Physical Headquarters</h3>
+                    <p className="text-slate-500 text-xs leading-relaxed font-light">
+                      123 Legal Avenue, Suite 500<br />
+                      New York, NY 10001<br />
+                      United States
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
+            {/* Operational Clock Card */}
+            <Card className="bg-white border border-slate-200/80 rounded-2xl shadow-2xs hover:border-slate-300 transition-all duration-300">
+              <CardContent className="p-5">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center justify-center shrink-0 shadow-3xs">
+                    <Clock className="h-4 w-4 text-slate-700" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-xs sm:text-sm font-serif font-bold text-slate-900 tracking-tight">Operational Hours</h3>
+                    <p className="text-slate-500 text-xs leading-relaxed font-light">
+                      Monday - Friday: 9:00 AM - 6:00 PM<br />
+                      Saturday: 10:00 AM - 4:00 PM<br />
+                      Sunday: Closed
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Message Input Matrix */}
+          <div className="lg:col-span-2">
+            <Card className="bg-white border border-slate-200/80 rounded-2xl shadow-xs">
+              <CardContent className="p-6 sm:p-8">
+                <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
+                  <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200/60 flex items-center justify-center shrink-0 shadow-3xs">
+                    <MessageSquare className="h-4 w-4 text-slate-700" />
+                  </div>
+                  <h2 className="font-serif text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+                    Send us a Message
+                  </h2>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2">
-                      <Label htmlFor="message">Message *</Label>
-                      <Textarea
-                        id="message"
-                        name="message"
-                        placeholder="Tell us more about your inquiry..."
-                        rows={6}
-                        value={formData.message}
+                      <Label htmlFor="name" className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">Full Name *</Label>
+                      <Input
+                        id="name"
+                        name="name"
+                        placeholder="John Doe"
+                        className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-300 focus:border-slate-400 h-10 text-xs sm:text-sm rounded-xl transition-all shadow-3xs"
+                        value={formData.name}
                         onChange={handleChange}
                         required
                       />
                     </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">Email Address *</Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        placeholder="john@example.com"
+                        className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-300 focus:border-slate-400 h-10 text-xs sm:text-sm rounded-xl transition-all shadow-3xs"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                  </div>
 
-                    <Button type="submit" size="lg" className="w-full md:w-auto" disabled={submitting}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="phone" className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">Phone Number</Label>
+                      <Input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        placeholder="+1 (555) 000-0000"
+                        className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-300 focus:border-slate-400 h-10 text-xs sm:text-sm rounded-xl transition-all shadow-3xs"
+                        value={formData.phone}
+                        onChange={handleChange}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="subject" className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">Subject *</Label>
+                      <Input
+                        id="subject"
+                        name="subject"
+                        placeholder="How can we help?"
+                        className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-300 focus:border-slate-400 h-10 text-xs sm:text-sm rounded-xl transition-all shadow-3xs"
+                        value={formData.subject}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="message" className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">Message *</Label>
+                    <Textarea
+                      id="message"
+                      name="message"
+                      placeholder="Tell us more about your inquiry..."
+                      rows={6}
+                      className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-300 focus:border-slate-400 text-xs sm:text-sm rounded-xl resize-none min-h-[150px] transition-all shadow-3xs p-3 font-light"
+                      value={formData.message}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="pt-2">
+                    <Button
+                      type="submit"
+                      disabled={submitting}
+                      className="w-full md:w-auto bg-slate-950 text-white hover:bg-slate-900 font-medium text-xs h-10 px-6 tracking-wide rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                    >
                       {submitting ? (
-                        'Sending...'
+                        'Sending Transmissions...'
                       ) : (
                         <>
-                          <Send className="mr-2 h-5 w-5" />
+                          <Send className="h-3.5 w-3.5 text-slate-400" />
                           Send Message
                         </>
                       )}
                     </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </div>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
           </div>
-        </div>
-      </section>
 
-      {/* Map Section Placeholder */}
-      <section className="py-16 bg-secondary">
-        <div className="container mx-auto px-4">
-          <div className="bg-muted rounded-2xl h-[400px] flex items-center justify-center">
-            <div className="text-center">
-              <Building2 className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">Interactive Map</p>
-              <p className="text-sm text-muted-foreground">123 Legal Avenue, New York</p>
-            </div>
-          </div>
         </div>
-      </section>
-    </MainLayout>
+      </main>
+
+    </div>
   );
 };
 

@@ -532,7 +532,7 @@ const ClientDashboard = () => {
 
             {/* Active Sessions */}
             <Card
-              onClick={() => navigate('/dashboard/active-sessions')}
+              onClick={() => navigate('/client/active-sessions')}
               className={cn(smallCardStyle)}
             >
               <CardContent className="p-3 sm:p-5">

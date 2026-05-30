@@ -179,7 +179,7 @@ export const BookingNotificationProvider = ({ children }: BookingNotificationPro
 
               // 🔔 sound
               try {
-                const audio = new Audio('/notification.mp3');
+                const audio = new Audio('/alertTone.mp3');
                 audio.volume = 0.5;
                 audio.play().catch(() => { });
               } catch { }

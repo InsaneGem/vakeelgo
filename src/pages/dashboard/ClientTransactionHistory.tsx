@@ -462,13 +462,12 @@ const ClientTransactionHistory = () => {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-5">
                     <div className="flex items-center gap-3">
+                        {/* The Button is hidden by default (mobile), and becomes a flex block on medium screens */}
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
-                            onClick={() =>
-                                navigate('/dashboard')
-                            }
+                            className="hidden md:flex h-8 w-8"
+                            onClick={() => navigate('/dashboard')}
                         >
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
@@ -477,10 +476,8 @@ const ClientTransactionHistory = () => {
                             <h1 className="font-serif text-xl sm:text-2xl font-bold">
                                 Payment History
                             </h1>
-
                             <p className="text-muted-foreground text-xs mt-0.5">
-                                All your Razorpay payment
-                                activity
+                                All your Razorpay payment activity
                             </p>
                         </div>
                     </div>
@@ -488,9 +485,7 @@ const ClientTransactionHistory = () => {
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() =>
-                            fetchTransactions()
-                        }
+                        onClick={() => fetchTransactions()}
                         className="gap-1.5 h-8 text-xs"
                     >
                         <RefreshCw className="h-3 w-3" />

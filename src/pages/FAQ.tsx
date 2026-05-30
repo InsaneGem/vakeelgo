@@ -1,13 +1,12 @@
-import { MainLayout } from '@/components/layout/MainLayout';
-import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { HelpCircle, MessageCircle } from 'lucide-react';
+import { HelpCircle, MessageCircle, ChevronRight, ArrowLeft } from 'lucide-react';
 
 const faqCategories = [
   {
@@ -130,78 +129,111 @@ const FAQ = () => {
   const navigate = useNavigate();
 
   return (
-    <MainLayout>
-      {/* Hero Section */}
-      <section className="hero-gradient py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="font-serif text-4xl md:text-5xl font-bold text-white mb-6 animate-fade-in">
+    <div className="bg-slate-50/60 min-h-screen text-slate-600 font-sans antialiased selection:bg-slate-900 selection:text-white">
+      {/* BACK BUTTON: Changed to absolute so it scrolls away with the header */}
+      <button
+        onClick={() => navigate(-1)}
+        className="hidden md:flex absolute top-20 left-8 z-50 items-center gap-2 text-slate-400 hover:text-white transition-colors bg-slate-900/50 px-4 py-2 rounded-full backdrop-blur-sm border border-slate-800"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span>Back</span>
+      </button>
+      {/* EXOTIC PREMIUM DARK HERO SECTION */}
+      <section className="relative bg-slate-950 py-16 sm:py-24 overflow-hidden border-b border-slate-900">
+        {/* Ambient Grid Lines & Accent Blur */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-40 pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[250px] bg-gradient-to-b from-slate-800/10 to-transparent blur-3xl pointer-events-none" />
+
+        <div className="container mx-auto px-4 max-w-3xl relative z-10 text-center">
+          <div className="inline-block px-4 py-1.5 bg-slate-900/90 border border-slate-800/60 text-slate-400 rounded-full text-[10px] font-mono tracking-widest uppercase mb-4">
+            Operations Matrix
+          </div>
+          <h1 className="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-white mb-5">
             Frequently Asked Questions
           </h1>
-          <p className="text-white/80 text-lg max-w-2xl mx-auto animate-fade-in">
-            Find answers to common questions about LEGALMATE, our services, 
-            and how to get the most out of our platform.
+          <p className="text-slate-400 text-xs sm:text-base max-w-2xl mx-auto leading-relaxed font-light tracking-wide">
+            Review documented core runtime frameworks, transaction parameters, and procedural infrastructure blueprints for the platform.
           </p>
         </div>
       </section>
 
-      {/* FAQ Categories */}
-      <section className="py-20">
-        <div className="container mx-auto px-4 max-w-4xl">
-          {faqCategories.map((category, categoryIndex) => (
-            <div 
-              key={category.id} 
-              id={category.id}
-              className="mb-12 animate-slide-up"
-              style={{ animationDelay: `${categoryIndex * 0.1}s` }}
-            >
-              <div className="flex items-center gap-3 mb-6">
-                <HelpCircle className="h-6 w-6 text-primary" />
-                <h2 className="font-serif text-2xl font-bold">{category.title}</h2>
+      {/* MAIN FAQS WHITE CANVAS AREA */}
+      <main className="container mx-auto px-4 max-w-3xl py-16 sm:py-24">
+        {faqCategories.map((category) => (
+          <div
+            key={category.id}
+            id={category.id}
+            className="mb-16 scroll-mt-24"
+          >
+            {/* Category Header Bar */}
+            <div className="flex items-center gap-3 mb-6 border-b border-slate-200/80 pb-4">
+              <div className="w-8 h-8 rounded-lg bg-white border border-slate-200/80 flex items-center justify-center shrink-0 shadow-2xs">
+                <HelpCircle className="h-4 w-4 text-slate-700" />
               </div>
-              
-              <Accordion type="single" collapsible className="space-y-4">
-                {category.questions.map((faq, index) => (
-                  <AccordionItem 
-                    key={index} 
-                    value={`${category.id}-${index}`}
-                    className="border rounded-lg px-6 bg-card"
-                  >
-                    <AccordionTrigger className="text-left hover:no-underline py-4">
-                      <span className="font-medium">{faq.q}</span>
-                    </AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground pb-4">
-                      {faq.a}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
+              <h2 className="font-serif text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+                {category.title}
+              </h2>
             </div>
-          ))}
-        </div>
-      </section>
 
-      {/* Still Have Questions */}
-      <section className="py-16 bg-secondary">
-        <div className="container mx-auto px-4 text-center">
-          <MessageCircle className="h-12 w-12 text-primary mx-auto mb-4" />
-          <h2 className="font-serif text-2xl font-bold mb-4">
+            {/* Accordion List Component */}
+            <Accordion type="single" collapsible className="space-y-3.5">
+              {category.questions.map((faq, index) => (
+                <AccordionItem
+                  key={index}
+                  value={`${category.id}-${index}`}
+                  className="border border-slate-200/80 rounded-xl px-5 bg-white data-[state=open]:border-slate-300 shadow-2xs transition-all duration-200 overflow-hidden"
+                >
+                  <AccordionTrigger className="text-left hover:no-underline py-4 text-slate-900 hover:text-slate-950 text-xs sm:text-sm font-semibold tracking-tight gap-4">
+                    {faq.q}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-slate-500 text-xs sm:text-sm leading-relaxed pb-5 border-t border-slate-100 pt-4 font-light">
+                    {faq.a}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        ))}
+      </main>
+
+      {/* FOOTER TRIAGE ADVISORY PANEL */}
+      <section className="border-t border-slate-200 bg-white py-16 sm:py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(#f1f5f9_1.5px,transparent_1.5px)] [background-size:24px_24px] opacity-100 pointer-events-none" />
+
+        <div className="container mx-auto px-4 text-center max-w-xl relative z-10">
+          <div className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center justify-center mx-auto mb-5 shadow-2xs">
+            <MessageCircle className="h-4 w-4 text-slate-700" />
+          </div>
+
+          <h2 className="font-serif text-xl sm:text-2xl font-bold text-slate-900 tracking-tight mb-3">
             Still Have Questions?
           </h2>
-          <p className="text-muted-foreground max-w-xl mx-auto mb-8">
-            Can't find what you're looking for? Our support team is here to help 
-            you with any questions or concerns.
+          <p className="text-slate-500 text-xs sm:text-sm leading-relaxed mb-8 font-light">
+            If your structural configuration requirement lacks documented parameter resolution, initialize direct routing vectors to support systems.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" onClick={() => navigate('/contact')}>
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+            <Button
+              size="lg"
+              onClick={() => navigate('/contact')}
+              className="w-full sm:w-auto bg-slate-950 text-white hover:bg-slate-900 font-medium text-xs px-5 h-10 tracking-wide rounded-lg shadow-sm transition-colors group"
+            >
               Contact Support
+              <ChevronRight className="ml-1 h-3.5 w-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
             </Button>
-            <Button size="lg" variant="outline" onClick={() => navigate('/help')}>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => navigate('/help')}
+              className="w-full sm:w-auto border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-950 font-medium text-xs px-5 h-10 tracking-wide rounded-lg shadow-2xs transition-colors"
+            >
               Visit Help Center
             </Button>
           </div>
         </div>
       </section>
-    </MainLayout>
+
+    </div>
   );
 };
 

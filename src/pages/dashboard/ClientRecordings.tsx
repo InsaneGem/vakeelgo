@@ -164,16 +164,21 @@ const ClientRecordings = () => {
                 <div className="max-w-3xl mx-auto px-4 py-8">
                     {/* Header */}
                     <div className="flex items-center gap-3 mb-8 animate-fade-in">
-                        <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-                            <ArrowLeft className="h-5 w-5" />
+                        {/* Back Button: Hidden on mobile, visible on desktop */}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="hidden md:flex h-8 w-8"
+                            onClick={() => navigate('/dashboard')}
+                        >
+                            <ArrowLeft className="h-4 w-4" />
                         </Button>
+
                         <div>
                             <h1 className="text-2xl font-bold flex items-center gap-2">
-                                {/* <FileVideo className="h-6 w-6 text-primary" /> */}
                                 Recordings
                             </h1>
                             <p className="text-sm text-muted-foreground">
-                                {/* {recordings.length} recording{recordings.length !== 1 ? 's' : ''} saved */}
                                 Saved Recent Consultation Recordings.
                             </p>
                         </div>

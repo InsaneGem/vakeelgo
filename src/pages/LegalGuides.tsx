@@ -1,15 +1,39 @@
-// import { MainLayout } from '@/components/layout/MainLayout';
-import { ClientLayout } from '@/components/layout/ClientLayout';
+import { useState, useMemo, ComponentType, ChangeEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { Input } from '@/components/ui/input';
 import {
-  FileText, Home, Briefcase, Users, Car, Heart,
-  Building, Shield, Scale, ArrowRight, BookOpen,
-  ClipboardList, AlertCircle
+  Home,
+  Briefcase,
+  Car,
+  Heart,
+  Building,
+  Scale,
+  BookOpen,
+  ClipboardList,
+  AlertCircle,
+  ExternalLink,
+  ChevronRight,
+  Search,
+  Filter, ArrowLeft
 } from 'lucide-react';
 
-const legalGuides = [
+interface LegalGuideItem {
+  icon: ComponentType<{ className?: string }>;
+  title: string;
+  category: string;
+  steps: string[];
+  important: string;
+}
+
+interface QuickLinkItem {
+  title: string;
+  description: string;
+  url: string;
+}
+
+const legalGuides: LegalGuideItem[] = [
   {
     icon: ClipboardList,
     title: 'Filing an FIR (First Information Report)',
@@ -101,115 +125,240 @@ const legalGuides = [
   },
 ];
 
-const quickLinks = [
+const quickLinks: QuickLinkItem[] = [
   { title: 'e-Courts Services', description: 'Check case status online', url: 'https://ecourts.gov.in' },
   { title: 'e-Daakhil Portal', description: 'File consumer complaints online', url: 'https://edaakhil.nic.in' },
-  { title: 'NALSA', description: 'Free legal aid services', url: 'https://nalsa.gov.in' },
-  { title: 'India Code', description: 'Access all Indian laws', url: 'https://www.indiacode.nic.in' },
+  { title: 'NALSA Services', description: 'Free legal aid services', url: 'https://nalsa.gov.in' },
+  { title: 'India Code Engine', description: 'Access all Indian laws', url: 'https://www.indiacode.nic.in' },
 ];
 
 const LegalGuides = () => {
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+
+  const categories = useMemo(() => {
+    const list = new Set(legalGuides.map(g => g.category));
+    return ['All', ...Array.from(list)];
+  }, []);
+
+  const filteredGuides = useMemo(() => {
+    return legalGuides.filter((guide) => {
+      const matchesCategory = selectedCategory === 'All' || guide.category === selectedCategory;
+      const matchesSearch = guide.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        guide.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        guide.steps.some(step => step.toLowerCase().includes(searchQuery.toLowerCase()));
+      return matchesCategory && matchesSearch;
+    });
+  }, [searchQuery, selectedCategory]);
+
+  const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
 
   return (
-    // <MainLayout>
-    <ClientLayout>
-      {/* Hero */}
-      <section className="hero-gradient py-20">
-        <div className="container mx-auto px-4 text-center">
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-2 mb-6">
-            <BookOpen className="h-4 w-4 text-white" />
-            <span className="text-white/90 text-sm font-medium">Step-by-Step Procedures</span>
+    // Styled exactly to replicate the Slate theme profile from your Terms configuration
+    <div className="bg-slate-50/60 min-h-screen text-slate-600 font-sans antialiased selection:bg-slate-900 selection:text-white">
+      {/* BACK BUTTON: Changed to absolute so it scrolls away with the header */}
+      <button
+        onClick={() => navigate(-1)}
+        className="hidden md:flex absolute top-20 left-8 z-50 items-center gap-2 text-slate-400 hover:text-white transition-colors bg-slate-900/50 px-4 py-2 rounded-full backdrop-blur-sm border border-slate-800"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span>Back</span>
+      </button>
+
+      {/* EXOTIC PREMIUM DARK HEADER AREA (Aligned with image_c6440c.png) */}
+      <header className="relative bg-slate-950 py-16 sm:py-20 overflow-hidden border-b border-slate-900 text-center">
+        {/* Luxury Textures & Grid Alignments */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-40 pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[200px] bg-gradient-to-b from-slate-800/10 to-transparent blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 container mx-auto px-4 max-w-5xl">
+          <div className="inline-flex items-center justify-center p-3 bg-slate-900/80 border border-slate-800 rounded-2xl mb-5 text-slate-400 shadow-2xl">
+            <BookOpen className="h-6 w-6 text-slate-300" />
           </div>
-          <h1 className="font-serif text-4xl md:text-5xl font-bold text-white mb-6 animate-fade-in">
-            Legal Guides
+
+          <h1 className="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-white mb-4">
+            Legal Guides &amp; Blueprints
           </h1>
-          <p className="text-white/80 text-lg max-w-2xl mx-auto animate-fade-in">
-            Comprehensive step-by-step guides for common legal procedures in India. 
-            Understand the process before consulting with a lawyer.
-          </p>
-        </div>
-      </section>
 
-      {/* Guides */}
-      <section className="py-20">
-        <div className="container mx-auto px-4 max-w-5xl">
-          <div className="space-y-10">
-            {legalGuides.map((guide, index) => (
-              <Card 
-                key={guide.title} 
-                className="card-premium animate-slide-up overflow-hidden"
-                style={{ animationDelay: `${index * 0.05}s` }}
+          <p className="text-slate-400 text-xs sm:text-sm max-w-2xl mx-auto leading-relaxed font-light tracking-wide">
+            Comprehensive step-by-step documentation for everyday legal procedures in India. Understand operational protocol configurations before onboarding firm counsel.
+          </p>
+
+          {/* Interactive Dynamic Search Architecture Nodes */}
+          <div className="max-w-md mx-auto mt-8 relative group">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl opacity-30 group-focus-within:opacity-70 blur-xs transition duration-300" />
+            <div className="relative flex items-center">
+              <Search className="absolute left-4 h-4 w-4 text-slate-500" />
+              <Input
+                type="text"
+                placeholder="Search procedures, laws, or keywords..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="pl-11 pr-4 py-6 bg-slate-900/90 border-slate-800 rounded-xl text-slate-200 placeholder:text-slate-600 focus-visible:ring-1 focus-visible:ring-slate-700 focus-visible:ring-offset-0 text-xs sm:text-sm transition-all"
+              />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* PREMIUM WHITE BODY CANVAS CONTAINER */}
+      <main className="container mx-auto px-4 max-w-5xl py-10 sm:py-16">
+
+        {/* Filter Segment System Selection Track */}
+        <div className="flex flex-col gap-3 mb-10 pb-4 border-b border-slate-200/70">
+          <div className="flex items-center gap-2 text-slate-400 text-[10px] uppercase tracking-widest font-bold">
+            <Filter className="h-3 w-3" />
+            <span>Jurisdiction Track</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 ${selectedCategory === category
+                  ? 'bg-slate-950 text-white shadow-lg shadow-slate-950/10 translate-y-[-1px]'
+                  : 'text-slate-500 hover:text-slate-900 hover:bg-white border border-transparent hover:border-slate-200'
+                  }`}
               >
-                <CardHeader className="border-b bg-secondary/50">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                      <guide.icon className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{guide.category}</span>
-                      <CardTitle className="font-serif text-xl mt-1">{guide.title}</CardTitle>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  <ol className="space-y-3 mb-6">
-                    {guide.steps.map((step, stepIndex) => (
-                      <li key={stepIndex} className="flex items-start gap-3">
-                        <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
-                          {stepIndex + 1}
+                {category}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Master White Cards Architecture Node */}
+        <div className="grid grid-cols-1 gap-8 relative bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-10 shadow-sm hover:shadow-md transition-all duration-500 overflow-hidden">
+
+          {/* Subtle light geometric grid pattern matching Terms look */}
+          <div className="absolute inset-0 bg-[radial-gradient(#f1f5f9_1.5px,transparent_1.5px)] [background-size:24px_24px] opacity-100 pointer-events-none" />
+
+          <div className="relative z-10 space-y-12">
+            {filteredGuides.length > 0 ? (
+              filteredGuides.map((guide) => {
+                const IconComponent = guide.icon;
+                return (
+                  <section key={guide.title} className="border-b border-slate-100 pb-10 last:border-b-0 last:pb-0 transition-all duration-300">
+
+                    {/* Header Block inside Section */}
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className="p-2 bg-slate-50 rounded-xl text-slate-900 border border-slate-100 shadow-xs">
+                        <IconComponent className="h-5 w-5 text-slate-700" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-0.5">
+                          {guide.category}
                         </span>
-                        <span className="text-sm">{step}</span>
-                      </li>
-                    ))}
-                  </ol>
-                  <div className="bg-secondary rounded-lg p-4 flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                    <div>
-                      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Important Note</span>
-                      <p className="text-sm mt-1">{guide.important}</p>
+                        <h2 className="font-serif text-base sm:text-xl font-bold text-slate-900 tracking-tight">
+                          {guide.title}
+                        </h2>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+
+                    {/* Content Process Maps */}
+                    <div className="space-y-6 pl-1.5">
+                      <ol className="space-y-4">
+                        {guide.steps.map((step, stepIndex) => (
+                          <li key={stepIndex} className="flex items-start gap-4 group/step">
+                            <span className="w-5 h-5 rounded-md bg-slate-50 border border-slate-200 text-[10px] font-mono font-bold text-slate-500 flex items-center justify-center shrink-0 mt-0.5 group-hover/step:border-slate-400 group-hover/step:text-slate-800 transition-colors">
+                              {(stepIndex + 1).toString().padStart(2, '0')}
+                            </span>
+                            <span className="text-xs sm:text-sm text-slate-600 leading-relaxed pt-0.5 transition-colors group-hover/step:text-slate-900">
+                              {step}
+                            </span>
+                          </li>
+                        ))}
+                      </ol>
+
+                      {/* Framework Alert Provisions Box */}
+                      <div className="border-l-2 border-slate-900 bg-slate-50 rounded-r-xl p-4 flex gap-3 shadow-inner">
+                        <AlertCircle className="h-4 w-4 text-slate-700 shrink-0 mt-0.5" />
+                        <div>
+                          <strong className="text-slate-900 text-xs font-mono uppercase tracking-wide block mb-0.5">Statutory Provision Note:</strong>
+                          <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed font-light">
+                            {guide.important}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                  </section>
+                );
+              })
+            ) : (
+              <div className="text-center py-16 bg-slate-50/50 border border-slate-200/60 border-dashed rounded-xl">
+                <Scale className="h-8 w-8 text-slate-300 mx-auto mb-3" />
+                <p className="text-slate-600 font-medium text-sm">No procedural blueprints found.</p>
+                <p className="text-slate-400 text-xs mt-1">Try resetting or loosening your active search filters.</p>
+              </div>
+            )}
           </div>
         </div>
-      </section>
 
-      {/* Quick Links */}
-      <section className="py-16 bg-secondary">
-        <div className="container mx-auto px-4">
-          <h2 className="font-serif text-2xl font-bold text-center mb-10">Useful Government Portals</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">
+        {/* Public Utility Portals Grid Area */}
+        <div className="mt-16 border-t border-slate-200/60 pt-12">
+          <div className="text-center sm:text-left mb-8">
+            <h3 className="font-serif text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+              Useful Government Portals
+            </h3>
+            <p className="text-xs text-slate-400 mt-1 font-light">
+              Direct structural pipelines to sovereign digital platforms and verification data clusters.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {quickLinks.map((link) => (
-              <Card key={link.title} className="card-premium text-center">
-                <CardContent className="pt-6">
-                  <h3 className="font-semibold mb-1">{link.title}</h3>
-                  <p className="text-muted-foreground text-xs mb-3">{link.description}</p>
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={link.url} target="_blank" rel="noopener noreferrer">Visit Portal</a>
-                  </Button>
-                </CardContent>
-              </Card>
+              <a
+                key={link.title}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-col justify-between p-4 bg-white border border-slate-200/70 rounded-xl hover:border-slate-300 hover:shadow-xs transition-all duration-300 group text-left"
+              >
+                <div>
+                  <h4 className="font-semibold text-xs sm:text-sm text-slate-800 group-hover:text-slate-950 transition-colors mb-1">
+                    {link.title}
+                  </h4>
+                  <p className="text-slate-500 text-[11px] leading-relaxed mb-4 font-light">
+                    {link.description}
+                  </p>
+                </div>
+
+                <span className="text-[10px] font-mono tracking-wider text-slate-400 font-medium inline-flex items-center gap-1 mt-auto uppercase">
+                  Open Portal
+                  <ExternalLink className="h-3 w-3 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all" />
+                </span>
+              </a>
             ))}
           </div>
         </div>
-      </section>
 
-      {/* CTA */}
-      <section className="py-16">
-        <div className="container mx-auto px-4 text-center">
-          <Scale className="h-12 w-12 text-primary mx-auto mb-4" />
-          <h2 className="font-serif text-2xl font-bold mb-4">Need Professional Legal Help?</h2>
-          <p className="text-muted-foreground max-w-xl mx-auto mb-8">
-            These guides are for informational purposes. For specific legal matters, consult a qualified lawyer on LEGALMATE.
-          </p>
-          <Button size="lg" onClick={() => navigate('/lawyers')}>Consult a Lawyer Now</Button>
+        {/* Action Conversion Pipeline Panel */}
+        <div className="bg-slate-950 text-slate-200 rounded-2xl p-6 sm:p-10 mt-16 relative overflow-hidden shadow-xl transition-all duration-300 hover:scale-[1.002]">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-slate-900 rounded-full blur-3xl opacity-50" />
+
+          <div className="relative z-10 max-w-2xl">
+            <h4 className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest mb-2">Advisory Pipeline</h4>
+            <h2 className="text-xl sm:text-2xl font-serif font-bold text-white mb-3">Need Professional Legal Assistance?</h2>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-light mb-6">
+              These blueprints act strictly as informational maps. For granular advisory workflows or litigation defense actions, initiate secure lines with verified legal teams across the LegalMate cluster.
+            </p>
+
+            <Button
+
+              onClick={() => navigate('/signup?role=client')}
+              className="bg-white text-slate-950 hover:bg-slate-100 font-semibold text-xs px-5 py-5 tracking-wide rounded-xl transition-all shadow-md group"
+            >
+              Consult a Lawyer Now
+              <ChevronRight className="h-3.5 w-3.5 ml-1 text-slate-950 group-hover:translate-x-0.5 transition-transform" />
+            </Button>
+          </div>
         </div>
-      </section>
-    {/* </MainLayout> */}
-    </ClientLayout>
+
+      </main>
+    </div>
   );
 };
 

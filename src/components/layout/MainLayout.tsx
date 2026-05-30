@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 
+
 interface MainLayoutProps {
   children: ReactNode;
   showFooter?: boolean;

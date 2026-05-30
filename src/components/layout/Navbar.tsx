@@ -1,172 +1,4 @@
 
-// import { Link, useNavigate } from 'react-router-dom';
-// import { Button } from '@/components/ui/button';
-// import { useAuth } from '@/contexts/AuthContext';
-// import { Scale, Menu, X, User, LogOut, Shield } from 'lucide-react';
-// import { useState } from 'react';
-// import { NavDropdown } from './NavDropdown';
-// import { MobileNavAccordion } from './MobileNavAccordion';
-// import { navMenuConfig } from './navMenuConfig';
-// import {
-//   DropdownMenu,
-//   DropdownMenuContent,
-//   DropdownMenuItem,
-//   DropdownMenuSeparator,
-//   DropdownMenuTrigger,
-// } from '@/components/ui/dropdown-menu';
-
-// export const Navbar = () => {
-//   const { user, role, signOut } = useAuth();
-//   const navigate = useNavigate();
-//   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-//   const handleSignOut = async () => {
-//     await signOut();
-//     navigate('/');
-//   };
-
-//   const getDashboardLink = () => {
-//     switch (role) {
-//       case 'admin':
-//         return '/admin';
-//       case 'lawyer':
-//         return '/lawyer/dashboard';
-//       default:
-//         return '/dashboard';
-//     }
-//   };
-
-//   return (
-//     // <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
-//     // <nav className="fixed top-[28px] left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
-//     <nav className="fixed top-0 left-0 right-0 z-50 
-// bg-background/70 backdrop-blur-xl border-b border-border/50 
-// shadow-sm transition-all duration-300">
-//       {/* <div className="container mx-auto px-4"> */}
-//       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-//         <div className="flex items-center justify-between h-16">
-//           {/* Logo */}
-//           {/* <Link to="/" className="flex items-center gap-2"> */}
-//           <Link to="/" className="flex items-center gap-2 group">
-//             <Scale className="h-8 w-8" />
-//             {/* <span className="font-serif text-xl font-semibold tracking-tight">LEGALMATEE</span> */}
-//             <span className="font-serif text-xl font-semibold tracking-tight 
-// group-hover:text-primary transition-colors duration-300">
-//               LEGALMATEE
-//             </span>
-//           </Link>
-
-//           {/* Desktop Navigation */}
-//           <div className="hidden lg:flex items-center gap-6">
-//             {navMenuConfig.map((section) => (
-//               <NavDropdown key={section.title} section={section} />
-//             ))}
-//             {role === 'admin' && (
-//               <Link to="/admin" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
-//                 <Shield className="h-4 w-4" />
-//                 Admin
-//               </Link>
-//             )}
-//           </div>
-
-//           {/* Auth Buttons */}
-//           <div className="hidden lg:flex items-center gap-4">
-//             {user ? (
-//               <DropdownMenu>
-//                 <DropdownMenuTrigger asChild>
-//                   {/* <Button variant="outline" size="sm" className="gap-2"> */}
-//                   <Button
-//                     variant="outline"
-//                     size="sm"
-//                     className="gap-2 rounded-full px-4 hover:bg-primary/10 transition-all"
-//                   >
-//                     <User className="h-4 w-4" />
-//                     Account
-//                   </Button>
-//                 </DropdownMenuTrigger>
-//                 <DropdownMenuContent align="end" className="w-48">
-//                   <DropdownMenuItem onClick={() => navigate(getDashboardLink())}>
-//                     Dashboard
-//                   </DropdownMenuItem>
-//                   <DropdownMenuItem onClick={() => navigate('/settings')}>
-//                     Settings
-//                   </DropdownMenuItem>
-//                   <DropdownMenuSeparator />
-//                   <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
-//                     <LogOut className="h-4 w-4 mr-2" />
-//                     Sign Out
-//                   </DropdownMenuItem>
-//                 </DropdownMenuContent>
-//               </DropdownMenu>
-//             ) : (
-//               <>
-//                 <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>
-//                   Sign In
-//                 </Button>
-//                 <Button size="sm" onClick={() => navigate('/signup')}>
-//                   Get Started
-//                 </Button>
-//               </>
-//             )}
-//           </div>
-
-//           {/* Mobile Menu Button */}
-//           <button
-//             // className="lg:hidden p-2"
-//             className="lg:hidden p-2 rounded-lg hover:bg-secondary transition-all"
-//             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-//           >
-//             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-//           </button>
-//         </div>
-//         {/* Mobile Menu */}
-//         {mobileMenuOpen && (
-//           // <div className="lg:hidden py-4 border-t border-border animate-fade-in">
-//           <div className="lg:hidden py-4 border-t border-border 
-// bg-background/95 backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-200">
-//             <div className="flex flex-col gap-2">
-//               <MobileNavAccordion
-//                 sections={navMenuConfig}
-//                 onNavigate={() => setMobileMenuOpen(false)}
-//               />
-//               {role === 'admin' && (
-//                 <Link
-//                   to="/admin"
-//                   className="text-sm font-medium py-2 text-primary flex items-center gap-2"
-//                   onClick={() => setMobileMenuOpen(false)}
-//                 >
-//                   <Shield className="h-4 w-4" />
-//                   Admin Dashboard
-//                 </Link>
-//               )}
-//               <div className="flex flex-col gap-2 pt-4 border-t border-border">
-//                 {user ? (
-//                   <>
-//                     <Button variant="outline" onClick={() => { navigate(getDashboardLink()); setMobileMenuOpen(false); }}>
-//                       Dashboard
-//                     </Button>
-//                     <Button variant="ghost" onClick={handleSignOut}>
-//                       Sign Out
-//                     </Button>
-//                   </>
-//                 ) : (
-//                   <>
-//                     <Button variant="outline" onClick={() => { navigate('/login'); setMobileMenuOpen(false); }}>
-//                       Sign In
-//                     </Button>
-//                     <Button onClick={() => { navigate('/signup'); setMobileMenuOpen(false); }}>
-//                       Get Started
-//                     </Button>
-//                   </>
-//                 )}
-//               </div>
-//             </div>
-//           </div>
-//         )}
-//       </div>
-//     </nav>
-//   );
-// };
 
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -224,7 +56,7 @@ export const Navbar = () => {
     shadow-sm transition-all duration-300">
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14">
 
           {/* LOGO */}
           <Link to="/" className="flex items-center gap-2 group">
@@ -322,10 +154,10 @@ export const Navbar = () => {
 
         {/* MOBILE MENU */}
         {mobileMenuOpen && (
-          <div className="lg:hidden fixed top-16 left-0 right-0 z-[99] 
+          <div className="lg:hidden fixed top-14 left-0 right-0 z-[99] 
           bg-background border-t border-border 
           animate-in fade-in slide-in-from-top-2 duration-200 
-          max-h-[calc(100vh-4rem)] overflow-y-auto shadow-xl">
+          max-h-[calc(100vh-3.5rem)] overflow-y-auto shadow-xl">
 
             <div className="px-4 py-4 space-y-6">
 
@@ -402,3 +234,4 @@ export const Navbar = () => {
     </nav>
   );
 };
+

@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Scale, Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instagram } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -29,178 +28,111 @@ export const Footer = () => {
         clients: consultationCount > 0 ? `${Math.floor(consultationCount * 0.8)}+` : '10K+'
       };
     },
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-primary text-primary-foreground">
+    <footer className="bg-zinc-950 text-zinc-200 border-t border-zinc-800/60 font-sans tracking-tight">
       {/* Main Footer */}
-      <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
-          {/* Brand */}
-          <div className="lg:col-span-2">
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <Scale className="h-8 w-8" />
-              <span className="font-serif text-xl font-semibold">LEGALMATE</span>
-            </Link>
-            <p className="text-sm text-primary-foreground/70 leading-relaxed mb-6 max-w-sm">
-              Connect with verified lawyers for expert legal advice via chat, audio, or video consultations.
-              Your trusted partner for all legal matters.
-            </p>
+      <div className="container mx-auto px-4 sm:px-6 py-12">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
 
-            {/* Contact Info */}
-            <div className="space-y-3">
-              <a href="mailto:support@legalmate.com" className="flex items-center gap-3 text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                <Mail className="h-4 w-4" />
+          {/* Brand Column: Spans full width on mobile/tablet */}
+          <div className="col-span-2 lg:col-span-2 flex flex-col justify-between space-y-4">
+            <div>
+              <Link to="/" className="inline-flex items-center gap-2 group transition-opacity hover:opacity-90">
+                <Scale className="h-6 w-6 text-zinc-400 group-hover:text-white transition-colors" />
+                <span className="font-serif text-lg font-bold tracking-wider text-white">LEGALMATE</span>
+              </Link>
+              <p className="mt-3 text-xs text-zinc-400 leading-relaxed max-w-sm">
+                Connect with verified lawyers for expert legal advice via chat, audio, or video consultations.
+                Your trusted partner for all legal matters.
+              </p>
+            </div>
+
+            <div className="space-y-2.5 pt-2">
+              <a href="mailto:insanegem142012@gmail.com" className="flex items-center gap-2.5 text-xs text-zinc-400 hover:text-white transition-colors w-fit">
+                <Mail className="h-3.5 w-3.5 text-zinc-500" />
                 insanegem142012@gmail.com
               </a>
-              <a href="tel:+18001234567" className="flex items-center gap-3 text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                <Phone className="h-4 w-4" />
+              <a href="tel:+919281472291" className="flex items-center gap-2.5 text-xs text-zinc-400 hover:text-white transition-colors w-fit">
+                <Phone className="h-3.5 w-3.5 text-zinc-500" />
                 +91 9281472291
               </a>
-              <div className="flex items-center gap-3 text-sm text-primary-foreground/70">
-                <MapPin className="h-4 w-4" />
-                Basavanna Nagar - 560066, Banaglore
+              <div className="flex items-center gap-2.5 text-xs text-zinc-400">
+                <MapPin className="h-3.5 w-3.5 text-zinc-500" />
+                Basavanna Nagar - 560066, Bangalore
               </div>
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h4 className="font-semibold mb-4">Quick Links</h4>
-            <ul className="space-y-3">
-              <li>
-                <Link to="/lawyers" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Find Lawyers
-                </Link>
-              </li>
-              <li>
-                <Link to="/categories" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Practice Areas
-                </Link>
-              </li>
-              <li>
-                <Link to="/how-it-works" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  How It Works
-                </Link>
-              </li>
-              <li>
-                <Link to="/signup?role=lawyer" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Join as Lawyer
-                </Link>
-              </li>
-              <li>
-                <Link to="/signup" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Sign Up
-                </Link>
-              </li>
+          {/* Link Columns: Each takes 1 column, forcing 2-per-row layout on mobile/tablet */}
+          <div className="col-span-1">
+            <h4 className="text-xs font-semibold uppercase tracking-widest text-zinc-400 mb-3.5">Quick Links</h4>
+            <ul className="space-y-2">
+              {[
+                { to: "/signup?role=client", label: "Find Lawyers" },
+                { to: "/categories", label: "Practice Areas" },
+                { to: "/how-it-works", label: "How It Works" },
+                { to: "/signup?role=lawyer", label: "Join as Lawyer" }
+              ].map((link) => (
+                <li key={link.to}>
+                  <Link to={link.to} className="text-xs text-zinc-400 hover:text-white transition-all duration-200 hover:translate-x-1 inline-block">{link.label}</Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Support */}
-          <div>
-            <h4 className="font-semibold mb-4">Support</h4>
-            <ul className="space-y-3">
-              <li>
-                <Link to="/help" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Help Center
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Contact Us
-                </Link>
-              </li>
-              <li>
-                <Link to="/faq" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  FAQs
-                </Link>
-              </li>
-              <li>
-                <a href="mailto:feedback@legalmate.com" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Feedback
-                </a>
-              </li>
+          <div className="col-span-1">
+            <h4 className="text-xs font-semibold uppercase tracking-widest text-zinc-400 mb-3.5">Support</h4>
+            <ul className="space-y-2">
+              <li><Link to="/help" className="text-xs text-zinc-400 hover:text-white transition-all duration-200 hover:translate-x-1 inline-block">Help Center</Link></li>
+              <li><Link to="/contact" className="text-xs text-zinc-400 hover:text-white transition-all duration-200 hover:translate-x-1 inline-block">Contact Us</Link></li>
+              <li><Link to="/faq" className="text-xs text-zinc-400 hover:text-white transition-all duration-200 hover:translate-x-1 inline-block">FAQs</Link></li>
             </ul>
           </div>
 
-          {/* Legal */}
-          <div>
-            <h4 className="font-semibold mb-4">Legal</h4>
-            <ul className="space-y-3">
-              <li>
-                <Link to="/privacy" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link to="/terms" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link to="/refund" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Refund Policy
-                </Link>
-              </li>
+          <div className="col-span-1">
+            <h4 className="text-xs font-semibold uppercase tracking-widest text-zinc-400 mb-3.5">Legal</h4>
+            <ul className="space-y-2">
+              {[
+                { to: "/privacy", label: "Privacy Policy" },
+                { to: "/terms", label: "Terms of Service" },
+                { to: "/refund", label: "Refund Policy" }
+              ].map((link) => (
+                <li key={link.to}>
+                  <Link to={link.to} className="text-xs text-zinc-400 hover:text-white transition-all duration-200 hover:translate-x-1 inline-block">{link.label}</Link>
+                </li>
+              ))}
             </ul>
           </div>
+
         </div>
       </div>
 
       {/* Stats Bar */}
-      <div className="border-t border-primary-foreground/10">
-        <div className="container mx-auto px-4 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="font-serif text-2xl md:text-3xl font-bold mb-1">{stats?.clients || '10K+'}</div>
-              <div className="text-xs md:text-sm text-primary-foreground/60">Happy Clientsss</div>
-            </div>
-            <div>
-              <div className="font-serif text-2xl md:text-3xl font-bold mb-1">{stats?.lawyers || '500+'}</div>
-              <div className="text-xs md:text-sm text-primary-foreground/60">Verified Lawyers</div>
-            </div>
-            <div>
-              <div className="font-serif text-2xl md:text-3xl font-bold mb-1">{stats?.consultations || '50K+'}</div>
-              <div className="text-xs md:text-sm text-primary-foreground/60">Consultations</div>
-            </div>
-            <div>
-              <div className="font-serif text-2xl md:text-3xl font-bold mb-1">⭐ {stats?.rating || '4.9'}</div>
-              <div className="text-xs md:text-sm text-primary-foreground/60">Average Rating</div>
-            </div>
+      <div className="border-t border-zinc-900 bg-zinc-950/40">
+        <div className="container mx-auto px-4 sm:px-6 py-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x md:divide-zinc-900 divide-none">
+            <div className="px-2"><div className="text-xl md:text-2xl font-bold font-serif text-white">{stats?.clients || '10K+'}</div><div className="text-[10px] uppercase tracking-wider text-zinc-500 mt-0.5">Happy Clients</div></div>
+            <div className="px-2 border-zinc-900"><div className="text-xl md:text-2xl font-bold font-serif text-white">{stats?.lawyers || '500+'}</div><div className="text-[10px] uppercase tracking-wider text-zinc-500 mt-0.5">Verified Lawyers</div></div>
+            <div className="px-2 border-zinc-900"><div className="text-xl md:text-2xl font-bold font-serif text-white">{stats?.consultations || '50K+'}</div><div className="text-[10px] uppercase tracking-wider text-zinc-500 mt-0.5">Consultations</div></div>
+            <div className="px-2 border-zinc-900"><div className="text-xl md:text-2xl font-bold font-serif text-white">★ {stats?.rating || '4.9'}</div><div className="text-[10px] uppercase tracking-wider text-zinc-500 mt-0.5">Average Rating</div></div>
           </div>
         </div>
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-primary-foreground/10">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-primary-foreground/60 text-center md:text-left">
-              © {currentYear} LegalMate. All rights reserved.
-            </p>
-
-            {/* Social Links */}
-            <div className="flex items-center gap-4">
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-primary-foreground/60 hover:text-primary-foreground transition-colors">
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-primary-foreground/60 hover:text-primary-foreground transition-colors">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-primary-foreground/60 hover:text-primary-foreground transition-colors">
-                <Linkedin className="h-5 w-5" />
-              </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-primary-foreground/60 hover:text-primary-foreground transition-colors">
-                <Instagram className="h-5 w-5" />
-              </a>
+      <div className="border-t border-zinc-900 bg-zinc-950/80">
+        <div className="container mx-auto px-4 sm:px-6 py-5">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-[11px] uppercase tracking-wider text-zinc-500 text-center sm:text-left order-2 sm:order-1">© {currentYear} LEGALMATE. All rights reserved.</p>
+            <div className="flex items-center gap-4 order-1 sm:order-2">
+              {[{ href: "https://facebook.com", icon: Facebook }, { href: "https://twitter.com", icon: Twitter }, { href: "https://linkedin.com", icon: Linkedin }, { href: "https://instagram.com", icon: Instagram }].map((social, idx) => { const Icon = social.icon; return (<a key={idx} href={social.href} target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-white transition-colors p-1 hover:bg-zinc-900 rounded-md"><Icon className="h-4 w-4" /></a>); })}
             </div>
-
-            <p className="text-sm text-primary-foreground/60 text-center md:text-right">
-              Trusted by thousands worldwide
-            </p>
+            <p className="text-[11px] uppercase tracking-wider text-zinc-500 text-center sm:text-right hidden md:block order-3">Trusted by thousands worldwide</p>
           </div>
         </div>
       </div>

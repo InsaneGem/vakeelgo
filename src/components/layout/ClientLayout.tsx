@@ -1,6 +1,8 @@
 import { ReactNode } from 'react';
 import { ClientNavbar } from './ClientNavbar';
 import { ClientFooter } from './ClientFooter';
+
+
 interface ClientLayoutProps {
   children: ReactNode;
   showClientFooter?: boolean;

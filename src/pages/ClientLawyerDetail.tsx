@@ -269,7 +269,7 @@ const ClientLawyerDetail = () => {
           </div>
           <h2 className="text-2xl font-semibold mb-2">Lawyer Not Found</h2>
           <p className="text-muted-foreground mb-6">This profile doesn't exist or has been removed.</p>
-          <Button onClick={() => navigate('/dashboard')}>Backk to Dashboard</Button>
+          <Button onClick={() => navigate('/dashboard')}>Back to Dashboard</Button>
         </div>
       </ClientLayout>
     );
@@ -277,26 +277,28 @@ const ClientLawyerDetail = () => {
   const memberSince = lawyer.created_at ? new Date(lawyer.created_at).getFullYear() : new Date().getFullYear();
   const avgRating = lawyer.rating?.toFixed(1) || '0.0';
   return (
-    // <MainLayout showFooter={false}>
+
     <ClientLayout>
       <div className="min-h-screen bg-gradient-to-br from-background via-secondary/10 to-background">
         <div className="container mx-auto px-2 py-6 max-w-6xl ">
-          {/* Back Button */}
-          <Button variant="outline" className={cn(rejectButtonStyle)}
 
-            onClick={() => navigate('/dashboard')}>
-
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
 
           {/* Hero Profile Header */}
           <Card className={cn(lawyerCardStyle)}>
+            {/* BACK BUTTON: Changed to absolute so it scrolls away with the header */}
+            <button
+              onClick={() => navigate(-1)}
+              className="hidden md:flex absolute top-4 left-4 z-50 items-center gap-2 text-slate-400 hover:text-black transition-colors "
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back</span>
+            </button>
 
             <CardContent className="p-1 sm:p-6">
 
               {/* GRID LAYOUT */}
               <div className="grid grid-cols-1 sm:grid-cols-[auto,1fr,auto] gap-3 sm:gap-5 items-center py-4 sm:py-6 text-center sm:text-left justify-items-center sm:justify-items-stretch">
+
                 {/* Avatar */}
                 <Avatar className="h-24 w-24 sm:h-28 sm:w-28 md:h-32 md:w-32 border-4  border-gray-900/50">
                   <AvatarImage src={profile.avatar_url || undefined} />

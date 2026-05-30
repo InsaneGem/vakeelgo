@@ -253,14 +253,24 @@ const ConsultationHistory = () => {
     <ClientLayout>
       <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background">
         <div className="container mx-auto px-4 py-6 sm:py-8 max-w-5xl">
-          {/* Header */}
+          {/* HEADER */}
           <div className="flex items-center gap-3 mb-6">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="h-5 w-5" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden md:flex h-8 w-8"
+              onClick={() => navigate('/dashboard')}
+            >
+              <ArrowLeft className="h-4 w-4" />
             </Button>
+
             <div>
-              <h1 className="font-serif text-2xl sm:text-3xl font-bold">Consultation History</h1>
-              <p className="text-sm text-muted-foreground mt-0.5">All your legal sessions in one place</p>
+              <h1 className="font-serif text-2xl sm:text-3xl font-bold">
+                Consultation History
+              </h1>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                All your legal sessions in one place
+              </p>
             </div>
           </div>
           {/* Stats */}

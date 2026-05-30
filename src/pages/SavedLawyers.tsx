@@ -103,22 +103,24 @@ const SavedLawyers = () => {
                 <div className="container mx-auto px-4 py-8">
                     {/* Header */}
                     <div className="flex items-center gap-4 mb-8 animate-fade-in">
+                        {/* Back Button: Hidden on mobile, visible on desktop */}
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => navigate('/dashboard')}
-                            className="hover:bg-secondary rounded-xl h-10 w-10"
+                            className="hidden md:flex h-8 w-8"
                         >
-                            <ArrowLeft className="h-5 w-5" />
+                            <ArrowLeft className="h-4 w-4" />
                         </Button>
+
                         <div className="flex items-center gap-3">
-                            <div className="w-11 h-11 rounded-xl bg-rose-500/10 flex items-center justify-center">
+                            {/* <div className="w-11 h-11 rounded-xl bg-rose-500/10 flex items-center justify-center">
                                 <Heart className="h-5 w-5 text-rose-500 fill-rose-500" />
-                            </div>
+                            </div> */}
                             <div>
                                 <h1 className="text-2xl sm:text-3xl font-bold">Saved Lawyers</h1>
                                 <p className="text-sm text-muted-foreground">
-                                    {lawyers.length} lawyer{lawyers.length !== 1 ? 's' : ''} saved as favrouite
+                                    {lawyers.length} lawyer{lawyers.length !== 1 ? 's' : ''} saved as favourite
                                 </p>
                             </div>
                         </div>

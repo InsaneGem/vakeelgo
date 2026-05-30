@@ -306,20 +306,30 @@ const LawyerEarnings = () => {
   return (
     <LawyerLayout>
       <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background">
-        <div className="container mx-auto px-4 py-8">
-          {/* Back */}
-          <Button
-            variant="ghost"
-            className="gap-2 mb-6"
-            onClick={() =>
-              navigate(
-                '/lawyer/dashboard'
-              )
-            }
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
-          </Button>
+        {/* <div className="container mx-auto px-4 py-8"> */}
+        <div className="container mx-auto px-4 py-6 sm:py-8 max-w-5xl">
+          {/* HEADER */}
+          <div className="flex items-center gap-3 mb-6">
+            {/* Back Button: Hidden on mobile, visible on desktop */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate('/dashboard')}
+              className="hidden md:flex h-8 w-8"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <h1 className="font-serif text-2xl sm:text-3xl font-bold">
+                Earning & Transaction History
+              </h1>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                All your earning details and client payments at a glance
+              </p>
+            </div>
+          </div>
+
+
 
           {/* Earnings Card */}
           <Card className="border-0 shadow-lg bg-gradient-to-br from-primary to-accent mb-8">
@@ -347,7 +357,7 @@ const LawyerEarnings = () => {
                 </div>
 
                 <div className="flex items-center gap-1 opacity-80">
-                  <DollarSign className="h-4 w-4" />
+                  <IndianRupee className="h-4 w-4" />
 
                   Completed payments only
                 </div>
@@ -374,7 +384,7 @@ const LawyerEarnings = () => {
                 0 ? (
                 <div className="text-center py-12">
                   <div className="w-16 h-16 rounded-full bg-secondary mx-auto mb-4 flex items-center justify-center">
-                    <DollarSign className="h-8 w-8 text-muted-foreground" />
+                    <IndianRupee className="h-8 w-8 text-muted-foreground" />
                   </div>
 
                   <h3 className="font-semibold mb-2">

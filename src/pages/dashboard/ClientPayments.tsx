@@ -627,10 +627,11 @@ const ClientPayments = () => {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-5">
                     <div className="flex items-center gap-3">
+                        {/* Back Button: Hidden on mobile, visible on desktop */}
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
+                            className="hidden md:flex h-8 w-8"
                             onClick={() => navigate('/dashboard')}
                         >
                             <ArrowLeft className="h-4 w-4" />
@@ -640,7 +641,6 @@ const ClientPayments = () => {
                             <h1 className="font-serif text-xl sm:text-2xl font-bold">
                                 Pending Payments
                             </h1>
-
                             <p className="text-muted-foreground text-xs mt-0.5">
                                 Pay consultation fees securely using Razorpay
                             </p>
@@ -648,17 +648,15 @@ const ClientPayments = () => {
                     </div>
 
                     <div className="flex gap-2">
-                        <Button
+                        {/* <Button
                             variant="outline"
                             size="sm"
-                            onClick={() =>
-                                navigate('/dashboard/transactions')
-                            }
+                            onClick={() => navigate('/dashboard/transactions')}
                             className="gap-1.5 h-8 text-xs"
                         >
                             <Clock className="h-3 w-3" />
                             Payment History
-                        </Button>
+                        </Button> */}
 
                         <Button
                             variant="outline"

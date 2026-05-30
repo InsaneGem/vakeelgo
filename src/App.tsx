@@ -36,6 +36,10 @@ import FAQ from "./pages/FAQ";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Refund from "./pages/Refund";
+import LegalUpdates from "./pages/LegalUpdates";
+import Blog from "./pages/Blog";
+import Articles from "./pages/Articles";
+import Pricing from "./pages/Pricing";
 import ClientLawyerDetail from "./pages/ClientLawyerDetail";
 import ConsultationHistory from "./pages/dashboard/ClientConsultationhistory";
 // import ClientConsultation from "./pages/consultation/ClientConsultation";
@@ -47,9 +51,11 @@ import ClientPayments from "./pages/dashboard/ClientPayments";
 import ClientTransactionHistory from "./pages/dashboard/ClientTransactionHistory";
 import ClientRecordings from "./pages/dashboard/ClientRecordings";
 import LawyerActiveSessions from "./pages/dashboard/LawyerActiveSessions";
-
-
-
+import { MainLayout } from '@/components/layout/MainLayout';
+import { ClientLayout } from '@/components/layout/ClientLayout';
+import { LawyerLayout } from '@/components/layout/LawyerLayout';
+import Benefits from "./pages/Benefits";
+import AboutUs from "./pages/AboutUs";
 
 // import { ScrollToTop } from "./components/context/ScrollToTop";
 import { ScrollToTop } from './contexts/ScrollToTop';
@@ -71,49 +77,110 @@ const App = () => (
           <CallNotificationProvider>
             <BookingNotificationProvider>
               <Routes>
-                <Route path="/saved-lawyers" element={<SavedLawyers />} />
-                <Route path="/lawyer/manage-account" element={<LawyerManageAccount />} />
+
+
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
-                <Route path="/lawyers" element={<Lawyers />} />
-                <Route path="/lawyer/:id" element={<LawyerProfile />} />
-                <Route path="/lawyer/earnings" element={<LawyerEarnings />} />
-                {/* <Route path="#" element={<LawyerConsultations />} /> */}
-                <Route path="/lawyer/consultations" element={<LawyerConsultations />} />
-                <Route path="/lawyer/rating" element={<LawyerRating />} />
-                <Route path="/lawyer/pending-requests" element={<LawyerPendingRequests />} />
-                <Route path="/dashboard" element={<ClientDashboard />} />
-                <Route path="/manage-account" element={<ClientManageAccount />} />
-                <Route path="/lawyer/dashboard" element={<LawyerDashboard />} />
+
+
+
+
                 <Route path="/lawyer/profile-setup" element={<LawyerOnboarding />} />
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/dashboard/admin" element={<AdminDashboard />} />
-
                 <Route path="/settings" element={<ProfileSettings />} />
-                <Route path="/know-your-rights" element={<KnowYourRights />} />
-                <Route path="/consumer-protection" element={<ConsumerProtection />} />
-                <Route path="/legal-guides" element={<LegalGuides />} />
-                <Route path="/legal-aid" element={<LegalAid />} />
-                <Route path="/how-it-works" element={<HowItWorks />} />
-                <Route path="/categories" element={<Categories />} />
-                <Route path="/help" element={<Help />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/faq" element={<FAQ />} />
-                <Route path="/privacy" element={<Privacy />} />
-                <Route path="/terms" element={<Terms />} />
-                <Route path="/refund" element={<Refund />} />
                 <Route path="/lawyersCard/:id" element={<ClientLawyerDetail />} />
                 <Route path="/consultation-history" element={<ConsultationHistory />} />
-                {/* <Route path="/client/consultation/:id" element={<ClientConsultation />} /> */}
-                {/* <Route path="#/:id" element={<LawyerConsultation />} /> */}
                 <Route path="/consultation/:id" element={<Consultation />} />
-                <Route path="/dashboard/active-sessions" element={<ClientActiveSessions />} />
-                <Route path="/dashboard/lawyer-active-sessions" element={<LawyerActiveSessions />} />
+
+
+
+
+// ==============================
+                // PUBLIC MAINLAYOUT ROUTES
+                // ==============================
+
+                <Route path="/legal-guides" element={<MainLayout><LegalGuides /></MainLayout>} />
+                <Route path="/know-your-rights" element={<MainLayout><KnowYourRights /></MainLayout>} />
+                <Route path="/legal-aid" element={<MainLayout><LegalAid /></MainLayout>} />
+                <Route path="/consumer-protection" element={<MainLayout><ConsumerProtection /></MainLayout>} />
+                <Route path="/help" element={<MainLayout><Help /></MainLayout>} />
+                <Route path="/faq" element={<MainLayout><FAQ /></MainLayout>} />
+                <Route path="/contact" element={<MainLayout><Contact /></MainLayout>} />
+                <Route path="/privacy" element={<MainLayout><Privacy /></MainLayout>} />
+                <Route path="/terms" element={<MainLayout><Terms /></MainLayout>} />
+                <Route path="/refund" element={<MainLayout><Refund /></MainLayout>} />
+                <Route path="/how-it-works" element={<MainLayout><HowItWorks /></MainLayout>} />
+                <Route path="/categories" element={<MainLayout><Categories /></MainLayout>} />
+                <Route path="/legal-updates" element={<MainLayout><LegalUpdates /></MainLayout>} />
+                <Route path="/blog" element={<MainLayout><Blog /></MainLayout>} />
+                <Route path="/articles" element={<MainLayout><Articles /></MainLayout>} />
+                <Route path="/pricing" element={<MainLayout><Pricing /></MainLayout>} />
+                <Route path="/benefits" element={<MainLayout><Benefits /></MainLayout>} />
+                <Route path="/aboutus" element={<MainLayout><AboutUs /></MainLayout>} />
+
+//                ==============================
+                // CLIENTLAYOUT ROUTES
+                // ==============================
+
+                <Route path="/client/legal-guides" element={<ClientLayout><LegalGuides /></ClientLayout>} />
+                <Route path="/client/know-your-rights" element={<ClientLayout><KnowYourRights /></ClientLayout>} />
+                <Route path="/client/legal-aid" element={<ClientLayout><LegalAid /></ClientLayout>} />
+                <Route path="/client/consumer-protection" element={<ClientLayout><ConsumerProtection /></ClientLayout>} />
+                <Route path="/client/help" element={<ClientLayout><Help /></ClientLayout>} />
+                <Route path="/client/faq" element={<ClientLayout><FAQ /></ClientLayout>} />
+                <Route path="/client/contact" element={<ClientLayout><Contact /></ClientLayout>} />
+                <Route path="/client/privacy" element={<ClientLayout><Privacy /></ClientLayout>} />
+                <Route path="/client/terms" element={<ClientLayout><Terms /></ClientLayout>} />
+                <Route path="/client/refund" element={<ClientLayout><Refund /></ClientLayout>} />
+                <Route path="/client/how-it-works" element={<ClientLayout><HowItWorks /></ClientLayout>} />
+                <Route path="/client/categories" element={<ClientLayout><Categories /></ClientLayout>} />
+                <Route path="/client/legal-updates" element={<ClientLayout><LegalUpdates /></ClientLayout>} />
+                <Route path="/client/blog" element={<ClientLayout><Blog /></ClientLayout>} />
+                <Route path="/client/articles" element={<ClientLayout><Articles /></ClientLayout>} />
+                <Route path="/client/pricing" element={<ClientLayout><Pricing /></ClientLayout>} />
+                <Route path="/dashboard" element={<ClientDashboard />} />
+                <Route path="/manage-account" element={<ClientManageAccount />} />
+                <Route path="/saved-lawyers" element={<SavedLawyers />} />
+                <Route path="/client/active-sessions" element={<ClientActiveSessions />} />
                 <Route path="/dashboard/processing" element={<ClientProcessing />} />
                 <Route path="/dashboard/payments" element={<ClientPayments />} />
                 <Route path="/dashboard/transactions" element={<ClientTransactionHistory />} />
                 <Route path="/dashboard/recordings" element={<ClientRecordings />} />
+
+// ==============================
+                // LAWYERLAYOUT ROUTES
+                // ==============================
+
+                <Route path="/lawyer/legal-guides" element={<LawyerLayout><LegalGuides /></LawyerLayout>} />
+                <Route path="/lawyer/know-your-rights" element={<LawyerLayout><KnowYourRights /></LawyerLayout>} />
+                <Route path="/lawyer/legal-aid" element={<LawyerLayout><LegalAid /></LawyerLayout>} />
+                <Route path="/lawyer/consumer-protection" element={<LawyerLayout><ConsumerProtection /></LawyerLayout>} />
+                <Route path="/lawyer/help" element={<LawyerLayout><Help /></LawyerLayout>} />
+                <Route path="/lawyer/faq" element={<LawyerLayout><FAQ /></LawyerLayout>} />
+                <Route path="/lawyer/contact" element={<LawyerLayout><Contact /></LawyerLayout>} />
+                <Route path="/lawyer/privacy" element={<LawyerLayout><Privacy /></LawyerLayout>} />
+                <Route path="/lawyer/terms" element={<LawyerLayout><Terms /></LawyerLayout>} />
+                <Route path="/lawyer/refund" element={<LawyerLayout><Refund /></LawyerLayout>} />
+                <Route path="/lawyer/how-it-works" element={<LawyerLayout><HowItWorks /></LawyerLayout>} />
+                <Route path="/lawyer/categories" element={<LawyerLayout><Categories /></LawyerLayout>} />
+                <Route path="/lawyer/legal-updates" element={<LawyerLayout><LegalUpdates /></LawyerLayout>} />
+                <Route path="/lawyer/blog" element={<LawyerLayout><Blog /></LawyerLayout>} />
+                <Route path="/lawyer/articles" element={<LawyerLayout><Articles /></LawyerLayout>} />
+                <Route path="/lawyer/pricing" element={<LawyerLayout><Pricing /></LawyerLayout>} />
+                <Route path="/lawyer/dashboard" element={<LawyerDashboard />} />
+                <Route path="/lawyer/manage-account" element={<LawyerManageAccount />} />
+                <Route path="/lawyers" element={<Lawyers />} />
+                <Route path="/lawyer/:id" element={<LawyerProfile />} />
+                <Route path="/lawyer/earnings" element={<LawyerEarnings />} />
+                <Route path="/lawyer/consultations" element={<LawyerConsultations />} />
+                <Route path="/lawyer/rating" element={<LawyerRating />} />
+                <Route path="/lawyer/pending-requests" element={<LawyerPendingRequests />} />
+                <Route path="/dashboard/lawyer-active-sessions" element={<LawyerActiveSessions />} />
+
+
+
 
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />

@@ -126,9 +126,16 @@ const ClientActiveSessions = () => {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-5">
                     <div className="flex items-center gap-3">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate('/dashboard')}>
+                        {/* Back Button: Hidden on mobile, visible on desktop */}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="hidden md:flex h-8 w-8"
+                            onClick={() => navigate('/dashboard')}
+                        >
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
+
                         <div>
                             <h1 className="font-serif text-xl sm:text-2xl font-bold flex items-center gap-2">
                                 <span className="relative flex h-2.5 w-2.5">
@@ -137,14 +144,22 @@ const ClientActiveSessions = () => {
                                 </span>
                                 Active Sessions
                             </h1>
-                            <p className="text-muted-foreground text-xs mt-0.5">Manage Ongoing Consultations In Real-Time</p>
+                            <p className="text-muted-foreground text-xs mt-0.5">
+                                Manage Ongoing Consultations In Real-Time
+                            </p>
                         </div>
                     </div>
+
                     <div className="flex items-center gap-2">
                         <Badge variant="outline" className="gap-1 text-[10px] px-2 py-1 hidden sm:flex">
                             <Activity className="h-3 w-3 text-blue-500" /> Live
                         </Badge>
-                        <Button variant="outline" size="sm" onClick={fetchSessions} className="gap-1.5 h-8 text-xs">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={fetchSessions}
+                            className="gap-1.5 h-8 text-xs"
+                        >
                             <RefreshCw className="h-3 w-3" />
                         </Button>
                     </div>

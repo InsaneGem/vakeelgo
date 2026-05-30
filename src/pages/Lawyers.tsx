@@ -224,17 +224,25 @@ const Lawyers = () => {
       <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background">
         {/* Hero Header */}
         <div className="relative bg-card border-b border-border overflow-hidden">
-          {/* Decorative background elements */}
-
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 relative z-10">
             {/* Title Row */}
             <div className="flex items-center sm:flex-row sm:items-center gap-4 mb-6 animate-fade-in">
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate('/dashboard')}>
-                <ArrowLeft className="h-5 w-5" />
+              {/* Back Button: Hidden on mobile, visible on desktop */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hidden md:flex h-8 w-8"
+                onClick={() => navigate('/dashboard')}
+              >
+                <ArrowLeft className="h-4 w-4" />
               </Button>
-              <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-primary flex items-center justify-center shadow-lg shrink-0">
+
+              {/* <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate('/dashboard')}>
+                <ArrowLeft className="h-5 w-5" />
+              </Button> */}
+              {/* <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-primary flex items-center justify-center shadow-lg shrink-0">
                 <Users className="h-6 w-6 md:h-7 md:w-7 text-primary-foreground" />
-              </div>
+              </div> */}
               <div className="flex-1 min-w-0">
                 <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
                   {/* {sortBy === 'top-rated' ? 'Top Rated Lawyers' : 'Find a Lawyer'} */}
@@ -247,7 +255,7 @@ const Lawyers = () => {
                   }
                 </h1>
                 <p className="text-muted-foreground text-sm md:text-base mt-1">
-                  Verifird Lawyers • Instant Consultation • Available Now
+                  Verified Lawyers • Instant Consultation • Available Now
                 </p>
 
               </div>

@@ -1,11 +1,19 @@
-// import { MainLayout } from '@/components/layout/MainLayout';
-import { ClientLayout } from '@/components/layout/ClientLayout';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
 import {
-  Heart, Users, Scale, Shield, Phone, MapPin,
-  FileText, ArrowRight, BookOpen, HandHeart, Gavel, Globe
+  Heart,
+  Users,
+  Scale,
+  Shield,
+  Phone,
+  ArrowRight,
+  BookOpen,
+  HandHeart,
+  Gavel,
+  Globe,
+  ExternalLink,
+  ChevronRight, ArrowLeft
 } from 'lucide-react';
 
 const eligibilityCriteria = [
@@ -78,147 +86,228 @@ const LegalAid = () => {
   const navigate = useNavigate();
 
   return (
-    // <MainLayout>
-    <ClientLayout>
-      {/* Hero */}
-      <section className="hero-gradient py-20">
-        <div className="container mx-auto px-4 text-center">
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-2 mb-6">
-            <Heart className="h-4 w-4 text-white" />
-            <span className="text-white/90 text-sm font-medium">Access to Justice for All</span>
+    <div className="bg-slate-50/60 min-h-screen text-slate-600 font-sans antialiased selection:bg-slate-900 selection:text-white">
+      {/* BACK BUTTON: Changed to absolute so it scrolls away with the header */}
+      <button
+        onClick={() => navigate(-1)}
+        className="hidden md:flex absolute top-20 left-8 z-50 items-center gap-2 text-slate-400 hover:text-white transition-colors bg-slate-900/50 px-4 py-2 rounded-full backdrop-blur-sm border border-slate-800"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span>Back</span>
+      </button>
+      {/* EXOTIC PREMIUM DARK HEADER SECTION */}
+      <header className="relative bg-slate-950 py-16 sm:py-20 overflow-hidden border-b border-slate-900">
+        {/* Ambient Lights & Textures */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-40 pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[200px] bg-gradient-to-b from-slate-800/10 to-transparent blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 container mx-auto px-4 max-w-5xl text-center">
+          <div className="inline-flex items-center justify-center p-3 bg-slate-900/80 border border-slate-800 rounded-2xl mb-5 text-slate-400 shadow-2xl">
+            <Heart className="h-6 w-6 text-slate-300" />
           </div>
-          <h1 className="font-serif text-4xl md:text-5xl font-bold text-white mb-6 animate-fade-in">
-            Legal Aid & Pro Bono
+          <h1 className="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-white mb-4">
+            Legal Aid &amp; Pro Bono
           </h1>
-          <p className="text-white/80 text-lg max-w-2xl mx-auto animate-fade-in">
-            Free and reduced-cost legal services are a constitutional right under Article 39A. 
-            Learn about the resources available to ensure no one is denied justice due to economic hardship.
+          <p className="text-slate-400 text-xs sm:text-sm max-w-2xl mx-auto leading-relaxed font-light tracking-wide">
+            Free and reduced-cost legal services are a constitutional right under Article 39A. Learn about public and platform frameworks established to guarantee equity for all.
           </p>
+          <div className="inline-block mt-5 px-4 py-1.5 bg-slate-900/90 border border-slate-800/60 text-slate-400 rounded-full text-[11px] font-mono tracking-wider uppercase">
+            Statutory Protocol Section
+          </div>
         </div>
-      </section>
+      </header>
 
-      {/* Eligibility */}
-      <section className="py-20">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <div className="text-center mb-12">
-            <h2 className="font-serif text-3xl font-bold mb-3">Who Is Eligible for Free Legal Aid?</h2>
-            <p className="text-muted-foreground">
-              Under Section 12 of the Legal Services Authorities Act, 1987, the following persons are entitled to free legal services:
+      {/* MAIN PREMIUM LIGHT CANVAS AREA */}
+      <main className="container mx-auto px-4 max-w-5xl py-12 sm:py-16 space-y-16">
+
+        {/* Eligibility Canvas Card */}
+        <section className="relative bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-10 shadow-sm hover:shadow-md transition-all duration-500 ease-out overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(#f1f5f9_1.5px,transparent_1.5px)] [background-size:24px_24px] opacity-100 pointer-events-none" />
+
+          <div className="relative z-10">
+            <div className="flex flex-col mb-8 border-b border-slate-100 pb-5">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Section 12 Classification Matrix</span>
+              <h2 className="font-serif text-base sm:text-xl font-bold text-slate-900 tracking-tight">
+                Who Is Eligible for Free Legal Aid?
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 mt-2 leading-relaxed">
+                Under Section 12 of the Legal Services Authorities Act, 1987, the following classifications of citizens are legally entitled to free legal remedies:
+              </p>
+            </div>
+
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {eligibilityCriteria.map((criteria, idx) => (
+                <li key={idx} className="flex items-start gap-3 group/item">
+                  <ArrowRight className="h-4 w-4 text-slate-400 mt-0.5 shrink-0 group-hover/item:text-slate-900 transition-colors" />
+                  <span className="text-xs sm:text-sm text-slate-600 leading-relaxed transition-colors group-hover/item:text-slate-900">
+                    {criteria}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        {/* Institutional Frameworks System */}
+        <section className="space-y-6">
+          <div className="text-left mb-6 pl-1">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400 block mb-1">Regulatory Framework</span>
+            <h2 className="font-serif text-lg sm:text-2xl font-bold text-slate-900 tracking-tight">
+              Constitutional Institutional Bodies
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {legalAidBodies.map((body, index) => {
+              const BodyIcon = body.icon;
+              return (
+                <Card key={index} className="bg-white border border-slate-200/80 rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden">
+                  <CardHeader className="p-6 pb-4">
+                    <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-3.5 shadow-xs">
+                      <BodyIcon className="h-5 w-5 text-slate-700" />
+                    </div>
+                    <CardTitle className="font-serif text-base text-slate-900 font-bold tracking-tight">
+                      {body.title}
+                    </CardTitle>
+                  </CardHeader>
+
+                  <CardContent className="p-6 pt-0 flex-1 flex flex-col justify-between space-y-5">
+                    <p className="text-slate-500 text-xs sm:text-sm leading-relaxed font-light">
+                      {body.description}
+                    </p>
+
+                    <div className="border-t border-slate-50 pt-4">
+                      <h4 className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 mb-2">
+                        Assistance Modules
+                      </h4>
+                      <ul className="space-y-1.5">
+                        {body.services.map((service, sIdx) => (
+                          <li key={sIdx} className="flex items-center gap-2 text-xs text-slate-600">
+                            <span className="w-1.5 h-1.5 rounded-full bg-slate-900 shrink-0" />
+                            <span>{service}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {body.website && (
+                      <div className="pt-2 border-t border-slate-100">
+                        <Button variant="outline" size="sm" className="border-slate-200 bg-slate-50/50 text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-xs px-3 h-8 rounded-lg group" asChild>
+                          <a href={body.website} target="_blank" rel="noopener noreferrer">
+                            Access Portal
+                            <ExternalLink className="h-3 w-3 ml-1.5 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                          </a>
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Pro Bono Canvas Panel */}
+        <section className="relative bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-10 shadow-sm hover:shadow-md transition-all duration-500 ease-out overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(#f1f5f9_1.5px,transparent_1.5px)] [background-size:24px_24px] opacity-100 pointer-events-none" />
+
+          <div className="relative z-10">
+            <div className="text-left mb-8 border-b border-slate-100 pb-5">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400 block mb-1">Voluntary Network</span>
+              <h2 className="font-serif text-base sm:text-xl font-bold text-slate-900 tracking-tight">
+                Voluntary Pro Bono Practices
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {proBonoInfo.map((info, idx) => {
+                const InfoIcon = info.icon;
+                return (
+                  <div key={idx} className="p-5 bg-slate-50/50 border border-slate-200/60 rounded-xl transition-all duration-300 hover:bg-slate-50">
+                    <div className="w-9 h-9 rounded-lg bg-white border border-slate-100 flex items-center justify-center mb-3.5 shadow-xs">
+                      <InfoIcon className="h-4.5 w-4.5 text-slate-700" />
+                    </div>
+                    <h3 className="font-serif font-bold text-xs sm:text-sm text-slate-900 mb-2 tracking-tight">
+                      {info.title}
+                    </h3>
+                    <p className="text-slate-500 text-xs leading-relaxed font-light">
+                      {info.description}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Helpline Matrix Cluster */}
+        <section className="space-y-6">
+          <div className="text-center sm:text-left pl-1">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400 block mb-1">Emergency Operations</span>
+            <h2 className="font-serif text-lg sm:text-2xl font-bold text-slate-900 tracking-tight">
+              Toll-Free Legal Assistance Helplines
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {helplineNumbers.map((helpline, index) => (
+              <Card key={index} className="bg-white border border-slate-200/70 rounded-2xl p-5 shadow-xs flex items-center gap-4 hover:border-slate-300 transition-colors">
+                <div className="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 shadow-xs">
+                  <Phone className="h-4 w-4 text-slate-600" />
+                </div>
+                <div className="overflow-hidden">
+                  <h3 className="font-medium text-xs text-slate-400 truncate">
+                    {helpline.name}
+                  </h3>
+                  <p className="text-slate-950 font-mono font-bold text-base my-0.5 tracking-wider">
+                    {helpline.number}
+                  </p>
+                  <p className="text-slate-500 text-[10px] leading-tight font-light truncate">
+                    {helpline.description}
+                  </p>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* INTERACTION CONVERSION CALLOUT BOX */}
+        <section className="bg-slate-950 text-slate-200 rounded-2xl p-6 sm:p-10 relative overflow-hidden shadow-xl transition-all duration-300 hover:scale-[1.002]">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-slate-900 rounded-full blur-3xl opacity-50 pointer-events-none" />
+
+          <div className="relative z-10 max-w-2xl">
+            <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest block mb-2">
+              Equity Access Pipeline
+            </span>
+            <h2 className="text-xl sm:text-2xl font-serif font-bold text-white mb-3">
+              Connect with Qualified Counsel
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-light mb-6">
+              Whether matching protocols qualify you for state-sponsored statutory assistance or you require flexible, tiered private billing options, LegalMate bridges connection points seamlessly.
             </p>
-          </div>
-          <Card className="card-premium">
-            <CardContent className="pt-6">
-              <ul className="grid md:grid-cols-2 gap-4">
-                {eligibilityCriteria.map((criteria) => (
-                  <li key={criteria} className="flex items-start gap-3">
-                    <ArrowRight className="h-4 w-4 text-primary mt-1 shrink-0" />
-                    <span className="text-sm">{criteria}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
 
-      {/* Legal Aid Bodies */}
-      <section className="py-16 bg-secondary">
-        <div className="container mx-auto px-4">
-          <h2 className="font-serif text-2xl font-bold text-center mb-12">Legal Aid Organizations</h2>
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {legalAidBodies.map((body, index) => (
-              <Card key={body.title} className="card-premium animate-slide-up" style={{ animationDelay: `${index * 0.05}s` }}>
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
-                    <body.icon className="h-6 w-6 text-primary" />
-                  </div>
-                  <CardTitle className="font-serif text-lg">{body.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground text-sm mb-4">{body.description}</p>
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Services Offered</h4>
-                  <ul className="space-y-1.5">
-                    {body.services.map((service) => (
-                      <li key={service} className="flex items-center gap-2 text-sm">
-                        <ArrowRight className="h-3 w-3 text-primary" />
-                        {service}
-                      </li>
-                    ))}
-                  </ul>
-                  {body.website && (
-                    <Button variant="outline" size="sm" className="mt-4" asChild>
-                      <a href={body.website} target="_blank" rel="noopener noreferrer">Visit Website</a>
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                onClick={() => navigate('/lawyers')}
+                className="bg-white text-slate-950 hover:bg-slate-100 font-semibold text-xs px-5 py-5 tracking-wide rounded-xl transition-all shadow-md group"
+              >
+                Browse Lawyers
+                <ChevronRight className="h-3.5 w-3.5 ml-1 text-slate-950 group-hover:translate-x-0.5 transition-transform" />
+              </Button>
 
-      {/* Pro Bono */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <h2 className="font-serif text-2xl font-bold text-center mb-12">Pro Bono Legal Services</h2>
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {proBonoInfo.map((info, index) => (
-              <Card key={info.title} className="card-premium animate-slide-up" style={{ animationDelay: `${index * 0.05}s` }}>
-                <CardContent className="pt-6">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                    <info.icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <h3 className="font-semibold mb-2">{info.title}</h3>
-                  <p className="text-muted-foreground text-sm">{info.description}</p>
-                </CardContent>
-              </Card>
-            ))}
+              <Button
+                variant="outline"
+                onClick={() => navigate('/contact')}
+                className="border-slate-800 bg-slate-900/40 text-slate-300 hover:bg-slate-900 hover:text-white font-medium text-xs px-5 py-5 tracking-wide rounded-xl transition-all"
+              >
+                Contact Support
+              </Button>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Helpline Numbers */}
-      <section className="py-16 bg-secondary">
-        <div className="container mx-auto px-4">
-          <h2 className="font-serif text-2xl font-bold text-center mb-4">Important Helpline Numbers</h2>
-          <p className="text-muted-foreground text-center mb-10 max-w-xl mx-auto">
-            These toll-free helpline numbers are available 24/7 for immediate assistance.
-          </p>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
-            {helplineNumbers.map((helpline) => (
-              <Card key={helpline.name} className="card-premium">
-                <CardContent className="pt-6 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <Phone className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-sm">{helpline.name}</h3>
-                    <p className="text-primary font-bold text-lg">{helpline.number}</p>
-                    <p className="text-muted-foreground text-xs">{helpline.description}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-16">
-        <div className="container mx-auto px-4 text-center">
-          <Scale className="h-12 w-12 text-primary mx-auto mb-4" />
-          <h2 className="font-serif text-2xl font-bold mb-4">Connect with a Lawyer</h2>
-          <p className="text-muted-foreground max-w-xl mx-auto mb-8">
-            Whether you need free legal aid or affordable legal services, LEGALMATE connects you with the right legal professional.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" onClick={() => navigate('/lawyers')}>Browse Lawyers</Button>
-            <Button size="lg" variant="outline" onClick={() => navigate('/contact')}>Contact Support</Button>
-          </div>
-        </div>
-      </section>
-    {/* </MainLayout> */}
-    </ClientLayout>
+      </main>
+    </div>
   );
 };
 

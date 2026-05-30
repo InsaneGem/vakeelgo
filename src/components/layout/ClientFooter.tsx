@@ -1,194 +1,136 @@
 import { Link } from 'react-router-dom';
-import { Scale, Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instagram, Wallet, MessageSquare, Shield, BookOpen, HelpCircle } from 'lucide-react';
+import { Scale, Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instagram, Wallet, BookOpen, HelpCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+
 export const ClientFooter = () => {
   const { user } = useAuth();
   const currentYear = new Date().getFullYear();
-  const { data: clientStats } = useQuery({
-    queryKey: ['client-footer-stats', user?.id],
-    queryFn: async () => {
-      if (!user) return null;
-      const [walletRes, consultationsRes] = await Promise.all([
-        supabase.from('wallets').select('balance').eq('user_id', user.id).single(),
-        supabase.from('consultations').select('status').eq('client_id', user.id),
-      ]);
-      const consultations = consultationsRes.data || [];
-      return {
-        balance: walletRes.data?.balance || 0,
-        total: consultations.length,
-        completed: consultations.filter(c => c.status === 'completed').length,
-        active: consultations.filter(c => c.status === 'active').length,
-      };
-    },
-    enabled: !!user,
-    staleTime: 1000 * 60 * 5,
-  });
+
   return (
-    <footer className="bg-primary text-primary-foreground">
-      <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
-          {/* Brand */}
-          <div className="lg:col-span-2">
-            <Link to="/dashboard" className="flex items-center gap-2 mb-4">
-              <Scale className="h-8 w-8" />
-              <span className="font-serif text-xl font-semibold">LEGALMATE</span>
-            </Link>
-            <p className="text-sm text-primary-foreground/70 leading-relaxed mb-6 max-w-sm">
-              Your trusted legal consultation platform. Connect with verified lawyers for expert advice via chat, audio, or video.
-            </p>
-            <div className="space-y-3">
-              <a href="mailto:support@legalmate.com" className="flex items-center gap-3 text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                <Mail className="h-4 w-4" />
+    <footer className="bg-zinc-950 text-zinc-200 border-t border-zinc-800/60 font-sans tracking-tight">
+      <div className="container mx-auto px-4 sm:px-6 py-12">
+        {/* Grid Logic:
+          - Mobile (default): grid-cols-2 (2 columns)
+          - Desktop (lg): grid-cols-5 (5 columns)
+        */}
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
+
+          {/* Brand Column: Spans full width on mobile/tablet, 2 units on desktop */}
+          <div className="col-span-2 lg:col-span-2 flex flex-col justify-between space-y-4">
+            <div>
+              <Link to="/dashboard" className="inline-flex items-center gap-2 group transition-opacity hover:opacity-90">
+                <Scale className="h-6 w-6 text-zinc-400 group-hover:text-white transition-colors" />
+                <span className="font-serif text-lg font-bold tracking-wider text-white">LEGALMATE</span>
+              </Link>
+              <p className="mt-3 text-xs text-zinc-400 leading-relaxed max-w-sm">
+                Your trusted legal consultation platform. Connect with verified lawyers for expert advice via chat, audio, or video.
+              </p>
+            </div>
+
+            <div className="space-y-2.5 pt-2">
+              <a href="mailto:insanegem142012@gmail.com" className="flex items-center gap-2.5 text-xs text-zinc-400 hover:text-white transition-colors w-fit">
+                <Mail className="h-3.5 w-3.5 text-zinc-500" />
                 insanegem142012@gmail.com
               </a>
-              <a href="tel:+18001234567" className="flex items-center gap-3 text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                <Phone className="h-4 w-4" />
+              <a href="tel:+919281472291" className="flex items-center gap-2.5 text-xs text-zinc-400 hover:text-white transition-colors w-fit">
+                <Phone className="h-3.5 w-3.5 text-zinc-500" />
                 +91 9281472291
               </a>
-              <div className="flex items-center gap-3 text-sm text-primary-foreground/70">
-                <MapPin className="h-4 w-4" />
-                Basavanna Nagar - 560066, Banaglore
+              <div className="flex items-center gap-2.5 text-xs text-zinc-400">
+                <MapPin className="h-3.5 w-3.5 text-zinc-500" />
+                Basavanna Nagar - 560066, Bangalore
               </div>
             </div>
           </div>
-          {/* My Account */}
-          <div>
-            <h4 className="font-semibold mb-4 flex items-center gap-2">
-              <Wallet className="h-4 w-4" /> My Account
+
+          {/* Link Columns: Each takes 1 column, forcing 2-per-row layout on mobile/tablet */}
+          <div className="col-span-1">
+            <h4 className="text-xs font-semibold uppercase tracking-widest text-zinc-400 mb-3.5 flex items-center gap-1.5">
+              <Wallet className="h-3.5 w-3.5 text-zinc-500" /> My Account
             </h4>
-            <ul className="space-y-3">
-              <li>
-                <Link to="/dashboard" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Dashboard
-                </Link>
-              </li>
-              <li>
-                <Link to="/manage-account" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Manage Account
-                </Link>
-              </li>
-              <li>
-                <Link to="/lawyers" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Find Lawyers
-                </Link>
-              </li>
-              <li>
-                <Link to="/categories" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Lawyer Categories
-                </Link>
-              </li>
+            <ul className="space-y-2">
+              {[
+                { to: "/dashboard", label: "Dashboard" },
+                { to: "/manage-account", label: "Manage Account" },
+                { to: "/lawyers", label: "Find Lawyers" },
+                { to: "/client/categories", label: "Lawyer Categories" },
+                { to: "/client/refund", label: "Refund Policy" }
+              ].map((link) => (
+                <li key={link.to}>
+                  <Link to={link.to} className="text-xs text-zinc-400 hover:text-white transition-all duration-200 hover:translate-x-1 inline-block">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
-          {/* Legal Resources */}
-          <div>
-            <h4 className="font-semibold mb-4 flex items-center gap-2">
-              <BookOpen className="h-4 w-4" /> Legal Resources
+
+          <div className="col-span-1">
+            <h4 className="text-xs font-semibold uppercase tracking-widest text-zinc-400 mb-3.5 flex items-center gap-1.5">
+              <BookOpen className="h-3.5 w-3.5 text-zinc-500" /> Resources
             </h4>
-            <ul className="space-y-3">
-              <li>
-                <Link to="/know-your-rights" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Know Your Rights
-                </Link>
-              </li>
-              <li>
-                <Link to="/legal-guides" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Legal Guides
-                </Link>
-              </li>
-              <li>
-                <Link to="/legal-aid" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Free Legal Aid
-                </Link>
-              </li>
-              <li>
-                <Link to="/consumer-protection" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Consumer Protection
-                </Link>
-              </li>
+            <ul className="space-y-2">
+              {[
+                { to: "/client/know-your-rights", label: "Know Your Rights" },
+                { to: "/client/legal-guides", label: "Legal Guides" },
+                { to: "/client/legal-aid", label: "Free Legal Aid" },
+                { to: "/client/consumer-protection", label: "Consumer Protection" },
+                { to: "/client/legal-updates", label: "Legal Updates" }
+              ].map((link) => (
+                <li key={link.to}>
+                  <Link to={link.to} className="text-xs text-zinc-400 hover:text-white transition-all duration-200 hover:translate-x-1 inline-block">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
-          {/* Support & Legal */}
-          <div>
-            <h4 className="font-semibold mb-4 flex items-center gap-2">
-              <HelpCircle className="h-4 w-4" /> Support
+
+          <div className="col-span-1">
+            <h4 className="text-xs font-semibold uppercase tracking-widest text-zinc-400 mb-3.5 flex items-center gap-1.5">
+              <HelpCircle className="h-3.5 w-3.5 text-zinc-500" /> Support
             </h4>
-            <ul className="space-y-3">
-              <li>
-                <Link to="" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Help Center
-                </Link>
-              </li>
-              <li>
-                <Link to="" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  FAQs
-                </Link>
-              </li>
-              <li>
-                <Link to="" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Contact Us
-                </Link>
-              </li>
-              <li>
-                <Link to="" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link to="" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                  Terms of Service
-                </Link>
-              </li>
+            <ul className="space-y-2">
+              {[
+                { to: "/client/help", label: "Help Center" },
+                { to: "/client/faq", label: "FAQs" },
+                { to: "/client/contact", label: "Contact Us" },
+                { to: "/client/privacy", label: "Privacy Policy" },
+                { to: "/client/terms", label: "Terms of Service" }
+              ].map((link) => (
+                <li key={link.to}>
+                  <Link to={link.to} className="text-xs text-zinc-400 hover:text-white transition-all duration-200 hover:translate-x-1 inline-block">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
       </div>
-      {/* Client Stats Bar */}
-      {/* {clientStats && (
-        <div className="border-t border-primary-foreground/10">
-          <div className="container mx-auto px-4 py-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-              <div>
-                <div className="font-serif text-2xl md:text-3xl font-bold mb-1">₹{clientStats.balance.toFixed(0)}</div>
-                <div className="text-xs md:text-sm text-primary-foreground/60">Wallet Balance</div>
-              </div>
-              <div>
-                <div className="font-serif text-2xl md:text-3xl font-bold mb-1">{clientStats.total}</div>
-                <div className="text-xs md:text-sm text-primary-foreground/60">Total Sessions</div>
-              </div>
-              <div>
-                <div className="font-serif text-2xl md:text-3xl font-bold mb-1">{clientStats.completed}</div>
-                <div className="text-xs md:text-sm text-primary-foreground/60">Completed</div>
-              </div>
-              <div>
-                <div className="font-serif text-2xl md:text-3xl font-bold mb-1">{clientStats.active}</div>
-                <div className="text-xs md:text-sm text-primary-foreground/60">Active Now</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )} */}
-      {/* Bottom Bar */}
-      <div className="border-t border-primary-foreground/10">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-primary-foreground/60">
+
+      <div className="border-t border-zinc-900 bg-zinc-950/50">
+        <div className="container mx-auto px-4 sm:px-6 py-5">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-[11px] uppercase tracking-wider text-zinc-500 text-center sm:text-left">
               © {currentYear} LEGALMATE. All rights reserved.
             </p>
             <div className="flex items-center gap-4">
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-primary-foreground/60 hover:text-primary-foreground transition-colors">
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-primary-foreground/60 hover:text-primary-foreground transition-colors">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-primary-foreground/60 hover:text-primary-foreground transition-colors">
-                <Linkedin className="h-5 w-5" />
-              </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-primary-foreground/60 hover:text-primary-foreground transition-colors">
-                <Instagram className="h-5 w-5" />
-              </a>
+              {[
+                { href: "https://facebook.com", icon: Facebook },
+                { href: "https://twitter.com", icon: Twitter },
+                { href: "https://linkedin.com", icon: Linkedin },
+                { href: "https://instagram.com", icon: Instagram }
+              ].map((social, idx) => {
+                const Icon = social.icon;
+                return (
+                  <a key={idx} href={social.href} target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-white transition-colors p-1 hover:bg-zinc-900 rounded-md">
+                    <Icon className="h-4 w-4" />
+                  </a>
+                );
+              })}
             </div>
           </div>
         </div>
