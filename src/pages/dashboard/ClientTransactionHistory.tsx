@@ -10,7 +10,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
+import { rejectButtonStyle, acceptButtonStyle, OtherCardStyle } from '@/lib/buttonStyles';
+import { cn } from '@/lib/utils';
 import {
     Dialog,
     DialogContent,
@@ -30,6 +31,8 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 
 import {
+
+    Calendar,
     ArrowLeft,
     RefreshCw,
     Clock,
@@ -541,225 +544,184 @@ const ClientTransactionHistory = () => {
                     </Tabs>
                 </div>
 
-                {/* Count */}
-                <p className="text-xs text-muted-foreground mb-3">
-                    Showing {displayed.length} of{' '}
-                    {filtered.length} payments
-                </p>
+
 
                 {/* Empty */}
                 {filtered.length === 0 ? (
-                    <Card className="border-0 shadow-sm">
-                        <CardContent className="py-14 text-center">
-                            <div className="w-14 h-14 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
-                                <IndianRupee className="h-7 w-7 text-muted-foreground" />
-                            </div>
+                    <div className="text-center py-16 px-4">
 
-                            <h3 className="text-lg font-semibold font-serif">
-                                No Payments Found
-                            </h3>
+                        <div className="w-14 h-14 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
+                            <IndianRupee className="h-7 w-7 text-muted-foreground" />
+                        </div>
 
-                            <p className="text-muted-foreground text-sm max-w-sm mx-auto mt-1">
-                                No payment records available.
-                            </p>
-                        </CardContent>
-                    </Card>
+                        <h3 className="text-lg font-semibold font-serif">
+                            No Payments Found
+                        </h3>
+
+                        <p className="text-muted-foreground text-sm max-w-sm mx-auto mt-1">
+                            No payment records available.
+                        </p>
+
+                    </div>
                 ) : (
-                    <div className="space-y-2 overflow-x-hidden">
-                        {displayed.map(
-                            (txn, index) => {
-                                const cfg = getConfig(
-                                    txn.payment_status
-                                );
+                    <div className="divide-y divide-slate-100 dark:divide-zinc-800">
+                        {displayed.map((txn, index) => {
+                            const cfg = getConfig(txn.payment_status);
+                            const IconComp = cfg.icon;
 
-                                const IconComp =
-                                    cfg.icon;
-
-                                return (
-                                    <Card
-                                        key={txn.id}
-                                        // onClick={() => {
-                                        //     setSelectedPayment(txn);
-                                        //     setReportDialogOpen(true);
-                                        // }}
-                                        onClick={() => {
-                                            if (txn.report_submitted) {
-                                                setSelectedReport(txn);
-                                                setViewReportOpen(true);
-                                            } else {
-                                                setSelectedPayment(txn);
-                                                setReportDialogOpen(true);
-                                            }
-                                        }}
-                                        className="border-0 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden animate-fade-in"
-                                        style={{
-                                            animationDelay: `${index * 0.04}s`
+                            return (
+                                <div
+                                    key={txn.id}
+                                    onClick={() => {
+                                        if (txn.report_submitted) {
+                                            setSelectedReport(txn);
+                                            setViewReportOpen(true);
+                                        } else {
+                                            setSelectedPayment(txn);
+                                            setReportDialogOpen(true);
                                         }
+                                    }}
+                                    className={cn(OtherCardStyle, "h-auto min-h-0 p-4 flex flex-col gap-3 cursor-pointer hover:bg-slate-50/50 dark:hover:bg-zinc-900/40 transition-colors duration-200")}
+                                >
+                                    {/* Top Layout Stack: Status Icon, Lawyer Name, Date, Status, Payment Type */}
+                                    <div className="flex items-start gap-2.5 min-w-0 w-full">
+                                        {/* Fixed Structural Block for Dynamic Icon Component */}
+                                        <div className={`w-8 h-8 rounded-lg ${cfg.bg} flex items-center justify-center shrink-0 border border-current/10`}>
+                                            <IconComp className={`h-4 w-4 ${cfg.color}`} />
+                                        </div>
+
+                                        {/* Metadata Column Layout */}
+                                        <div className="space-y-1 min-w-0 flex-1">
+                                            <span className="font-semibold text-xs text-[#3B2F0B] dark:text-amber-200 truncate block">
+                                                {txn.lawyer_name}
+                                            </span>
+
+                                            {/* Row 2: Date, Status Badge, and Payment Method */}
+                                            <div className="flex items-center gap-1.5 text-[11px] text-[#3B2F0B]/60 flex-wrap">
+                                                <Calendar className="h-3 w-3 text-[#3B2F0B]/40 shrink-0" />
+                                                <span>
+                                                    {new Date(txn.created_at).toLocaleDateString('en-IN', {
+                                                        day: 'numeric',
+                                                        month: 'short',
+                                                        year: 'numeric'
+                                                    })}
+                                                </span>
+                                                <Badge className={`text-[9px] px-1 py-0 h-4 font-bold uppercase tracking-wider shadow-none border-0 ${cfg.bg} ${cfg.color}`}>
+                                                    {cfg.label}
+                                                </Badge>
+                                                <span className="text-[9px] px-1 py-0 h-4 font-bold text-[#3B2F0B]/70 dark:text-amber-300/70 bg-[#3B2F0B]/5 dark:bg-amber-400/10 border border-[#3B2F0B]/10 dark:border-amber-400/20 rounded-md uppercase inline-flex items-center">
+                                                    {txn.payment_method || 'Razorpay'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* --- LINE SEPARATOR --- */}
+                                    <hr className="border-slate-200/70 dark:border-zinc-800 w-full" />
+
+                                    {/* Bottom Content Area */}
+                                    <div className="space-y-2 w-full">
+                                        <div className="flex items-center justify-between gap-4 flex-wrap">
+                                            {/* Technical Identifier Segment */}
+                                            {txn.razorpay_payment_id ? (
+                                                <p className="text-[10px] text-[#3B2F0B]/60 dark:text-zinc-400 font-mono truncate">
+                                                    ID: {txn.razorpay_payment_id}
+                                                </p>
+                                            ) : (
+                                                <div /> // Spacing placeholder
+                                            )}
+
+                                            {/* Earnings Value Component */}
+                                            <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+                                                <span className="text-[9px] text-[#3B2F0B]/50 font-bold uppercase tracking-wider">
+                                                    Your Earnings:
+                                                </span>
+                                                <p className={`font-extrabold text-base tracking-tight ${txn.payment_status === 'completed' ? 'text-emerald-700' : cfg.color}`}>
+                                                    ₹{Number(txn.amount).toFixed(2)}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Operational Interaction Status Bar */}
+                                        <div className={`flex items-center gap-1 pt-0.5 text-[10px] font-medium ${txn.report_submitted ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'}`}>
+                                            <MessageSquareWarning className="h-3 w-3 shrink-0" />
+                                            <span>{txn.report_submitted ? 'Report already submitted' : 'Tap to report issue'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+
+
+                        {/* PAGINATION */}
+                        {totalPages > 1 && (
+                            <div className="mt-8 flex flex-col items-center gap-4">
+
+                                <p className="text-sm text-muted-foreground">
+                                    Showing {(currentPage - 1) * perPage + 1}
+                                    –
+                                    {Math.min(
+                                        currentPage * perPage,
+                                        filtered.length
+                                    )}
+                                    {' '}of {filtered.length} payments
+                                </p>
+
+                                <div className="flex items-center gap-2">
+
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={currentPage === 1}
+                                        onClick={() =>
+                                            setCurrentPage((p) => p - 1)
                                         }
                                     >
-                                        <CardContent className="p-3">
-                                            <div className="flex items-center gap-3">
-                                                {/* Icon */}
-                                                <div
-                                                    className={`w-9 h-9 rounded-lg ${cfg.bg} flex items-center justify-center shrink-0`}
-                                                >
-                                                    <IconComp
-                                                        className={`h-4 w-4 ${cfg.color}`}
-                                                    />
-                                                </div>
+                                        Previous
+                                    </Button>
 
-                                                {/* Info */}
-                                                <div className="min-w-0 flex-1">
-                                                    <div className="flex items-center gap-2 flex-wrap">
-                                                        <h3 className="font-semibold text-sm truncate">
-                                                            {
-                                                                txn.lawyer_name
-                                                            }
-                                                        </h3>
+                                    {/* CURRENT PAGE */}
+                                    <Button
+                                        variant="default"
+                                        size="sm"
+                                        className="w-9 h-9 p-0"
+                                    >
+                                        {currentPage}
+                                    </Button>
 
-                                                        <Badge
-                                                            variant="outline"
-                                                            className={`text-[10px] px-1.5 py-0 h-4 ${cfg.bg} ${cfg.color} ${cfg.border}`}
-                                                        >
-                                                            {
-                                                                cfg.label
-                                                            }
-                                                        </Badge>
-                                                    </div>
+                                    {/* NEXT PAGE */}
+                                    {currentPage + 1 <= totalPages && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="w-9 h-9 p-0"
+                                            onClick={() =>
+                                                setCurrentPage(currentPage + 1)
+                                            }
+                                        >
+                                            {currentPage + 1}
+                                        </Button>
+                                    )}
 
-                                                    <div className="flex items-center gap-1 text-[11px] text-muted-foreground mt-1">
-                                                        <User className="h-3 w-3" />
+                                    {/* ELLIPSIS */}
+                                    {currentPage + 1 < totalPages && (
+                                        <span className="px-2 text-muted-foreground">
+                                            ...
+                                        </span>
+                                    )}
 
-                                                        <span className="truncate">
-                                                            Payment
-                                                            via{' '}
-                                                            {txn.payment_method ||
-                                                                'Razorpay'}
-                                                        </span>
-                                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={currentPage === totalPages}
+                                        onClick={() =>
+                                            setCurrentPage((p) => p + 1)
+                                        }
+                                    >
+                                        Next
+                                    </Button>
 
-                                                    {txn.razorpay_payment_id && (
-                                                        <p className="text-[10px] text-muted-foreground mt-1 truncate">
-                                                            ID:{' '}
-                                                            {
-                                                                txn.razorpay_payment_id
-                                                            }
-                                                        </p>
-                                                    )}
-
-                                                    {/* <div className="flex items-center gap-1 mt-2 text-[10px] text-red-500">
-                                                        <MessageSquareWarning className="h-3 w-3" />
-                                                        Tap to report issue
-                                                    </div> */}
-                                                    <div
-                                                        className={`flex items-center gap-1 mt-2 text-[10px] ${txn.report_submitted
-                                                            ? 'text-emerald-600'
-                                                            : 'text-red-500'
-                                                            }`}
-                                                    >
-                                                        <MessageSquareWarning className="h-3 w-3" />
-
-                                                        {txn.report_submitted
-                                                            ? 'Report already submitted'
-                                                            : 'Tap to report issue'}
-                                                    </div>
-                                                </div>
-
-                                                {/* Amount */}
-                                                <div className="text-right shrink-0 min-w-[80px]">
-                                                    <p className="text-sm font-bold text-emerald-600">
-                                                        ₹
-                                                        {Number(
-                                                            txn.amount
-                                                        ).toFixed(
-                                                            2
-                                                        )}
-                                                    </p>
-
-                                                    <p className="text-[10px] text-muted-foreground flex items-center gap-1 justify-end">
-                                                        <Clock className="h-2.5 w-2.5" />
-
-                                                        {new Date(
-                                                            txn.created_at
-                                                        ).toLocaleDateString(
-                                                            [],
-                                                            {
-                                                                month: 'short',
-                                                                day: 'numeric'
-                                                            }
-                                                        )}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                );
-                            }
-                        )}
-
-                        {/* Pagination */}
-                        {totalPages > 1 && (
-                            <div className="flex justify-center items-center gap-2 mt-4 flex-wrap">
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    disabled={
-                                        currentPage === 1
-                                    }
-                                    onClick={() =>
-                                        setCurrentPage(
-                                            p => p - 1
-                                        )
-                                    }
-                                    className="text-xs h-8"
-                                >
-                                    Prev
-                                </Button>
-
-                                {[...Array(totalPages)]
-                                    .slice(0, 5)
-                                    .map((_, i) => {
-                                        const page =
-                                            i + 1;
-
-                                        return (
-                                            <Button
-                                                key={page}
-                                                size="sm"
-                                                variant={
-                                                    currentPage ===
-                                                        page
-                                                        ? 'default'
-                                                        : 'outline'
-                                                }
-                                                onClick={() =>
-                                                    setCurrentPage(
-                                                        page
-                                                    )
-                                                }
-                                                className="text-xs h-8 w-8 p-0"
-                                            >
-                                                {page}
-                                            </Button>
-                                        );
-                                    })}
-
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    disabled={
-                                        currentPage ===
-                                        totalPages
-                                    }
-                                    onClick={() =>
-                                        setCurrentPage(
-                                            p => p + 1
-                                        )
-                                    }
-                                    className="text-xs h-8"
-                                >
-                                    Next
-                                </Button>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -892,7 +854,8 @@ const ClientTransactionHistory = () => {
                     }
                 }}
             >
-                <DialogContent className="sm:max-w-md">
+                {/* <DialogContent className="sm:max-w-md"> */}
+                <DialogContent className="sm:max-w-md rounded-2xl border-0 shadow-2xl">
                     {/* <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto scrollbar-none"> */}
                     <DialogHeader>
                         <DialogTitle>
@@ -908,7 +871,8 @@ const ClientTransactionHistory = () => {
                     {selectedPayment && (
                         <div className="space-y-4 mt-2">
                             {/* Payment Info */}
-                            <div className="rounded-xl border p-3 bg-muted/30">
+                            {/* <div className="rounded-xl border p-3 bg-muted/30"> */}
+                            <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 shadow-sm">
                                 <div className="flex justify-between text-sm">
                                     <span>Lawyer</span>
 
@@ -941,21 +905,46 @@ const ClientTransactionHistory = () => {
                                 </div>
                             </div>
 
-                            {/* Issue Type */}
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">
-                                    Select Issue
-                                </label>
+
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="text-sm font-semibold text-slate-900">
+                                        Select Issue
+                                    </label>
+
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        Choose the issue that best matches your concern.
+                                    </p>
+                                </div>
 
                                 <Select
                                     value={reportReason}
                                     onValueChange={setReportReason}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger
+                                        className="
+                h-12
+                rounded-xl
+                border-slate-200
+                bg-slate-50/70
+                hover:bg-slate-50
+                focus:ring-2
+                focus:ring-primary/20
+                focus:border-primary
+                transition-all
+            "
+                                    >
                                         <SelectValue placeholder="Choose issue type" />
                                     </SelectTrigger>
 
-                                    <SelectContent>
+                                    <SelectContent
+                                        className="
+                z-[9999]
+                rounded-xl
+                border-slate-200
+                shadow-xl
+            "
+                                    >
                                         <SelectItem value="refund_request">
                                             Refund Request
                                         </SelectItem>
@@ -1014,6 +1003,7 @@ const ClientTransactionHistory = () => {
                             )}
                             <div className="flex justify-end gap-2 pt-2">
                                 <Button
+                                    className={cn(rejectButtonStyle)}
                                     variant="outline"
                                     onClick={() =>
                                         setReportDialogOpen(false)
@@ -1023,6 +1013,7 @@ const ClientTransactionHistory = () => {
                                 </Button>
 
                                 <Button
+                                    className={cn(acceptButtonStyle)}
                                     onClick={submitReport}
                                     disabled={submittingReport}
                                 >
@@ -1041,7 +1032,7 @@ const ClientTransactionHistory = () => {
                 open={viewReportOpen}
                 onOpenChange={setViewReportOpen}
             >
-                <DialogContent className="sm:max-w-md">
+                <DialogContent className="sm:max-w-md rounded-2xl border-0 shadow-2xl">
                     <DialogHeader>
                         <DialogTitle>
                             Submitted Report
@@ -1074,7 +1065,7 @@ const ClientTransactionHistory = () => {
                                     Description
                                 </p>
 
-                                <div className="border rounded-lg p-3 text-sm whitespace-pre-wrap">
+                                <div className="border rounded-lg p-3 text-sm whitespace-pre-wrap max-h-24 overflow-y-auto">
                                     {
                                         selectedReport.report_description
                                     }
@@ -1106,6 +1097,7 @@ const ClientTransactionHistory = () => {
                                     onClick={() =>
                                         setViewReportOpen(false)
                                     }
+                                    className={cn(rejectButtonStyle)}
                                 >
                                     Close
                                 </Button>

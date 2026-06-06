@@ -143,15 +143,32 @@ const LawyerPendingRequests = () => {
     <LawyerLayout>
       <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background">
         <div className="container mx-auto px-4 py-8">
-          <Button variant="ghost" className="gap-2 mb-6" onClick={() => navigate('/lawyer/dashboard')}>
+          {/* <Button variant="ghost" className="gap-2 mb-6" onClick={() => navigate('/lawyer/dashboard')}>
             <ArrowLeft className="h-4 w-4" /> Back to Dashboard
+          </Button> */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hidden md:flex h-8 w-8"
+            onClick={() => navigate('/lawyer/dashboard')}
+          >
+            <ArrowLeft className="h-4 w-4" />
           </Button>
+          <div className="space-y-1">
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold flex items-center gap-2 text-foreground">
+
+              Pending Requests
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground font-medium">
+              Consulatation Pending Requests from clients will appear here. You can accept or decline each request.
+            </p>
+          </div>
           <Card className="border-0 shadow-lg">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
+              {/* <CardTitle className="flex items-center gap-2 text-xl">
                 <Zap className="h-5 w-5 text-amber-500" /> Pending Requests
-              </CardTitle>
-              <CardDescription>{consultations.length} requests awaiting your response</CardDescription>
+              </CardTitle> */}
+              {/* <CardDescription>{consultations.length} requests awaiting your response</CardDescription> */}
             </CardHeader>
             <CardContent>
               {consultations.length === 0 ? (

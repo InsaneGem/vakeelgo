@@ -72,6 +72,8 @@ export const BookingNotificationProvider = ({ children }: BookingNotificationPro
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const intervalsRef = useRef<Map<string, ReturnType<typeof setInterval>>>(new Map());
+  // ✅ ADD THIS LINE: To keep track of the playing ringtone instance
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
 
@@ -119,29 +121,48 @@ export const BookingNotificationProvider = ({ children }: BookingNotificationPro
 
               const reqId = consultation.id;
 
+
+              // ✅ UPDATED CODE
               // const newReq: IncomingRequest = {
               //   id: reqId,
               //   consultationId: consultation.id,
               //   clientName: clientProfile?.full_name || 'Client',
               //   clientAvatar: clientProfile?.avatar_url || undefined,
+              //   // type: consultation.type,
               //   type: consultation.type,
-              //   amount: consultation.total_amount || 0,
+              //   // Automatically filters out description details, leaving only bracketed categories
+              //   agenda: cleanAgendaForDisplay(consultation.agenda),
+              //   // Reverse the 15% markup to show the lawyer's actual earnings
+              //   amount: consultation.total_amount ? Math.round(consultation.total_amount / 1.15) : 0,
               //   agenda: consultation.agenda,
               //   countdown: 60,
               // };
-              // ✅ UPDATED CODE
+
+              // 1. Safely normalize the type string to handle capitalization variations
+              const consultationMode = (consultation.type || 'chat').toLowerCase().trim();
+              const totalPaidByClient = consultation.total_amount || 0;
+
+              // 2. Apply precise variable multipliers matching the checkout component
+              const currentMarkupRule = consultationMode === 'chat'
+                ? 0.05
+                : consultationMode === 'audio'
+                  ? 0.12
+                  : 0.15;
+
+              // 3. Reverse engineering the gateway and handling fees down to the base rate
+              const netBeforeGateway = totalPaidByClient * 0.9764;
+              const rawLawyerEarnings = netBeforeGateway > 15
+                ? Math.floor((netBeforeGateway - 15) / (1 + currentMarkupRule))
+                : Math.round(totalPaidByClient / 1.15); // Dynamic backward compatibility fallback
+
               const newReq: IncomingRequest = {
                 id: reqId,
                 consultationId: consultation.id,
                 clientName: clientProfile?.full_name || 'Client',
                 clientAvatar: clientProfile?.avatar_url || undefined,
-                // type: consultation.type,
                 type: consultation.type,
-                // Automatically filters out description details, leaving only bracketed categories
                 agenda: cleanAgendaForDisplay(consultation.agenda),
-                // Reverse the 15% markup to show the lawyer's actual earnings
-                amount: consultation.total_amount ? Math.round(consultation.total_amount / 1.15) : 0,
-                agenda: consultation.agenda,
+                amount: rawLawyerEarnings, // Resolves exactly to 25 for a 43 INR payload!
                 countdown: 60,
               };
 
@@ -177,10 +198,16 @@ export const BookingNotificationProvider = ({ children }: BookingNotificationPro
 
               intervalsRef.current.set(reqId, interval);
 
-              // 🔔 sound
+
               try {
+                // If a tone is already playing, stop it first before triggering a new one
+                if (audioRef.current) {
+                  audioRef.current.pause();
+                  audioRef.current.currentTime = 0;
+                }
                 const audio = new Audio('/alertTone.mp3');
                 audio.volume = 0.5;
+                audioRef.current = audio; // ✅ Save reference to the audio instance
                 audio.play().catch(() => { });
               } catch { }
 
@@ -272,11 +299,20 @@ export const BookingNotificationProvider = ({ children }: BookingNotificationPro
 
   }, [user]);
 
+
+
   const dismissRequest = (id: string) => {
 
     if (intervalsRef.current.has(id)) {
       clearInterval(intervalsRef.current.get(id)!);
       intervalsRef.current.delete(id);
+    }
+
+    // ✅ Stop the audio alert instantly when the request is dismissed or processed
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
     }
 
     setRequests(prev => prev.filter(r => r.id !== id));

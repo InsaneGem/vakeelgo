@@ -7,12 +7,14 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { cn } from '@/lib/utils';
+import { rejectButtonStyle, acceptButtonStyle, OtherCardStyle } from '@/lib/buttonStyles';
 import {
     ArrowLeft, Video, Phone, MessageSquare, Play, Clock,
     Calendar, User, FileVideo, Loader2, Download, HardDrive
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
+
 interface RecordingWithDetails {
     id: string;
     consultation_id: string;
@@ -32,6 +34,7 @@ interface RecordingWithDetails {
     };
     participant_name?: string;
     playback_url?: string;
+    participant_avatar?: string | null;
 }
 const ClientRecordings = () => {
     const { user, loading: authLoading } = useAuth();
@@ -40,6 +43,7 @@ const ClientRecordings = () => {
     const [loading, setLoading] = useState(true);
     const [playingId, setPlayingId] = useState<string | null>(null);
     const [loadingPlaybackId, setLoadingPlaybackId] = useState<string | null>(null);
+    const [totalRecordingTime, setTotalRecordingTime] = useState(0);
     const { toast } = useToast();
     useEffect(() => {
         if (!authLoading && !user) {
@@ -79,25 +83,43 @@ const ClientRecordings = () => {
         ];
         const { data: profiles } = await supabase
             .from('profiles')
-            .select('id, full_name')
+            .select('id, full_name, avatar_url')
             .in('id', otherUserIds);
-        // Build enriched recordings but do NOT fetch signed URLs yet (on-demand)
         const enriched: RecordingWithDetails[] = recordingsData.map((rec) => {
-            const consultation = userConsultations.find(c => c.id === rec.consultation_id);
+            const consultation = userConsultations.find(
+                c => c.id === rec.consultation_id
+            );
+
             const otherUserId = consultation
                 ? consultation.client_id === user.id
                     ? consultation.lawyer_id
                     : consultation.client_id
                 : null;
-            const participantName = profiles?.find(p => p.id === otherUserId)?.full_name || 'Unknown';
+
+            const participantProfile = profiles?.find(
+                p => p.id === otherUserId
+            );
+
             return {
                 ...rec,
                 consultation: consultation || undefined,
-                participant_name: participantName,
+
+                participant_name:
+                    participantProfile?.full_name || 'Unknown',
+
+                participant_avatar:
+                    participantProfile?.avatar_url || null,
+
                 playback_url: undefined,
             };
         });
         setRecordings(enriched);
+        const totalSeconds = enriched.reduce(
+            (sum, rec) => sum + (rec.duration_seconds || 0),
+            0
+        );
+
+        setTotalRecordingTime(totalSeconds);
         setLoading(false);
     };
     const fetchPlaybackUrl = async (rec: RecordingWithDetails) => {
@@ -132,6 +154,17 @@ const ClientRecordings = () => {
         const s = seconds % 60;
         return `${m}:${s.toString().padStart(2, '0')}`;
     };
+    const formatTotalDuration = (seconds: number) => {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const remainingSeconds = seconds % 60;
+
+        if (hours > 0) {
+            return `${hours}h ${minutes}m ${remainingSeconds}s`;
+        }
+
+        return `${minutes}m ${remainingSeconds}s`;
+    };
     const formatFileSize = (bytes: number | null) => {
         if (!bytes) return 'Unknown';
         if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -144,6 +177,7 @@ const ClientRecordings = () => {
             default: return <MessageSquare className="h-4 w-4" />;
         }
     };
+
     if (authLoading || loading) {
         return (
             <ClientLayout>
@@ -198,96 +232,78 @@ const ClientRecordings = () => {
                             {recordings.map((rec, index) => (
                                 <Card
                                     key={rec.id}
-                                    className="border shadow-sm hover:shadow-md transition-all duration-300 animate-fade-in overflow-hidden"
+                                    className={cn(OtherCardStyle, "h-auto min-h-0 p-3 flex flex-col justify-between")}
                                     style={{ animationDelay: `${index * 80}ms` }}
                                 >
-                                    <CardContent className="p-4 sm:p-5">
-                                        <div className="flex items-start justify-between gap-3 mb-3">
-                                            <div className="flex items-center gap-3 min-w-0">
-                                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                                    <User className="h-5 w-5 text-primary" />
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <h3 className="font-semibold text-sm truncate">
-                                                        {rec.participant_name}
-                                                    </h3>
-                                                    <div className="flex items-center gap-2 mt-0.5">
-                                                        <Badge variant="outline" className="text-[10px] gap-1 px-1.5 py-0">
-                                                            {getTypeIcon(rec.consultation?.type)}
-                                                            <span className="capitalize">{rec.consultation?.type || 'call'}</span>
-                                                        </Badge>
-                                                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                                            <Calendar className="h-3 w-3" />
-                                                            {new Date(rec.created_at).toLocaleDateString()}
-                                                        </span>
+                                    <CardContent className="p-3 sm:p-4 space-y-3">
+                                        {/* Header: Compact Avatar & Info */}
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full overflow-hidden bg-primary/10 shrink-0">
+                                                {rec.participant_avatar ? (
+                                                    <img
+                                                        src={rec.participant_avatar}
+                                                        alt={rec.participant_name}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center">
+                                                        <User className="h-5 w-5 text-primary" />
                                                     </div>
-                                                </div>
+                                                )}
                                             </div>
-                                            <div className="flex items-center gap-2 flex-shrink-0">
-                                                <div className="text-right text-xs text-muted-foreground hidden sm:block">
-                                                    <div className="flex items-center gap-1">
-                                                        <Clock className="h-3 w-3" />
-                                                        {formatDuration(rec.duration_seconds)}
-                                                    </div>
-                                                    <div className="flex items-center gap-1 mt-0.5">
-                                                        <HardDrive className="h-3 w-3" />
-                                                        {formatFileSize(rec.file_size_bytes)}
-                                                    </div>
+                                            <div className="min-w-0 flex-1">
+                                                <h3 className="font-semibold text-sm truncate">{rec.participant_name}</h3>
+                                                <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                                                    <span className="capitalize font-medium">{rec.consultation?.type || 'call'}</span>
+                                                    <span>•</span>
+                                                    <span>{new Date(rec.created_at).toLocaleDateString()}</span>
                                                 </div>
                                             </div>
                                         </div>
-                                        {/* Consultation details */}
+
+                                        {/* Stats: Modern Pill Layout */}
                                         {rec.consultation && (
-                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3 text-xs">
-                                                <div className="bg-secondary/50 rounded-lg px-2.5 py-1.5">
-                                                    <span className="text-muted-foreground block">Duration</span>
-                                                    <span className="font-medium">{rec.consultation.duration_minutes || '—'} min</span>
-                                                </div>
-                                                <div className="bg-secondary/50 rounded-lg px-2.5 py-1.5">
-                                                    <span className="text-muted-foreground block">Fee</span>
-                                                    <span className="font-medium text-emerald-600">
-                                                        ${rec.consultation.total_amount?.toFixed(2) || '0.00'}
-                                                    </span>
-                                                </div>
-                                                <div className="bg-secondary/50 rounded-lg px-2.5 py-1.5">
-                                                    <span className="text-muted-foreground block">Status</span>
-                                                    <Badge variant="outline" className={cn(
-                                                        "text-[10px] px-1.5 py-0 mt-0.5",
-                                                        rec.consultation.status === 'completed' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
-                                                            rec.consultation.status === 'active' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
-                                                                'bg-muted text-muted-foreground'
-                                                    )}>
-                                                        {rec.consultation.status}
-                                                    </Badge>
-                                                </div>
-                                                <div className="bg-secondary/50 rounded-lg px-2.5 py-1.5">
-                                                    <span className="text-muted-foreground block">Recording</span>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {/* <div className="px-2 py-1 rounded-md bg-secondary/50 text-[10px] flex items-center gap-1">
+                                                    <span className="text-muted-foreground font-semibold">DUR:</span>
                                                     <span className="font-medium">{formatDuration(rec.duration_seconds)}</span>
+
+                                                </div> */}
+                                                <div className="px-2 py-1 rounded-md bg-emerald-50 text-[10px] text-emerald-700 border border-emerald-100 flex items-center gap-1">
+                                                    <span className="font-semibold">FEE:</span>
+                                                    <span className="font-bold">${rec.consultation.total_amount?.toFixed(2) || '0.00'}</span>
+                                                </div>
+                                                <div className="px-2 py-1 rounded-md bg-secondary/50 text-[10px] flex items-center gap-1">
+                                                    <span className="text-muted-foreground font-semibold">STATUS:</span>
+                                                    <span className="font-medium capitalize">{rec.consultation.status}</span>
                                                 </div>
                                             </div>
                                         )}
-                                        {/* Player */}
-                                        {playingId === rec.id && rec.playback_url ? (
-                                            <div className="mt-3 rounded-lg overflow-hidden bg-black/5 border">
+
+                                        {/* Player Container */}
+                                        {playingId === rec.id && rec.playback_url && (
+                                            <div className="rounded-lg overflow-hidden bg-black/5 border">
                                                 {rec.consultation?.type === 'video' ? (
                                                     <video
                                                         src={rec.playback_url}
                                                         controls
                                                         autoPlay
-                                                        className="w-full max-h-64 rounded-lg"
+                                                        className="w-full max-h-48 rounded-lg"
                                                     />
                                                 ) : (
                                                     <audio
                                                         src={rec.playback_url}
                                                         controls
                                                         autoPlay
-                                                        className="w-full"
+                                                        className="w-full h-10"
                                                     />
                                                 )}
                                             </div>
-                                        ) : null}
+                                        )}
+
                                         {/* Actions */}
-                                        <div className="flex items-center gap-2 mt-3">
+                                        <div className="flex items-center gap-2 pt-1 border-t border-dashed border-secondary/50">
+
                                             <Button
                                                 size="sm"
                                                 variant={playingId === rec.id ? "secondary" : "default"}
@@ -314,33 +330,20 @@ const ClientRecordings = () => {
                                                 )}
                                                 {playingId === rec.id ? 'Hide Player' : 'Play'}
                                             </Button>
-                                            {rec.playback_url ? (
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    className="gap-1.5 text-xs"
-                                                    asChild
-                                                >
-                                                    <a href={rec.playback_url} download target="_blank" rel="noopener noreferrer">
-                                                        <Download className="h-3.5 w-3.5" />
-                                                        Download
-                                                    </a>
-                                                </Button>
-                                            ) : (
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    className="gap-1.5 text-xs"
-                                                    onClick={async () => {
-                                                        if (loadingPlaybackId === rec.id) return;
-                                                        const url = await fetchPlaybackUrl(rec);
-                                                        if (url) window.open(url, '_blank');
-                                                    }}
-                                                >
-                                                    <Download className="h-3.5 w-3.5" />
-                                                    Download
-                                                </Button>
-                                            )}
+
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="gap-1.5 text-xs"
+                                                onClick={async () => {
+                                                    if (loadingPlaybackId === rec.id) return;
+                                                    const url = await fetchPlaybackUrl(rec);
+                                                    if (url) window.open(url, '_blank');
+                                                }}
+                                            >
+                                                <Download className="h-3.5 w-3.5" />
+                                                Download
+                                            </Button>
                                         </div>
                                     </CardContent>
                                 </Card>

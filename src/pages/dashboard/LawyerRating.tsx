@@ -44,6 +44,10 @@ const LawyerRating = () => {
     if (user) fetchData();
   }, [user, authLoading]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [reviews.length]);
+
   const fetchData = async () => {
     if (!user) return;
 
@@ -123,13 +127,21 @@ const LawyerRating = () => {
           {/* Page Header (Matching Active Sessions Style Layout) */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pt-2">
             <div className="flex items-start gap-3">
-              <Button
+              {/* <Button
                 variant="ghost"
                 size="icon"
                 className="h-9 w-9 rounded-full shrink-0 text-foreground hover:bg-muted"
                 onClick={() => navigate('/lawyer/dashboard')}
               >
                 <ArrowLeft className="h-5 w-5" />
+              </Button> */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hidden md:flex h-8 w-8"
+                onClick={() => navigate('/lawyer/dashboard')}
+              >
+                <ArrowLeft className="h-4 w-4" />
               </Button>
 
               <div className="space-y-1">

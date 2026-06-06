@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-// import { LucideIcon } from 'lucide-react';
+// import { LucideIcon, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { LawyerLayout } from '@/components/layout/LawyerLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -23,7 +23,7 @@ import {
   CakeSlice,
   Verified,
   Bell, Timer, FileText,
-  IndianRupee
+  IndianRupee, Play, HelpCircle
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -204,12 +204,20 @@ const LawyerDashboard = () => {
           },
           (payload) => {
             const updated = payload.new as any;
-            // If payment completed, notify lawyer
+            // If payment completed, notify lawyer and hard-redirect into the consultation page
             if (updated?.payment_status === 'paid' && updated?.status === 'active') {
               toast({
                 title: '💰 Payment Received!',
                 description: 'The client has completed payment. Consultation is now unlocked.',
               });
+
+              const target = `/consultation/${updated.id}`;
+              if (window.location.pathname !== target) {
+                window.location.href = target;
+              } else {
+                window.location.reload();
+              }
+              return;
             }
             fetchDashboardData();
           }
@@ -449,15 +457,15 @@ const LawyerDashboard = () => {
   const getStatusConfig = (status: string) => {
     switch (status) {
       case 'completed':
-        return { className: 'bg-green-100 text-green-700 border-green-200' };
+        return { className: 'bg-green-100 text-green-700 border-green-200 ', icon: <CheckCircle className="h-3 w-3" /> };
       case 'cancelled':
-        return { className: 'bg-red-100 text-red-700 border-red-200' };
+        return { className: 'bg-red-100 text-red-700 border-red-200', icon: <XCircle className="h-3 w-3" /> };
       case 'active':
-        return { className: 'bg-blue-100 text-blue-700 border-blue-200' };
+        return { className: 'bg-blue-100 text-blue-700 border-blue-200', icon: <Play className="h-3 w-3" /> };
       case 'pending':
-        return { className: 'bg-amber-100 text-amber-700 border-amber-200' };
+        return { className: 'bg-amber-100 text-amber-700 border-amber-200', icon: <Clock className="h-3 w-3" /> };
       default:
-        return { className: 'bg-gray-100 text-gray-700 border-gray-200' };
+        return { className: 'bg-gray-100 text-gray-700 border-gray-200', icon: <HelpCircle className="h-3 w-3" /> };
     }
   };
 
@@ -502,7 +510,7 @@ const LawyerDashboard = () => {
   return (
     <LawyerLayout>
       <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-2">
           {/* Header Section */}
           <div
             className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between
@@ -688,12 +696,12 @@ const LawyerDashboard = () => {
                     </p>
                     <p className="text-[10px] sm:text-xs opacity-80 flex items-center gap-1">
                       <TrendingUp className="h-2.5 w-2.5" />
-                      Available for withdrawal
+                      Check your Earning growth over time
                     </p>
 
-                    <p className="text-[10px] opacity-70">
+                    {/* <p className="text-[10px] opacity-70">
                       Withdraw anytime to your bank
-                    </p>
+                    </p> */}
                   </div>
                 </div>
               </CardContent>
@@ -732,7 +740,7 @@ const LawyerDashboard = () => {
                     </p>
 
                     <p className="text-[10px] text-muted-foreground">
-                      • Check You ongoing Consulation
+                      • Check Your ongoing Consultation
                     </p>
 
                     <p className="text-[10px] text-muted-foreground whitespace-nowrap">
@@ -799,10 +807,10 @@ const LawyerDashboard = () => {
                       Client Review
                     </p>
                     <p className="text-[10px] text-muted-foreground ">
-                      Based on completed consultations
+                      • Based on completed consultations
                     </p>
                     <p className="text-[10px] text-muted-foreground">
-                      Trusted legal professional rating
+                      • Trusted legal professional rating
                     </p>
                   </div>
                 </div>
@@ -838,10 +846,10 @@ const LawyerDashboard = () => {
                       Awaiting for response
                     </p>
                     <p className="text-[10px] text-muted-foreground">
-                      Client consultation requests pending
+                      • Client consultation requests pending
                     </p>
                     <p className="text-[10px] text-muted-foreground">
-                      Accept or decline in real-time
+                      • Accept or decline in real-time
                     </p>
                   </div>
                 </div>
@@ -851,7 +859,7 @@ const LawyerDashboard = () => {
           </div>
 
           {/* Active Consultations (paid & unlocked) */}
-          {activeConsultations.filter(c => c.payment_status === 'paid').length > 0 && (
+          {/* {activeConsultations.filter(c => c.payment_status === 'paid').length > 0 && (
             <Card className="mb-8 border-2 border-emerald-500/30 bg-emerald-500/5 shadow-lg">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-3 text-xl">
@@ -898,7 +906,7 @@ const LawyerDashboard = () => {
                 </div>
               </CardContent>
             </Card>
-          )}
+          )} */}
           {/* Accepted but awaiting payment */}
           {activeConsultations.filter(c => c.payment_status === 'unpaid').length > 0 && (
             <Card className="mb-8 border-2 border-blue-500/30 bg-blue-500/5 shadow-lg">
@@ -989,8 +997,9 @@ const LawyerDashboard = () => {
                             {/* Status */}
                             <div className="absolute top-2 right-3 z-10">
                               <Badge
-                                className={`${statusConfig.className} text-[10px] font-medium px-2 py-0.5 rounded-full capitalize`}
+                                className={`${statusConfig.className} text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-md gap-1 border shadow-3xs flex-shrink-0`}
                               >
+                                {c.icon}
                                 {c.status}
                               </Badge>
                             </div>
@@ -1045,10 +1054,9 @@ const LawyerDashboard = () => {
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-1">
                                   <span className="text-lg font-bold">₹{c.total_amount || 0}</span>
-                                  <span
-                                    className="text-[10px] text-muted-foreground">
-                                    {c.status === 'cancelled' ? 'Not Paid' : 'Earned'}
-                                  </span>
+                                  <span className="text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-md gap-1 border shadow-3xs flex-shrink-0"> {c.status === 'cancelled' ? 'Not Paid' : 'Earned'} </span>
+
+                                  {statusConfig.icon}
                                 </div>
                                 <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition" />
                               </div>

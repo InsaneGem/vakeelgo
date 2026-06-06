@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
+import { cn } from '@/lib/utils';
+import { rejectButtonStyle, acceptButtonStyle, lawyerCardStyle } from '@/lib/buttonStyles';
 import { useNavigate } from 'react-router-dom';
 import { LawyerLayout } from '@/components/layout/LawyerLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -9,6 +11,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import {
+
+
     ArrowLeft, ArrowRight, Video, Phone, MessageSquare, Clock,
     User, Activity, Shield, RefreshCw, XCircle
 } from 'lucide-react';
@@ -30,6 +34,9 @@ const LawyerActiveSessions = () => {
     const { toast } = useToast();
 
     const [sessions, setSessions] = useState<ActiveSession[]>([]);
+    const [currentPage, setCurrentPage] = useState(1);
+
+    const SESSIONS_PER_PAGE = 5;
     const [loading, setLoading] = useState(true);
     const [endingId, setEndingId] = useState<string | null>(null);
     const [, setTick] = useState(0);
@@ -68,6 +75,10 @@ const LawyerActiveSessions = () => {
             };
         }
     }, [user, authLoading]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [sessions.length]);
 
     const fetchSessions = useCallback(async () => {
         if (!user) return;
@@ -140,7 +151,14 @@ const LawyerActiveSessions = () => {
             default: return <MessageSquare className="h-3.5 w-3.5" />;
         }
     };
+    const totalPages = Math.ceil(
+        sessions.length / SESSIONS_PER_PAGE
+    );
 
+    const displayedSessions = sessions.slice(
+        (currentPage - 1) * SESSIONS_PER_PAGE,
+        currentPage * SESSIONS_PER_PAGE
+    );
     const getElapsedTime = (startedAt: string | null) => {
         if (!startedAt) return '< 1 min';
         const diff = Math.floor((Date.now() - new Date(startedAt).getTime()) / 60000);
@@ -170,7 +188,16 @@ const LawyerActiveSessions = () => {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-5">
                     <div className="flex items-center gap-3">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate('/lawyer/dashboard')}>
+                        {/* <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate('/lawyer/dashboard')}>
+                            <ArrowLeft className="h-4 w-4" />
+                        </Button> */}
+
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="hidden md:flex h-8 w-8"
+                            onClick={() => navigate('/lawyer/dashboard')}
+                        >
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
                         <div>
@@ -224,88 +251,179 @@ const LawyerActiveSessions = () => {
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="space-y-3">
-                        {sessions.map((session, index) => (
-                            <Card key={session.id} className="border-0 shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden animate-fade-in relative"
-                                style={{ animationDelay: `${index * 0.08}s` }}
-                            >
-                                <div className="absolute top-0 left-0 w-0.5 h-full bg-blue-500" />
-                                <CardContent className="p-4 ">
-                                    <div className="flex items-center justify-between gap-3">
-                                        {/* Client */}
-                                        <div className="flex items-center gap-3 min-w-0 flex-1">
-                                            <div className="relative shrink-0">
-                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center overflow-hidden ring-1 ring-blue-500/30">
-                                                    {session.client_avatar ? (
-                                                        <img src={session.client_avatar} alt={session.client_name} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <User className="h-5 w-5 test-primary" />
-                                                    )}
-                                                </div>
-                                                <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3">
-                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border border-background" />
-                                                </span>
-                                            </div>
-                                            <div className="min-w-0">
-                                                <h3 className="font-semibold text-sm truncate">{session.client_name}</h3>
-                                                <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                                                    <Badge variant="outline" className="gap-1 text-[10px] px-1.5 py-0 h-5">
-                                                        {getTypeIcon(session.type)} {session.type}
-                                                    </Badge>
-                                                    <span className="text-[10px] text-blue-600 flex items-center gap-1">
-                                                        <Clock className="h-2.5 w-2.5" />
-                                                        {getElapsedTime(session.started_at)}
+                    <>
+                        <div className="space-y-2">
+                            {/* {sessions.map((session, index) => ( */}
+                            {displayedSessions.map((session, index) => (
+                                <Card
+                                    key={session.id}
+                                    className={cn("p-0 overflow-hidden", lawyerCardStyle, "h-auto min-h-0")}
+                                    style={{ animationDelay: `${index * 0.08}s` }}
+                                >
+                                    {/* Premium Left Accent Border Indicator with subtle hover glow */}
+                                    {/* <div className="absolute top-0 left-0 w-[3px] h-full bg-gradient-to-b from-blue-500 to-indigo-600 transition-all duration-300 group-hover:w-[4px]" /> */}
+
+                                    {/* Inline subtle background pulse effect for ongoing active sessions */}
+                                    {/* <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/[0.01] to-blue-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" /> */}
+
+                                    <CardContent className="p-2.5 relative z-10">
+                                        <div className="flex items-center justify-between gap-4">
+                                            {/* Client Information */}
+                                            <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                                                <div className="relative shrink-0">
+                                                    {/* Premium Avatar Ring */}
+                                                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center overflow-hidden ring-2 ring-blue-500/10 dark:ring-blue-400/20 shadow-inner group-hover:ring-blue-500/20 transition-all duration-300">
+                                                        {session.client_avatar ? (
+                                                            <img src={session.client_avatar} alt={session.client_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                                        ) : (
+                                                            <User className="h-5 w-5 text-blue-600/80 dark:text-blue-400" />
+                                                        )}
+                                                    </div>
+                                                    {/* Active Status Pulse Indicator */}
+                                                    <span className="absolute bottom-0 right-0 flex h-3 w-3">
+                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border-2 border-white dark:border-slate-900" />
                                                     </span>
                                                 </div>
+
+                                                <div className="min-w-0 space-y-1">
+                                                    <h3 className="font-semibold text-[14px] leading-tight text-slate-900 dark:text-slate-100 tracking-tight group-hover:text-blue-600 transition-colors duration-200 truncate">
+                                                        {session.client_name}
+                                                    </h3>
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        {/* Refined Type Badge */}
+                                                        <Badge
+                                                            variant="secondary"
+                                                            className="gap-1 text-[10px] font-medium tracking-wide bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-slate-700/60 uppercase px-2 py-0 h-5 rounded-md"
+                                                        >
+                                                            {getTypeIcon(session.type)} <span className="ml-0.5">{session.type}</span>
+                                                        </Badge>
+                                                        {/* Refined Live Duration Tracker */}
+                                                        <span className="text-[11px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50/60 dark:bg-blue-500/10 px-2 py-0 h-5 inline-flex items-center gap-1 rounded-md border border-blue-100/40 dark:border-blue-400/10">
+                                                            <Clock className="h-2.5 w-2.5 animate-pulse" />
+                                                            {getElapsedTime(session.started_at)}
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            {/* </div> */}
+
+                                            {/* Action Buttons */}
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                <Button
+                                                    size="sm"
+                                                    className={cn(acceptButtonStyle, "px-3")}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigate(`/consultation/${session.id}`);
+                                                        window.scrollTo(0, 0);
+                                                    }}
+                                                >
+                                                    Continue
+                                                    <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
+                                                </Button>
+                                            </div>
                                         </div>
 
-                                        {/* Actions */}
-                                        <div className="flex items-center gap-2 shrink-0">
-                                            <Button
-                                                size="sm"
-                                                className="gap-1 h-7 text-xs px-3"
-                                                // onClick={(e) => { navigate(`/consultation/${session.id}`); window.scrollTo(0, 0);
-                                                onClick={(e) => {
-                                                    e.stopPropagation(); navigate(`/consultation/${session.id}`); window.scrollTo(0, 0)
-                                                }}
-                                            >
-                                                Continue <ArrowRight className="h-3 w-3" />
-                                            </Button>
+                                        {/* Footer Section Meta Data */}
+                                        <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-4 text-[11px] text-slate-500 dark:text-slate-400 flex-wrap">
+                                            <div className="flex items-center gap-4">
+                                                <span className="flex items-center gap-1.5">
+                                                    <Clock className="h-3 w-3 text-slate-400" />
+                                                    Started: <span className="font-medium text-slate-600 dark:text-slate-300">{session.started_at ? new Date(session.started_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recently'}</span>
+                                                </span>
+                                                <span className="flex items-center gap-1.5">
+                                                    <Shield className="h-3 w-3 text-emerald-500/90" />
+                                                    <span className="font-medium text-slate-600 dark:text-slate-300">Secure Live Connection</span>
+                                                </span>
+                                            </div>
 
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                className="gap-1 h-7 text-xs px-2 text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
-                                                disabled={endingId === session.id}
-                                                // onClick={(e) => handleEndSession(session.id)}
-                                                onClick={(e) => { e.stopPropagation(); handleEndSession(session.id); }}
-                                            >
-                                                {endingId === session.id ? <RefreshCw className="h-3 w-3 animate-spin" /> : <XCircle className="h-3 w-3" />}
-                                                End
-                                            </Button>
+                                            {/* {session.total_amount && (
+                                                <div className="text-right">
+                                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-medium tracking-wider mr-1.5">Earnings:</span>
+                                                    <span className="font-semibold text-xs text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-800/50 px-2 py-0.5 rounded border border-slate-100 dark:border-slate-700/40">
+                                                        ${Number(session.total_amount).toFixed(2)}
+                                                    </span>
+                                                </div>
+                                            )} */}
                                         </div>
-                                    </div>
-                                    {/* Footer info */}
-                                    <div className="mt-2.5 pt-2.5 border-t border-border flex items-center gap-4 text-[10px] text-muted-foreground flex-wrap">
-                                        <span className="flex items-center gap-1">
-                                            <Clock className="h-2.5 w-2.5" />
-                                            Started {session.started_at ? new Date(session.started_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recently'}
-                                        </span>
-                                        {session.total_amount && (
-                                            <span className="font-medium text-foreground">${Number(session.total_amount).toFixed(2)}</span>
-                                        )}
-                                        <span className="flex items-center gap-1">
-                                            <Shield className="h-2.5 w-2.5 text-emerald-500" /> Encrypted
-                                        </span>
-                                    </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
 
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
+
+                        {/* PAGINATION */}
+                        {totalPages > 1 && (
+                            <div className="mt-8 flex flex-col items-center gap-4">
+
+                                <p className="text-sm text-muted-foreground">
+                                    Showing {(currentPage - 1) * SESSIONS_PER_PAGE + 1}
+                                    –
+                                    {Math.min(
+                                        currentPage * SESSIONS_PER_PAGE,
+                                        sessions.length
+                                    )}
+                                    {' '}of {sessions.length} active sessions
+                                </p>
+
+                                <div className="flex items-center gap-2">
+
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={currentPage === 1}
+                                        onClick={() =>
+                                            setCurrentPage((p) => p - 1)
+                                        }
+                                    >
+                                        Previous
+                                    </Button>
+
+                                    {/* CURRENT PAGE */}
+                                    <Button
+                                        variant="default"
+                                        size="sm"
+                                        className="w-9 h-9 p-0"
+                                    >
+                                        {currentPage}
+                                    </Button>
+
+                                    {/* NEXT PAGE */}
+                                    {currentPage + 1 <= totalPages && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="w-9 h-9 p-0"
+                                            onClick={() =>
+                                                setCurrentPage(currentPage + 1)
+                                            }
+                                        >
+                                            {currentPage + 1}
+                                        </Button>
+                                    )}
+
+                                    {/* ELLIPSIS */}
+                                    {currentPage + 1 < totalPages && (
+                                        <span className="px-2 text-muted-foreground">
+                                            ...
+                                        </span>
+                                    )}
+
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={currentPage === totalPages}
+                                        onClick={() =>
+                                            setCurrentPage((p) => p + 1)
+                                        }
+                                    >
+                                        Next
+                                    </Button>
+
+                                </div>
+                            </div>
+                        )}
+                    </>
                 )}
 
             </div>

@@ -18,7 +18,7 @@ export const useCallRecording = ({
   const { toast } = useToast();
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
-  
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
   const startTimeRef = useRef<number>(0);
@@ -28,13 +28,13 @@ export const useCallRecording = ({
   const createCombinedStream = useCallback(() => {
     const audioContext = new AudioContext();
     const destination = audioContext.createMediaStreamDestination();
-    
+
     // Add local audio
     if (localStream) {
       const localSource = audioContext.createMediaStreamSource(localStream);
       localSource.connect(destination);
     }
-    
+
     // Add remote audio
     if (remoteStream) {
       const remoteSource = audioContext.createMediaStreamSource(remoteStream);
@@ -43,7 +43,7 @@ export const useCallRecording = ({
 
     // For video, we'll use a canvas to combine both video streams
     const combinedStream = new MediaStream();
-    
+
     // Add combined audio track
     destination.stream.getAudioTracks().forEach(track => {
       combinedStream.addTrack(track);
@@ -64,7 +64,7 @@ export const useCallRecording = ({
 
     try {
       const combinedStream = createCombinedStream();
-      
+
       const options: MediaRecorderOptions = {
         mimeType: 'video/webm;codecs=vp9,opus',
       };
@@ -123,7 +123,7 @@ export const useCallRecording = ({
 
     mediaRecorderRef.current.stop();
     setIsRecording(false);
-    
+
     if (durationIntervalRef.current) {
       clearInterval(durationIntervalRef.current);
       durationIntervalRef.current = null;
@@ -137,7 +137,7 @@ export const useCallRecording = ({
     try {
       const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
       const fileName = `${user.id}/${consultationId}/${Date.now()}.webm`;
-      
+
       // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from('recordings')
@@ -152,7 +152,7 @@ export const useCallRecording = ({
 
       // Save metadata to database
       const durationSeconds = Math.floor((Date.now() - startTimeRef.current) / 1000);
-      
+
       const { error: dbError } = await supabase
         .from('call_recordings')
         .insert({

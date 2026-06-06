@@ -140,53 +140,39 @@ const ClientLawyerDetail = () => {
     if (profileRes.data) setProfile(profileRes.data);
 
     // ✅ Fetch ONLY completed consultations
-    const { count } = await supabase
-      .from('consultations')
-      .select('*', { count: 'exact', head: true })
-      .eq('lawyer_id', data.id)
-      .eq('status', 'completed');
-
-    if (!error) {
-      setCompletedConsultations(count || 0);
-      setTotalConsultations(count || 0);
-    }
-
-    // const { data: consultations } = await supabase
+    // const { count } = await supabase
     //   .from('consultations')
-    //   .select('id, status')
+    //   .select('*', { count: 'exact', head: true })
     //   .eq('lawyer_id', data.id)
     //   .eq('status', 'completed');
 
-    // if (!error && consultations) {
-    //   setCompletedConsultations(consultations.length);
-    //   setTotalConsultations(consultations.length);
+    // if (!error) {
+    //   setCompletedConsultations(count || 0);
+    //   setTotalConsultations(count || 0);
     // }
 
-
-    // const fetchConsultationCount = async (lawyerId: string) => {
-    //   const { count, error } = await supabase
-    //     .from('consultations')
-    //     .select('*', { count: 'exact', head: true })
-    //     .eq('lawyer_id', lawyerId)
-    //     .eq('status', 'completed'); // optional
-
-    //   if (!error) {
-    //     setTotalConsultations(count || 0);
-    //   }
-    // };
-
-
-
-
-
-    // setCompletedConsultations(count || 0);
-
     // ✅ KEEP ONLY THIS — uses data.user_id since consultations.lawyer_id stores user_id
-    const { count: completedCount } = await supabase
+    // const { count: completedCount } = await supabase
+    //   .from('consultations')
+    //   .select('*', { count: 'exact', head: true })
+    //   .eq('lawyer_id', data.user_id)  // ← use user_id, NOT data.id
+    //   .eq('status', 'completed');
+
+    // ✅ FIXED: Single isolated query referencing user_id with dedicated error scoping
+    const { count: completedCount, error: countError } = await supabase
       .from('consultations')
       .select('*', { count: 'exact', head: true })
-      .eq('lawyer_id', data.user_id)  // ← use user_id, NOT data.id
+      .eq('lawyer_id', data.user_id) // Matches consultations table user allocation
       .eq('status', 'completed');
+
+    if (!countError) {
+      setCompletedConsultations(completedCount || 0);
+      setTotalConsultations(completedCount || 0);
+    } else {
+      console.error("Consultation count lookup failed:", countError);
+      setCompletedConsultations(0);
+      setTotalConsultations(0);
+    }
 
     setCompletedConsultations(completedCount || 0);
     setTotalConsultations(completedCount || 0);
@@ -207,9 +193,6 @@ const ClientLawyerDetail = () => {
 
 
   };
-
-
-
 
   const handleBookClick = (
     type: 'chat' | 'audio' | 'video',
@@ -565,7 +548,12 @@ const ClientLawyerDetail = () => {
                     </div>
 
                     {/* Pricing Cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    {/* <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5"> */}
+                    {/*  UPDATED CODE ON LINE 441 */}
+                    <div
+                      className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 transform-gpu"
+                      style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
+                    >
 
                       {/* Chat */}
                       <div className="group rounded-2xl border border-border/70 bg-secondary/30 p-3 hover:border-primary/30 transition-all">
@@ -718,122 +706,107 @@ const ClientLawyerDetail = () => {
                 <CardContent>
 
                   {reviews.length === 0 ? (
-                    <div className="text-center py-12">
-                      <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-                        <ThumbsUp className="h-8 w-8 text-muted-foreground" />
+                    <div className="text-center py-10">
+                      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
+                        <ThumbsUp className="h-6 w-6 text-muted-foreground" />
                       </div>
-                      <p className="font-medium text-muted-foreground">No reviews yet</p>
-                      <p className="text-sm text-muted-foreground mt-1">Be the first to leave a review!</p>
+                      <p className="text-sm font-medium text-muted-foreground">No reviews yet</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Be the first to leave a review!</p>
                     </div>
                   ) : (
                     <>
                       {/* REVIEWS LIST */}
-                      <div className="space-y-4">
-
+                      <div className="space-y-3">
                         {paginatedReviews.map(review => {
-
                           const isLong = review.comment && review.comment.length > 120;
-
                           return (
                             <div
                               key={review.id}
-                              className="p-4 rounded-xl border bg-secondary/20 hover:bg-secondary/40 transition"
+                              className="p-3 sm:p-4 rounded-xl border border-border/60 bg-card/50 hover:bg-secondary/20 transition-colors w-full min-w-0"
                             >
-
-                              <div className="flex items-start gap-3">
-
+                              <div className="flex gap-3 items-start w-full">
                                 {/* Avatar */}
-                                <Avatar className="h-10 w-10">
+                                <Avatar className="h-8 w-8 sm:h-9 sm:w-9 shrink-0 border">
                                   <AvatarImage src={review.client_avatar || undefined} />
-                                  <AvatarFallback className="text-sm bg-secondary">
+                                  <AvatarFallback className="text-xs bg-muted font-medium">
                                     {review.client_name?.charAt(0) || 'C'}
                                   </AvatarFallback>
                                 </Avatar>
 
-                                {/* Content */}
-                                <div className="flex-1">
-
-                                  {/* Header */}
-                                  <div className="flex items-center justify-between">
-                                    <span className="font-semibold text-sm">
-                                      {review.client_name}
-                                    </span>
-                                    <span className="text-xs text-muted-foreground">
+                                {/* Content Core */}
+                                <div className="flex-1 min-w-0">
+                                  {/* Header Row */}
+                                  <div className="flex items-start justify-between gap-2 w-full">
+                                    <div className="min-w-0">
+                                      <span className="font-semibold text-xs sm:text-sm text-foreground block truncate">
+                                        {review.client_name}
+                                      </span>
+                                      <div className="flex items-center gap-0.5 mt-0.5">
+                                        {renderStars(review.rating || 0)}
+                                      </div>
+                                    </div>
+                                    <span className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap shrink-0 pt-0.5">
                                       {new Date(review.created_at).toLocaleDateString()}
                                     </span>
                                   </div>
 
-                                  {/* Stars */}
-                                  <div className="flex items-center gap-0.5 mt-1">
-                                    {renderStars(review.rating || 0)}
-                                  </div>
-
-                                  {/* Comment */}
+                                  {/* Comment Block */}
                                   {review.comment && (
-                                    <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                                      {isLong
-                                        ? review.comment.slice(0, 120) + '...'
-                                        : review.comment}
-                                    </p>
+                                    <div className="mt-2">
+                                      <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed break-words whitespace-pre-wrap">
+                                        {isLong ? `${review.comment.slice(0, 120)}...` : review.comment}
+                                      </p>
+                                      {isLong && (
+                                        <button
+                                          onClick={() => setSelectedReview(review)}
+                                          className="text-xs text-primary font-medium mt-1 inline-block hover:underline"
+                                        >
+                                          Read more
+                                        </button>
+                                      )}
+                                    </div>
                                   )}
-
-                                  {/* SEE MORE */}
-                                  {isLong && (
-                                    <button
-                                      onClick={() => setSelectedReview(review)}
-                                      className="text-xs text-primary mt-1 hover:underline"
-                                    >
-                                      See more
-                                    </button>
-                                  )}
-
                                 </div>
-
                               </div>
-
                             </div>
                           );
                         })}
-
                       </div>
 
                       {/* PAGINATION */}
                       {totalPages > 1 && (
-                        <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
-
-                          {/* Previous */}
+                        <div className="flex justify-center items-center gap-1.5 mt-5 flex-wrap">
                           <Button
                             size="sm"
                             variant="outline"
+                            className="h-7 px-2.5 text-xs rounded-lg"
                             disabled={currentPage === 1}
                             onClick={() => setCurrentPage(prev => prev - 1)}
                           >
                             Prev
                           </Button>
 
-                          {/* Page Numbers */}
                           {[...Array(totalPages)].map((_, i) => (
                             <Button
                               key={i}
                               size="sm"
                               variant={currentPage === i + 1 ? "default" : "outline"}
-                              className="h-8 w-8 p-0"
+                              className="h-7 w-7 p-0 text-xs rounded-lg"
                               onClick={() => setCurrentPage(i + 1)}
                             >
                               {i + 1}
                             </Button>
                           ))}
 
-                          {/* Next */}
                           <Button
                             size="sm"
                             variant="outline"
+                            className="h-7 px-2.5 text-xs rounded-lg"
                             disabled={currentPage === totalPages}
                             onClick={() => setCurrentPage(prev => prev + 1)}
                           >
                             Next
                           </Button>
-
                         </div>
                       )}
                     </>

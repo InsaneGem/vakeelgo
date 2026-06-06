@@ -14,6 +14,7 @@ interface AudioCallProps {
   participantName: string;
   consultationId: string;
   isInitiatedByMe?: boolean;
+  canRecord?: boolean;
 }
 
 export const AudioCall = ({
@@ -22,6 +23,7 @@ export const AudioCall = ({
   participantName,
   consultationId,
   isInitiatedByMe = false,
+  canRecord = false,
 }: AudioCallProps) => {
   const { toast } = useToast();
   const [isMuted, setIsMuted] = useState(true);
@@ -220,7 +222,8 @@ export const AudioCall = ({
           Audio Consultation Call
         </p>
 
-        {isRecording && (
+        {/* {isRecording && ( */}
+        {canRecord && isRecording && (
           <div className="mt-5 flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 text-red-600">
             <Circle className="h-3 w-3 fill-current animate-pulse" />
             Recording {formatDuration(recordingDuration)}
@@ -240,13 +243,22 @@ export const AudioCall = ({
             {isMuted ? <MicOff className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
           </Button>
 
-          <Button
+          {/* <Button
             variant={isRecording ? 'destructive' : 'outline'}
             className="rounded-full w-14 h-14 md:w-16 md:h-16"
             onClick={handleToggleRecording}
           >
             <Circle className={cn('h-6 w-6', isRecording && 'fill-current')} />
-          </Button>
+          </Button> */}
+          {canRecord && (
+            <Button
+              variant={isRecording ? 'destructive' : 'outline'}
+              className="rounded-full w-14 h-14 md:w-16 md:h-16"
+              onClick={handleToggleRecording}
+            >
+              <Circle className={cn('h-6 w-6', isRecording && 'fill-current')} />
+            </Button>
+          )}
 
           <Button
             variant="destructive"

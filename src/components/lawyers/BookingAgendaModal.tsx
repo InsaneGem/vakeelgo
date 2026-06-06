@@ -163,15 +163,47 @@ export const BookingAgendaModal = ({
 
     const minimumMinutes = selectedMinutes;
 
-    // ✅ 1. Get the raw base price per minute set by the lawyer
     const lawyerBasePricePerMinute = consultationType === 'chat'
         ? lawyer.chat_price_per_minute ?? lawyer.price_per_minute ?? 5
         : consultationType === 'audio'
             ? lawyer.audio_price_per_minute ?? lawyer.price_per_minute ?? 5
             : lawyer.video_price_per_minute ?? lawyer.price_per_minute ?? 5;
 
-    // ✅ 2. Calculate raw session cost before platform markup
     const rawSessionCost = minimumMinutes * lawyerBasePricePerMinute;
+    // const sessionCost = Math.ceil((rawSessionCost * 1.05) / 0.9764);
+
+    const markup =
+        consultationType === 'chat'
+            ? 0.05
+            : consultationType === 'audio'
+                ? 0.12
+                : 0.15;
+
+    const sessionCost = Math.ceil(
+        ((rawSessionCost * (1 + markup)) + 15) / 0.9764
+    );
+
+
+
+
+
+    // ✅ 1. Get the raw base price per minute set by the lawyer
+    // const lawyerBasePricePerMinute = consultationType === 'chat'
+    //     ? lawyer.chat_price_per_minute ?? lawyer.price_per_minute ?? 5
+    //     : consultationType === 'audio'
+    //         ? lawyer.audio_price_per_minute ?? lawyer.price_per_minute ?? 5
+    //         : lawyer.video_price_per_minute ?? lawyer.price_per_minute ?? 5;
+
+    // // ✅ 2. Calculate raw session cost before platform markup
+    // const rawSessionCost = minimumMinutes * lawyerBasePricePerMinute;
+
+    // const sessionCost = Math.ceil((rawSessionCost * 1.05) / 0.9764);
+
+    // ✅ 1. Get the raw base price per minute set by the lawyer
+
+
+    // ✅ 2. Calculate raw session cost before platform markup
+
 
     // ✅ 3. Add your 15% platform markup rule (Covers Razorpay's fee + your profit)
     // const totalMarkupMultiplier = 1.15;
@@ -179,7 +211,11 @@ export const BookingAgendaModal = ({
     // ✅ 4. Final rounded cost to show to the client and send to your DB/Razorpay
     // const sessionCost = Math.ceil(rawSessionCost * totalMarkupMultiplier);
 
-    const sessionCost = Math.ceil((rawSessionCost * 1.05) / 0.9764);
+
+
+
+
+
 
     const getTypeIcon = (type: string) => {
         switch (type) {
@@ -470,7 +506,9 @@ export const BookingAgendaModal = ({
                         setPayingNow(false);
                         resetAndClose();
                         onSuccess?.(id);
-                        navigate(`/consultation/${id}`);
+                        // navigate(`/consultation/${id}`);
+                        // ⚡ FORCES HARD PAGE REFRESH AND MOUNTS WEBSOCKETS CLEANLY 
+                        window.location.href = `/consultation/${id}`;
                     }, 300);
 
                 } catch (err) {
@@ -829,7 +867,12 @@ max-h-[92vh] overflow-hidden p-0 rounded-2xl"
                                                 // ? `₹${(minutes * pricePerMinute).toFixed(0)}`
                                                 //  Update it to this:
                                                 // ? `₹${Math.ceil((minutes * lawyerBasePricePerMinute) * 1.15)}`
-                                                ? `₹${Math.ceil(((minutes * lawyerBasePricePerMinute) * 1.05) / 0.9764)}`
+                                                // ? `₹${Math.ceil(((minutes * lawyerBasePricePerMinute) * 1.05) / 0.9764)}`
+                                                ? (() => {
+                                                    const currentBase = minutes * lawyerBasePricePerMinute;
+                                                    const currentMarkup = consultationType === 'chat' ? 0.05 : consultationType === 'audio' ? 0.12 : 0.15;
+                                                    return `₹${Math.ceil(((currentBase * (1 + currentMarkup)) + 15) / 0.9764)}`;
+                                                })()
                                                 : `${minutes} min`;
 
                                             return (

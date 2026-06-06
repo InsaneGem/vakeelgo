@@ -343,21 +343,32 @@ const ConsultationHistory = () => {
                       <CardContent
                         className={cn(
                           "p-4 relative overflow-hidden rounded-xl border flex flex-col justify-between min-h-[145px] cursor-pointer",
-                          // Premium golden background setup
-                          "bg-gradient-to-r from-amber-200 via-yellow-200 to-amber-300",
-                          // KEEP SAME COLORS ON HOVER
-                          "hover:from-amber-200 hover:via-yellow-200 hover:to-amber-300",
-                          // Dark premium text color baseline
-                          "text-amber-900",
-                          // Premium shadow configurations
-                          "shadow-md hover:shadow-lg",
-                          // ONLY slight front translation movement on desktop hover states
-                          "hover:-translate-y-1 hover:scale-[1.01]",
-                          // NO brightness modifications or color flickering
+
+
+                          // Premium Royal Purple background
+                          "bg-gradient-to-br from-[#FFFFFF] via-[#EFE7FF] to-[#DCCBFF]",
+
+                          // Maintain same colors on hover
+                          "hover:from-[#FFFFFF] hover:via-[#EFE7FF] hover:to-[#DCCBFF]",
+
+                          // Deep royal purple text
+                          "text-[#2E1065]",
+
+                          // Premium purple shadow
+                          "shadow-[0_10px_30px_rgba(109,40,217,0.12)]",
+                          "hover:shadow-[0_20px_45px_rgba(109,40,217,0.22)]",
+
+                          // Luxury lavender border
+                          "border-[#B794F6]",
+
+                          // Premium interaction
+                          "hover:-translate-y-1",
+                          "hover:scale-[1.01]",
+
+                          // Prevent brightness/color shifts
                           "hover:brightness-100",
-                          // Sub-pixel custom borders
-                          "border-amber-300/40",
-                          // Animation transitions
+
+                          // Smooth transitions
                           "transition-all duration-300 ease-out group"
                         )}
                       >

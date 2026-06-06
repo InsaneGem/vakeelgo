@@ -294,28 +294,54 @@ const LawyerConsultations = () => {
                       className={cn(
                         "border rounded-xl flex flex-col justify-between min-h-[150px] cursor-pointer animate-fade-in overflow-hidden",
 
-                        // Premium solid golden background setup
-                        "bg-gradient-to-r from-amber-200 via-yellow-200 to-amber-300",
+                        // // Premium solid golden background setup
+                        // "bg-gradient-to-r from-amber-200 via-yellow-200 to-amber-300",
 
-                        // KEEP EXACT SAME COLORS ON HOVER (NO FLICKERING/COLOR CHANGES)
-                        "hover:from-amber-200 hover:via-yellow-200 hover:to-amber-300",
+                        // // KEEP EXACT SAME COLORS ON HOVER (NO FLICKERING/COLOR CHANGES)
+                        // "hover:from-amber-200 hover:via-yellow-200 hover:to-amber-300",
 
-                        // Dark premium styling text baseline
-                        "text-amber-900",
+                        // // Dark premium styling text baseline
+                        // "text-amber-900",
 
-                        // Premium dynamic depth shadow configurations
-                        "shadow-md hover:shadow-lg",
+                        // // Premium dynamic depth shadow configurations
+                        // "shadow-md hover:shadow-lg",
 
-                        // ONLY smooth slight upward movement translation on hover
-                        "hover:-translate-y-1 hover:scale-[1.01]",
+                        // // ONLY smooth slight upward movement translation on hover
+                        // "hover:-translate-y-1 hover:scale-[1.01]",
 
-                        // Strict protection rule against brightness or contrast alterations
+                        // // Strict protection rule against brightness or contrast alterations
+                        // "hover:brightness-100",
+
+                        // // Custom sub-pixel border matching container
+                        // "border-amber-300/40",
+
+                        // // Transition settings
+                        // "transition-all duration-300 ease-out group"
+
+                        // Premium Royal Purple background
+                        "bg-gradient-to-br from-[#FFFFFF] via-[#EFE7FF] to-[#DCCBFF]",
+
+                        // Maintain same colors on hover
+                        "hover:from-[#FFFFFF] hover:via-[#EFE7FF] hover:to-[#DCCBFF]",
+
+                        // Deep royal purple text
+                        "text-[#2E1065]",
+
+                        // Premium purple shadow
+                        "shadow-[0_10px_30px_rgba(109,40,217,0.12)]",
+                        "hover:shadow-[0_20px_45px_rgba(109,40,217,0.22)]",
+
+                        // Luxury lavender border
+                        "border-[#B794F6]",
+
+                        // Premium interaction
+                        "hover:-translate-y-1",
+                        "hover:scale-[1.01]",
+
+                        // Prevent brightness/color shifts
                         "hover:brightness-100",
 
-                        // Custom sub-pixel border matching container
-                        "border-amber-300/40",
-
-                        // Transition settings
+                        // Smooth transitions
                         "transition-all duration-300 ease-out group"
                       )}
                       style={{ animationDelay: `${index * 50}ms` }}
@@ -399,7 +425,6 @@ const LawyerConsultations = () => {
                               </>
                             )}
                           </div>
-
                           {/* Right Action Trigger Elements Group */}
                           <div className="flex items-center gap-2.5 flex-shrink-0">
 

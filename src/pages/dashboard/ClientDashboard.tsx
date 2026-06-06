@@ -22,7 +22,7 @@ import {
   Eye,
   ArrowDownLeft, ArrowUpRight, FileText,
   Currency,
-  IndianRupee
+  IndianRupee, CheckCircle, Play, XCircle
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LawyerCard } from '@/components/lawyers/LawyerCard';
@@ -355,10 +355,10 @@ const ClientDashboard = () => {
 
   const getStatusConfig = (status: string) => {
     switch (status) {
-      case 'completed': return { variant: 'default' as const, className: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' };
-      case 'active': return { variant: 'secondary' as const, className: 'bg-blue-500/10 text-blue-600 border-blue-500/20 animate-pulse' };
-      case 'pending': return { variant: 'outline' as const, className: 'bg-amber-500/10 text-amber-600 border-amber-500/20' };
-      default: return { variant: 'destructive' as const, className: 'bg-red-500/10 text-red-600 border-red-500/20' };
+      case 'completed': return { variant: 'default' as const, className: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', icon: <CheckCircle className="h-3 w-3" /> };
+      case 'active': return { variant: 'secondary' as const, className: 'bg-blue-500/10 text-blue-600 border-blue-500/20 animate-pulse', icon: <Play className="h-3 w-3" /> };
+      case 'pending': return { variant: 'outline' as const, className: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: <Clock className="h-3 w-3" /> };
+      default: return { variant: 'destructive' as const, className: 'bg-red-500/10 text-red-600 border-red-500/20', icon: <XCircle className="h-3 w-3" /> };
     }
   };
 
@@ -401,7 +401,7 @@ const ClientDashboard = () => {
   return (
     <ClientLayout>
       <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-2">
 
           {/* Header Section */}
           <div
@@ -1003,8 +1003,9 @@ const ClientDashboard = () => {
                         >
                           {/* Status badge */}
                           <div className="absolute top-3 right-3 z-10">
-                            <Badge className={`${statusConfig.className} text-[10px] font-medium px-2 py-0.5 rounded-full capitalize`}>
+                            <Badge className={`${statusConfig.className} text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-md gap-1 border shadow-3xs flex-shrink-0`}>
                               {consultation.status}
+                              {/* {statusConfig.icon} */}
                             </Badge>
                           </div>
 
@@ -1051,7 +1052,8 @@ const ClientDashboard = () => {
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-1">
                                 <span className="text-lg font-bold">₹{consultation.total_amount?.toFixed(0) || '0'}</span>
-                                <span className="text-[12px] text-muted-foreground">{consultation.status === 'cancelled' ? 'Not Paid' : 'Paid'}</span>
+                                <span className="text-[9px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-md gap-1 border shadow-3xs flex-shrink-0">{consultation.status === 'cancelled' ? 'Not Paid' : 'Paid'} </span>
+                                {statusConfig.icon}
                               </div>
                               <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
                             </div>

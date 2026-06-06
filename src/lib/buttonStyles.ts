@@ -106,53 +106,165 @@ export const bookNowButtonStyle = [
 
 export const seeMoreButtonStyle = [
     "h-9",
-    "sm:h-9",
     "rounded-xl",
     "gap-2",
-
-    "font-semibold",
-
+    "font-medium", // Changed from 'semibold' to 'medium' for a cleaner professional look
     "transition-all",
     "duration-200",
 
-    // Premium soft pink-purple background
-    "bg-gradient-to-r",
-    "from-[#F2CCFF]",
-    "via-[#F7D9FF]",
-    "to-[#EFC2FF]",
+    // Clean professional black background
+    "bg-slate-950",
+    "dark:bg-white",
 
-    // KEEP SAME COLORS ON HOVER
-    "hover:from-[#F2CCFF]",
-    "hover:via-[#F7D9FF]",
-    "hover:to-[#EFC2FF]",
+    // Hover states: smooth contrast shift
+    "hover:bg-slate-900",
+    "dark:hover:bg-slate-100",
 
-    // Dark premium text
-    "text-purple-900",
-    "hover:text-purple-900",
+    // Text colors
+    "text-white",
+    "dark:text-slate-950",
 
-    // Premium shadow
-    "shadow-md",
-    "hover:shadow-lg",
+    // Subtle professional shadow
+    "shadow-sm",
+    "hover:shadow-md",
 
-    // ONLY slight front movement
+    // Micro-interactions
     "hover:-translate-y-0.5",
-
-    // NO brightness/color change
-    "hover:brightness-100",
-
     "active:scale-[0.98]",
 
-    "border",
-    "border-[#E5B8F4]",
-
+    // Focus rings
     "focus:outline-none",
     "focus:ring-2",
-    "focus:ring-[#F2CCFF]",
+    "focus:ring-slate-950",
+    "dark:focus:ring-white",
     "focus:ring-offset-2",
 ].join(" ");
 
 
 
+// export const lawyerCardStyle = [
+
+//     "relative rounded-lg border overflow-hidden",
+//     "flex flex-col h-full min-h-[205px]",
+//     "cursor-pointer",
+//     "mt-2",
+
+//     // Premium golden background
+//     "bg-gradient-to-r",
+//     "from-amber-200",
+//     "via-yellow-200",
+//     "to-amber-300",
+
+//     // KEEP SAME COLORS ON HOVER
+//     "hover:from-amber-200",
+//     "hover:via-yellow-200",
+//     "hover:to-amber-300",
+
+//     // Dark premium text
+//     "text-amber-900",
+//     "hover:text-amber-900",
+
+//     // Premium shadow
+//     "shadow-md",
+//     "hover:shadow-lg",
+
+//     // ONLY slight front movement
+//     "hover:-translate-y-1",
+//     "hover:scale-[1.01]",
+
+//     // NO brightness/color change
+//     "hover:brightness-100",
+
+//     "border-amber-300/40",
+
+//     "transition-all",
+//     "duration-300",
+//     "ease-out",
+
+// ].join(" ");
+
+export const OtherCardStyle = [
+
+    "relative rounded-lg border overflow-hidden",
+    "flex flex-col h-full min-h-[205px]",
+    "cursor-pointer",
+    "mt-2",
+
+    // Rich luxury gold background
+    "bg-gradient-to-br",
+    "from-[#FFF8D6]",
+    "via-[#FFECA3]",
+    "to-[#FFD86B]",
+
+    // Maintain same colors on hover
+    "hover:from-[#FFF8D6]",
+    "hover:via-[#FFECA3]",
+    "hover:to-[#FFD86B]",
+
+    // Premium dark text
+    "text-[#3B2F0B]",
+    "hover:text-[#3B2F0B]",
+
+    // Rich golden shadow
+    "shadow-[0_10px_30px_rgba(255,193,7,0.15)]",
+    "hover:shadow-[0_20px_45px_rgba(255,193,7,0.25)]",
+
+    // Gold border
+    "border-[#E6C547]",
+
+    // Premium interaction
+    "hover:-translate-y-1",
+    "hover:scale-[1.01]",
+
+    "hover:brightness-100",
+
+    "transition-all",
+    "duration-300",
+    "ease-out",
+
+].join(" ");
+
+// export const lawyerCardStyle = [
+
+//     "relative rounded-lg border overflow-hidden",
+//     "flex flex-col h-full min-h-[205px]",
+//     "cursor-pointer",
+//     "mt-2",
+
+//     // Royal Purple + White luxury background
+//     "bg-gradient-to-br",
+//     "from-[#FFFFFF]",
+//     "via-[#F7F3FF]",
+//     "to-[#E8DDFF]",
+
+//     // Maintain same colors on hover
+//     "hover:from-[#FFFFFF]",
+//     "hover:via-[#F7F3FF]",
+//     "hover:to-[#E8DDFF]",
+
+//     // Premium royal purple text
+//     "text-[#312E81]",
+//     "hover:text-[#312E81]",
+
+//     // Luxury purple shadow
+//     "shadow-[0_10px_30px_rgba(124,58,237,0.10)]",
+//     "hover:shadow-[0_20px_45px_rgba(124,58,237,0.18)]",
+
+//     // Elegant lavender border
+//     "border-[#C4B5FD]",
+
+//     // Premium interaction
+//     "hover:-translate-y-1",
+//     "hover:scale-[1.01]",
+
+//     // Prevent color shift
+//     "hover:brightness-100",
+
+//     "transition-all",
+//     "duration-300",
+//     "ease-out",
+
+// ].join(" ");
 
 export const lawyerCardStyle = [
 
@@ -161,33 +273,34 @@ export const lawyerCardStyle = [
     "cursor-pointer",
     "mt-2",
 
-    // Premium golden background
-    "bg-gradient-to-r",
-    "from-amber-200",
-    "via-yellow-200",
-    "to-amber-300",
+    // Premium Royal Purple background
+    "bg-gradient-to-br",
+    "from-[#FFFFFF]",
+    "via-[#EFE7FF]",
+    "to-[#DCCBFF]",
 
-    // KEEP SAME COLORS ON HOVER
-    "hover:from-amber-200",
-    "hover:via-yellow-200",
-    "hover:to-amber-300",
+    // Maintain same colors on hover
+    "hover:from-[#FFFFFF]",
+    "hover:via-[#EFE7FF]",
+    "hover:to-[#DCCBFF]",
 
-    // Dark premium text
-    "text-amber-900",
-    "hover:text-amber-900",
+    // Deep royal purple text
+    "text-[#2E1065]",
+    "hover:text-[#2E1065]",
 
-    // Premium shadow
-    "shadow-md",
-    "hover:shadow-lg",
+    // Premium purple shadow
+    "shadow-[0_10px_30px_rgba(109,40,217,0.12)]",
+    "hover:shadow-[0_20px_45px_rgba(109,40,217,0.22)]",
 
-    // ONLY slight front movement
+    // Luxury lavender border
+    "border-[#B794F6]",
+
+    // Premium interaction
     "hover:-translate-y-1",
     "hover:scale-[1.01]",
 
-    // NO brightness/color change
+    // Prevent color shift
     "hover:brightness-100",
-
-    "border-amber-300/40",
 
     "transition-all",
     "duration-300",
@@ -195,48 +308,6 @@ export const lawyerCardStyle = [
 
 ].join(" ");
 
-
-// export const smallCardStyle = [
-//     "rounded-2xl",
-//     "border",
-
-//     // Premium luxury lavender background
-//     "bg-gradient-to-br",
-//     "from-[#D6B4D6]",
-//     "via-[#DDBFDD]",
-//     "to-[#CFA9CF]",
-
-//     // Keep same colors on hover
-//     "hover:from-[#D6B4D6]",
-//     "hover:via-[#DDBFDD]",
-//     "hover:to-[#CFA9CF]",
-
-//     // Rich black text
-//     "text-black",
-//     "hover:text-black",
-
-//     // Premium glass/shadow effect
-//     "shadow-lg",
-//     "hover:shadow-2xl",
-
-//     // Elegant border
-//     "border-white/40",
-
-//     // Smooth premium movement
-//     "hover:-translate-y-1",
-//     "hover:scale-[1.01]",
-
-//     // Prevent brightness/color change
-//     "hover:brightness-100",
-
-//     // Smooth animation
-//     "transition-all",
-//     "duration-300",
-//     "ease-out",
-
-//     // Optional subtle backdrop feel
-//     "backdrop-blur-sm",
-// ].join(" ");
 
 
 export const transactionCardStyle = [
@@ -276,133 +347,39 @@ export const transactionCardStyle = [
     "backdrop-blur-sm",
 ].join(" ");
 
-// export const smallCardStyle = [
-//     "rounded-2xl",
-//     "border-2", // Increased thickness slightly to make the frame pop like the demo
-
-//     // Premium luxury matte orchid background (Matches the demo color exactly)
-//     "bg-gradient-to-br",
-//     "from-[#EADFFF]",
-//     "to-[#DFCEFF]",
-
-//     // Maintain stable background colors on hover
-//     "hover:from-[#EADFFF]",
-//     "hover:to-[#DFCEFF]",
-
-//     // Deep premium contrast purple text (CRITICAL: Fixes your washed-out text)
-//     "text-[#1F123D]",
-//     "hover:text-[#1F123D]",
-
-//     /* 
-//       DEMO GLOW ENGINE:
-//       Matches the explicit, rich ambient shadow lifting off the white backdrop in the image.
-//     */
-//     "shadow-[0_12px_30px_rgba(108,92,231,0.18),_0_0_0_1px_rgba(108,92,231,0.05)]",
-//     "hover:shadow-[0_20px_40px_rgba(108,92,231,0.28),_0_0_0_1px_rgba(108,92,231,0.1)]",
-
-//     /*
-//       DEMO BORDER COLOR:
-//       A solid, distinct purple frame that defines the shape cleanly against the white background.
-//     */
-//     "border-[#9F85F8]",
-//     "hover:border-[#8A66F6]",
-
-//     // Smooth premium movement
-//     "hover:-translate-y-1",
-//     "hover:scale-[1.01]",
-
-//     // Prevent brightness/color change
-//     "hover:brightness-100",
-
-//     // Smooth animation
-//     "transition-all",
-//     "duration-300",
-//     "ease-out",
-
-//     // Optional subtle backdrop feel
-//     "backdrop-blur-sm",
-// ].join(" ");
-
-
-// export const smallCardStyle = [
-//     "rounded-2xl",
-//     "border",
-
-//     // Premium luxury matte orchid background
-//     "bg-gradient-to-br",
-//     "from-[#EADFFF]",
-//     "to-[#DFCEFF]",
-
-//     // Maintain stable background colors on hover
-//     "hover:from-[#EADFFF]",
-//     "hover:to-[#DFCEFF]",
-
-//     // Deep premium contrast purple text
-//     "text-[#1F123D]",
-//     "hover:text-[#1F123D]",
-
-//     /* 
-//       GLOW ENGINE CHANGE: 
-//       Replaced standard shadows with dual-purpose ambient shadow strings.
-//       This creates a tight, intense colored glow around the 1px border perimeter.
-//     */
-//     "shadow-[0_0_15px_rgba(108,92,231,0.25),_0_8px_25px_rgba(108,92,231,0.07)]",
-//     "hover:shadow-[0_0_25px_rgba(108,92,231,0.45),_0_15px_30px_rgba(108,92,231,0.15)]",
-
-//     /*
-//       BORDER LAYER CHANGE:
-//       Switched to a semi-transparent white-purple border. 
-//       This lets the glow look like it is emitting straight out from the edge.
-//     */
-//     "border-white/60",
-//     "hover:border-white/90",
-
-//     // Smooth premium movement
-//     "hover:-translate-y-1",
-//     "hover:scale-[1.01]",
-
-//     // Prevent brightness/color change
-//     "hover:brightness-100",
-
-//     // Smooth animation
-//     "transition-all",
-//     "duration-300",
-//     "ease-out",
-
-//     // Optional subtle backdrop feel
-//     "backdrop-blur-sm",
-// ].join(" ");
 
 
 export const smallCardStyle = [
     "rounded-2xl",
     "border",
 
-    // Premium luxury matte orchid background (Option 3 style from image)
+    // Professional blue-white gradient
     "bg-gradient-to-br",
-    "from-[#EADFFF]",
-    "to-[#DFCEFF]",
+    "from-white",
+    "via-blue-50",
+    "to-blue-100",
 
-    // Maintain stable background colors on hover
-    "hover:from-[#EADFFF]",
-    "hover:to-[#DFCEFF]",
+    // Keep same colors on hover
+    "hover:from-white",
+    "hover:via-blue-50",
+    "hover:to-blue-100",
 
-    // Deep premium contrast purple text (Matches the high-end imagery)
-    "text-[#1F123D]",
-    "hover:text-[#1F123D]",
+    // Professional dark text
+    "text-slate-900",
+    "hover:text-slate-900",
 
-    // Soft multi-layered premium shadow depth
-    "shadow-[0_8px_25px_rgba(108,92,231,0.07)]",
-    "hover:shadow-[0_15px_30px_rgba(108,92,231,0.12)]",
+    // Elegant shadow
+    "shadow-[0_8px_25px_rgba(30,64,175,0.08)]",
+    "hover:shadow-[0_15px_35px_rgba(30,64,175,0.15)]",
 
-    // Crisp premium solid-tint border rule
-    "border-[rgba(108,92,231,0.25)]",
+    // Soft blue border
+    "border-blue-200",
 
-    // Smooth premium movement
+    // Subtle interaction
     "hover:-translate-y-1",
     "hover:scale-[1.01]",
 
-    // Prevent brightness/color change
+    // Prevent brightness shift
     "hover:brightness-100",
 
     // Smooth animation
@@ -410,6 +387,6 @@ export const smallCardStyle = [
     "duration-300",
     "ease-out",
 
-    // Optional subtle backdrop feel
+    // Premium glass effect
     "backdrop-blur-sm",
 ].join(" ");
