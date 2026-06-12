@@ -263,8 +263,7 @@ const ClientLawyerDetail = () => {
 
     <ClientLayout>
       <div className="min-h-screen bg-gradient-to-br from-background via-secondary/10 to-background">
-        <div className="container mx-auto px-2 py-6 max-w-6xl ">
-
+        <div className="container mx-auto px-2 py-0 max-w-6xl ">
 
           {/* Hero Profile Header */}
           <Card className={cn(lawyerCardStyle)}>
@@ -309,11 +308,22 @@ const ClientLawyerDetail = () => {
                   {/* Meta Row */}
                   <div className="flex flex-wrap justify-center sm:justify-start items-center gap-3 text-sm text-muted-foreground ">
 
-                    {/* Rating */}
-                    <div className="flex items-center gap-1 bg-amber-500/10 px-3 py-1 rounded-full">
-                      <Star className="h-4 w-9 fill-amber-500 text-amber-500" />
-                      <span className="font-semibold text-amber-600">({avgRating} Ratings)</span>
-                      <span className="text-sm  text-foreground whitespace-nowrap"> | {reviews.length} Reviews</span>
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/[0.04] border border-amber-500/[0.08] transition-colors hover:bg-amber-500/[0.08]">
+                      {/* Star Icon */}
+                      <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
+
+                      {/* Rating Value */}
+                      <span className="font-bold text-amber-700 text-sm">
+                        {avgRating}
+                      </span>
+
+                      {/* Separator */}
+                      <span className="text-amber-500/30 font-light">|</span>
+
+                      {/* Review Count */}
+                      <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">
+                        {reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'}
+                      </span>
                     </div>
 
                     {/* Member Since */}
@@ -340,6 +350,37 @@ const ClientLawyerDetail = () => {
                       </Badge>
 
                     </span>
+                    <div className="flex justify-center sm:justify-end">
+                      {lawyer?.is_busy ? (
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-red-200 bg-red-50 backdrop-blur-sm">
+                          <div className="relative flex h-2 w-2">
+                            <span className="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75 animate-ping" />
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+                          </div>
+                          <span className="text-[11px] font-semibold text-red-700 uppercase tracking-wider">
+                            Busy
+                          </span>
+                        </div>
+                      ) : lawyer?.is_available ? (
+                        <div className="group flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-200 bg-emerald-50/50 backdrop-blur-sm transition-all hover:bg-emerald-50">
+                          {/* Animated Pulse Indicator */}
+                          <div className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                          </div>
+                          <span className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider">
+                            Available
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-slate-50/50 backdrop-blur-sm">
+                          <div className="h-2 w-2 rounded-full bg-slate-300" />
+                          <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+                            Offline
+                          </span>
+                        </div>
+                      )}
+                    </div>
 
                   </div>
 
@@ -353,24 +394,10 @@ const ClientLawyerDetail = () => {
                       ))}
                     </div>
                   )}
+
+
                 </div>
 
-                {/* Status Badge */}
-                <div className="flex justify-center sm:justify-end">
-                  {lawyer.is_available ? (
-                    <Badge className="bg-emerald-500 text-white border-0 gap-1.5 px-3 py-1 text-xs sm:text-sm">
-                      <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
-                      </span>
-                      Available
-                    </Badge>
-                  ) : (
-                    <Badge variant="secondary" className="px-3 py-1 text-xs sm:text-sm">
-                      Offline
-                    </Badge>
-                  )}
-                </div>
 
               </div>
 
@@ -872,18 +899,17 @@ const ClientLawyerDetail = () => {
                         Book Now
                       </Button> */}
                       <Button
-                        disabled={isBusy}
+                        disabled={!(lawyer?.is_available === true && lawyer?.is_busy !== true)}
                         onClick={(e) => handleBookClick('chat', e)}
                         className={cn(
                           bookNowButtonStyle,
                           "w-full h-12 text-base flex items-center justify-center",
 
-                          isBusy &&
+                          !(lawyer?.is_available === true && lawyer?.is_busy !== true) &&
                           "bg-gray-400 hover:bg-gray-400 text-white cursor-not-allowed opacity-70"
                         )}
                       >
-                        {/* <CreditCard className="h-5 w-5" /> */}
-                        {isBusy ? 'Lawyer is Busy With Client' : 'Book Now'}
+                        {lawyer?.is_busy ? 'Lawyer is Busy With Client' : lawyer?.is_available ? 'Book Now' : 'Offline'}
                       </Button>
 
 
@@ -906,13 +932,13 @@ const ClientLawyerDetail = () => {
 
                         <Button
                           variant="outline"
-                          disabled={isBusy}
+                          disabled={!(lawyer?.is_available === true && lawyer?.is_busy !== true)}
                           onClick={(e) => handleBookClick('chat', e)}
                           className={`
     h-11 rounded-xl flex flex-col gap-1
     transition-all duration-200
 
-    ${isBusy
+    ${!(lawyer?.is_available === true && lawyer?.is_busy !== true)
                               ? 'opacity-60 cursor-not-allowed bg-muted'
                               : ''
                             }
@@ -940,13 +966,13 @@ const ClientLawyerDetail = () => {
 
                         <Button
                           variant="outline"
-                          disabled={isBusy}
+                          disabled={!(lawyer?.is_available === true && lawyer?.is_busy !== true)}
                           onClick={(e) => handleBookClick('audio', e)}
                           className={`
     h-11 rounded-xl flex flex-col gap-1
     transition-all duration-200
 
-    ${isBusy
+    ${!(lawyer?.is_available === true && lawyer?.is_busy !== true)
                               ? 'opacity-60 cursor-not-allowed bg-muted'
                               : ''
                             }
@@ -973,13 +999,13 @@ const ClientLawyerDetail = () => {
 
                         <Button
                           variant="outline"
-                          disabled={isBusy}
+                          disabled={!(lawyer?.is_available === true && lawyer?.is_busy !== true)}
                           onClick={(e) => handleBookClick('video', e)}
                           className={`
     h-11 rounded-xl flex flex-col gap-1
     transition-all duration-200
 
-    ${isBusy
+    ${!(lawyer?.is_available === true && lawyer?.is_busy !== true)
                               ? 'opacity-60 cursor-not-allowed bg-muted'
                               : ''
                             }
@@ -1031,18 +1057,17 @@ const ClientLawyerDetail = () => {
 
 
               <Button
-                disabled={isBusy}
+                disabled={!(lawyer?.is_available === true && lawyer?.is_busy !== true)}
                 onClick={(e) => handleBookClick('chat', e)}
                 className={cn(
                   bookNowButtonStyle,
 
 
-                  isBusy &&
+                  !(lawyer?.is_available === true && lawyer?.is_busy !== true) &&
                   "bg-gray-400 hover:bg-gray-400 text-white cursor-not-allowed opacity-70"
                 )}
               >
-                {/* <CreditCard className="h-4 w-4" /> */}
-                {isBusy ? 'Busy' : 'Book Now'}
+                {lawyer?.is_busy ? 'Busy' : lawyer?.is_available ? 'Book Now' : 'Offline'}
               </Button>
             </div>
           </div>

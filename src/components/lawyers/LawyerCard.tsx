@@ -12,8 +12,7 @@ import { useSavedLawyers } from '@/hooks/useSavedLawyers';
 import { BookingAgendaModal } from './BookingAgendaModal';
 import { cn } from '@/lib/utils';
 import { bookNowButtonStyle, lawyerCardStyle } from '@/lib/buttonStyles';
-// import { lawyerCardStyle } from '@/lib/Styles';
-// import { lawyerCardStyle } from './../../lib/buttonStyles';
+
 
 
 interface LawyerWithProfile {
@@ -55,12 +54,8 @@ export const LawyerCard = ({
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // const isOnline = lawyer.is_available;
-  // const isBusy = lawyer.is_busy;
-  // const isBusy = !lawyer.is_available;
-  // const isBusy = lawyer.is_busy;
-  // const isOnline = lawyer.is_available;
   const isBusy = lawyer.is_busy === true;
+
   const isOnline =
     lawyer.is_available === true && lawyer.is_busy !== true;
   const isApproved = lawyer.status === 'approved';
@@ -128,20 +123,7 @@ export const LawyerCard = ({
     <div className="group block w-full h-full">
 
       {/* CARD */}
-      {/* <div
-        onClick={handleCardClick}
-        className={`
-        relative bg-card rounded-lg border overflow-hidden
-        transition-all duration-300 ease-out
-        hover:shadow-xl hover:-translate-y-1 hover:scale-[1.01]
-        cursor-pointer flex flex-col h-full min-h-[220px]
 
-        ${isOnline
-            ? 'border-emerald-500/30 hover:border-emerald-500/60'
-            : 'border-border hover:border-primary/30'
-          }
-        `}
-      > */}
 
       <div
         onClick={handleCardClick}
@@ -377,15 +359,15 @@ export const LawyerCard = ({
 
             <Button
               size="sm"
-              disabled={isBusy}
+              disabled={!isOnline}
               className={cn(
                 "ml-auto h-8 text-xs px-1.5",
                 bookNowButtonStyle,
-                isBusy && "bg-gray-400 hover:bg-gray-400 cursor-not-allowed opacity-70"
+                (!isOnline) && "bg-gray-400 hover:bg-gray-400 cursor-not-allowed opacity-70"
               )}
               onClick={(e) => handleBookClick('chat', e)}
             >
-              Book Now
+              {isBusy ? 'Busy' : isOnline ? 'Book Now' : 'Offline'}
 
               <Video className="h-3.5 w-3.5" />
               <Phone className="h-3.5 w-3.5" />

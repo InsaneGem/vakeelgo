@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { formatLawyerName } from '@/lib/lawyer-utils';
 import { cn } from '@/lib/utils';
 import { rejectButtonStyle, acceptButtonStyle, OtherCardStyle } from '@/lib/buttonStyles';
 import {
@@ -105,7 +106,8 @@ const ClientRecordings = () => {
                 consultation: consultation || undefined,
 
                 participant_name:
-                    participantProfile?.full_name || 'Unknown',
+                    // formatLawyerName(participantProfile?.full_name) || 'Unknown',
+                    (formatLawyerName(participantProfile?.full_name) || 'U').charAt(0),
 
                 participant_avatar:
                     participantProfile?.avatar_url || null,

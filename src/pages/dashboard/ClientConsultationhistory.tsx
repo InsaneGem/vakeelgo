@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogClose, DialogHeader, DialogTitle, DialogDe
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { RatingDialog } from '@/components/consultation/RatingDialog';
+import { formatLawyerName } from '@/lib/lawyer-utils';
 import {
   ArrowLeft, Search, MessageSquare, Phone, Video, User,
   Clock, Calendar, DollarSign, Star, Filter,
@@ -21,7 +22,7 @@ import {
   CheckCircle, XCircle, Loader2, History
 } from 'lucide-react';
 import { ClientLayout } from '@/components/layout/ClientLayout';
-import { rejectButtonStyle } from '@/lib/buttonStyles';
+import { rejectButtonStyle, acceptButtonStyle } from '@/lib/buttonStyles';
 import { cn } from './../../lib/utils';
 interface ConsultationFull {
   id: string;
@@ -127,6 +128,8 @@ const ConsultationHistory = () => {
     }
     setLoading(false);
   };
+
+
   const openDetail = async (consultation: ConsultationFull) => {
     setSelectedConsultation(consultation);
     setDetailOpen(true);
@@ -381,7 +384,9 @@ const ConsultationHistory = () => {
                               <Avatar className="h-12 w-12 rounded-xl border-2 border-amber-100/40 shadow-xs">
                                 <AvatarImage src={c.lawyer_avatar || undefined} className="object-cover" />
                                 <AvatarFallback className="bg-amber-950 text-amber-100 text-xs font-bold rounded-xl">
-                                  {c.lawyer_name?.charAt(0) || 'A'}
+                                  {/* {c.lawyer_name?.charAt(0) || 'A'} */}
+                                  {(formatLawyerName(c.lawyer_name) || 'A').charAt(0)}
+
                                 </AvatarFallback>
                               </Avatar>
                               <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-amber-200" />
@@ -390,7 +395,8 @@ const ConsultationHistory = () => {
                             {/* Identity Headers */}
                             <div className="min-w-0">
                               <p className="font-bold text-sm tracking-tight text-amber-950 truncate">
-                                {c.lawyer_name}
+                                {/* {c.lawyer_name} */}
+                                {formatLawyerName(c.lawyer_name)}
                               </p>
                               {/* Specializations */}
                               {c.lawyer_specializations?.length ? (
@@ -608,8 +614,7 @@ const ConsultationHistory = () => {
           }
         }}
       >
-        <DialogContent className="w-full max-w-[calc(100vw-1.5rem)] sm:max-w-3xl max-h-[92vh] p-0 overflow-y-auto overflow-x-hidden scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:rounded-3xl">
-
+        <DialogContent className="w-full max-w-[calc(100vw-1.5rem)] sm:max-w-3xl max-h-[92vh] p-0 overflow-y-auto overflow-x-hidden rounded-2xl scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {selectedConsultation && (
             <>
               {/* Detail Header */}
@@ -627,7 +632,8 @@ const ConsultationHistory = () => {
 
                     <div>
                       <DialogTitle className="text-xl sm:text-2xl flex flex-col gap-1">
-                        {selectedConsultation.lawyer_name}
+                        Adv. {selectedConsultation.lawyer_name}
+                        {/* {formatLawyerName(selectedConsultation.lawyer_name)} */}
                       </DialogTitle>
 
                       <DialogDescription className="text-sm text-muted-foreground max-w-xl">
@@ -694,18 +700,19 @@ const ConsultationHistory = () => {
               </div>
 
               {/* Content Tabs */}
-              <div className="px-1 pb-10">
-
+              {/* <div className="px-1 pb-10"> */}
+              <div className="flex-1 overflow-hidden p-5 sm:p-6 flex flex-col min-h-0">
                 {detailLoading ? (
                   <div className="flex items-center justify-center py-12">
                     <Loader2 className="h-6 w-6 animate-spin text-primary" />
                   </div>
                 ) : (
-                  <Tabs defaultValue="chat" className="mt-4">
-
-                    <TabsList className="w-full">
+                  // <Tabs defaultValue="chat" className="mt-4">
+                  <Tabs defaultValue="chat" className="flex flex-col h-full">
+                    {/* <TabsList className="w-full"> */}
+                    <TabsList className="w-full shrink-0">
                       <TabsTrigger value="chat" className="flex-1 gap-1.5 text-xs">
-                        <MessageSquare className="h-3.5 w-3.5" />
+                        <MessageSquare className="h-4 w-4" />
                         Chat ({chatMessages.length})
                       </TabsTrigger>
 
@@ -728,7 +735,7 @@ const ConsultationHistory = () => {
                         </div>
                       ) : (
                         // FIX: Added w-full down-scoping
-                        <ScrollArea className="h-[200px] w-full pr-2">
+                        <ScrollArea className="h-[300px] w-full pr-2">
                           {/* FIX: Added w-full min-w-0 to anchor layout boundaries */}
                           <div className="space-y-3 pr-1 w-full min-w-0 flex flex-col">
 
@@ -1012,24 +1019,27 @@ const ConsultationHistory = () => {
                 )}
 
                 {/* Actions */}
-                <div className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-3 pt-3 border-t w-full">
+                {/* <div className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-3 pt-3 border-t w-full"> */}
+                <div className="p-5 sm:p-6 border-t bg-background shrink-0 flex justify-end gap-2">
 
                   {selectedConsultation.status === 'completed' &&
                     !ratedConsultationIds.has(selectedConsultation.id) && (
                       <Button
-                        className="w-full sm:max-w-[130px] h-8.5 text-[11px] sm:text-xs font-semibold tracking-wide gap-1.5 transition-all shadow-xs order-1 sm:order-2"
+                        className={cn(acceptButtonStyle)}
+                        size="sm"
                         onClick={() => {
                           setDetailOpen(false);
                           setRatingTarget(selectedConsultation);
                         }}
                       >
-                        <Star className="h-3.5 w-3.5 fill-current" />
+                        <Star className="h-3.5 w-3.5 !fill-amber-400 !text-amber-400" />
                         Rate Lawyer
                       </Button>
                     )}
 
                   {selectedConsultation.status === 'active' && (
                     <Button
+                      size="sm"
                       className="w-full sm:max-w-[140px] h-8.5 text-[11px] sm:text-xs font-semibold tracking-wide gap-1.5 transition-all shadow-xs order-1 sm:order-2"
                       onClick={() => {
                         setDetailOpen(false);
@@ -1043,10 +1053,8 @@ const ConsultationHistory = () => {
 
                   <Button
                     variant="outline"
-                    className={cn(
-                      "w-full sm:max-w-[100px] h-8.5 text-[11px] sm:text-xs font-medium text-muted-foreground hover:text-foreground gap-1.5 transition-colors order-2 sm:order-1",
-                      rejectButtonStyle
-                    )}
+                    size="sm"
+                    className={cn(rejectButtonStyle)}
                     onClick={() => setDetailOpen(false)}
                   >
                     <XCircle className="h-3.5 w-3.5 opacity-80" />
@@ -1061,22 +1069,24 @@ const ConsultationHistory = () => {
 
         </DialogContent>
       </Dialog>
-      {ratingTarget && user && (
-        <RatingDialog
-          open={!!ratingTarget}
-          onOpenChange={(open) => { if (!open) setRatingTarget(null); }}
-          consultationId={ratingTarget.id}
-          lawyerId={ratingTarget.lawyer_id}
-          clientId={user.id}
-          lawyerName={ratingTarget.lawyer_name}
-          lawyerAvatar={ratingTarget.lawyer_avatar}
-          onRated={() => {
-            setRatedConsultationIds(prev => new Set([...prev, ratingTarget.id]));
-            setRatingTarget(null);
-          }}
-        />
-      )}
-    </ClientLayout>
+      {
+        ratingTarget && user && (
+          <RatingDialog
+            open={!!ratingTarget}
+            onOpenChange={(open) => { if (!open) setRatingTarget(null); }}
+            consultationId={ratingTarget.id}
+            lawyerId={ratingTarget.lawyer_id}
+            clientId={user.id}
+            lawyerName={ratingTarget.lawyer_name}
+            lawyerAvatar={ratingTarget.lawyer_avatar}
+            onRated={() => {
+              setRatedConsultationIds(prev => new Set([...prev, ratingTarget.id]));
+              setRatingTarget(null);
+            }}
+          />
+        )
+      }
+    </ClientLayout >
   );
 };
 export default ConsultationHistory;

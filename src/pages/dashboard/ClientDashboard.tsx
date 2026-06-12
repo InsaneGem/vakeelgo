@@ -10,6 +10,15 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'; // Add this for the tabs
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle, DialogDescription, DialogTrigger,
+} from '@/components/ui/dialog';
 import {
   Wallet, MessageSquare, Clock, Plus, History, User, Video, Phone,
   TrendingUp, Calendar, ArrowRight, Zap, Shield, Activity, Settings,
@@ -22,7 +31,8 @@ import {
   Eye,
   ArrowDownLeft, ArrowUpRight, FileText,
   Currency,
-  IndianRupee, CheckCircle, Play, XCircle
+  IndianRupee, CheckCircle, Play, XCircle, X, Loader2,
+
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LawyerCard } from '@/components/lawyers/LawyerCard';
@@ -32,7 +42,8 @@ import Consultation from './../Consultation';
 import { initiateRazorpayPayment } from '@/lib/razorpay';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { seeMoreButtonStyle, smallCardStyle, transactionCardStyle, lawyerCardStyle } from '@/lib/buttonStyles';
+import { seeMoreButtonStyle, smallCardStyle, transactionCardStyle, lawyerCardStyle, acceptButtonStyle, rejectButtonStyle } from '@/lib/buttonStyles';
+import { RatingDialog } from '@/components/consultation/RatingDialog';
 
 
 interface ConsultationWithLawyer {
@@ -108,6 +119,19 @@ const ClientDashboard = () => {
   const [payingConsultationId, setPayingConsultationId] = useState<string | null>(null);
   const [recordingsCount, setRecordingsCount] = useState<number>(0);
   const [completedCount, setCompletedCount] = useState<number>(0);
+  // Add these with your other state declarations
+  const [activeRecordingId, setActiveRecordingId] = useState<string | null>(null);
+  const [recordingUrls, setRecordingUrls] = useState<Record<string, string>>({});
+  const [chatMessages, setChatMessages] = useState<any[]>([]); // You may already have this
+  const [recordings, setRecordings] = useState<any[]>([]); // You may already have this
+  const [detailOpen, setDetailOpen] = useState(false); // You may already have this
+  const [selectedConsultation, setSelectedConsultation] = useState<ConsultationWithLawyer | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false); // You may already have this
+  // Add this state to track which consultation is being rated
+  const [ratingTarget, setRatingTarget] = useState<ConsultationWithLawyer | null>(null);
+
+  // Add this to track IDs that have already been rated (to hide the button)
+  const [ratedConsultationIds, setRatedConsultationIds] = useState<Set<string>>(new Set());
   const [showMore, setShowMore] = useState({
     active: false,
     accepted: false,
@@ -162,6 +186,18 @@ const ClientDashboard = () => {
     }
   }, [user, authLoading]);
 
+  const fetchRatedConsultations = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('reviews') // Assuming your table is named 'reviews'
+      .select('consultation_id')
+      .eq('client_id', user.id);
+
+    if (data) {
+      setRatedConsultationIds(new Set(data.map(r => r.consultation_id)));
+    }
+  };
+
   const fetchDashboardData = async () => {
     if (!user) return;
 
@@ -172,6 +208,7 @@ const ClientDashboard = () => {
       fetchLawyers(),
       fetchTransactions(),
       fetchRecordingsCount(),
+      fetchRatedConsultations(),
     ]);
 
     setLoading(false);
@@ -303,6 +340,26 @@ const ClientDashboard = () => {
     } else {
       setConsultations([]);
     }
+  };
+
+
+
+
+  const openDetail = async (consultation: ConsultationWithLawyer) => {
+    setSelectedConsultation(consultation);
+    setDetailOpen(true);
+    setDetailLoading(true);
+    setChatMessages([]);
+    setRecordings([]);
+
+    const [{ data: msgs }, { data: recs }] = await Promise.all([
+      supabase.from('messages').select('*').eq('consultation_id', consultation.id).order('created_at', { ascending: true }),
+      supabase.from('call_recordings').select('id, storage_path, duration_seconds, created_at').eq('consultation_id', consultation.id).order('created_at', { ascending: true }),
+    ]);
+
+    setChatMessages(msgs || []);
+    setRecordings(recs || []);
+    setDetailLoading(false);
   };
 
 
@@ -495,7 +552,8 @@ const ClientDashboard = () => {
                 <p className="text-sm text-gray-300 mt-4 leading-relaxed">
                   Your secure peer-to-peer platform to connect with verified lawyers,
                   manage legal consultations, track cases, and store important legal
-                  documents safely.
+                  {/* documents safely.import {ScrollArea} from '@/components/ui/scroll-area'; */}
+
                 </p>
 
               </div>
@@ -999,7 +1057,8 @@ const ClientDashboard = () => {
                           key={consultation.id}
                           className={cn(lawyerCardStyle, "!h-auto !min-h-0 !max-h-fit")}
 
-                          onClick={() => navigate(`/consultation/${consultation.id}`)}
+                          // onClick={() => navigate(`/consultation/${consultation.id}`)}
+                          onClick={() => openDetail(consultation)}
                         >
                           {/* Status badge */}
                           <div className="absolute top-3 right-3 z-10">
@@ -1172,6 +1231,157 @@ const ClientDashboard = () => {
           </div>
         </div>
       </div>
+      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+        <DialogContent className="w-full max-w-[calc(100vw-1.5rem)] sm:max-w-3xl max-h-[92vh] flex flex-col p-0 overflow-hidden rounded-3xl">
+          {selectedConsultation && (
+            <>
+              {/* Detail Header */}
+              <div className="relative p-5 sm:p-6 border-b bg-gradient-to-r from-primary/5 to-accent/5 shrink-0">
+                <DialogHeader className="sm:flex sm:items-center sm:justify-between sm:gap-4">
+                  <div className="flex items-start gap-4">
+                    <Avatar className="h-14 w-14 border-2 border-primary/20">
+                      <AvatarImage src={selectedConsultation.lawyer_avatar || undefined} />
+                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-accent/20 font-semibold">
+                        {selectedConsultation.lawyer_name?.charAt(0) || "L"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <DialogTitle className="text-xl sm:text-2xl">{selectedConsultation.lawyer_name}</DialogTitle>
+                      <DialogDescription className="text-sm text-muted-foreground">
+                        View complete session history for this consultation.
+                      </DialogDescription>
+                    </div>
+                  </div>
+                </DialogHeader>
+
+                {/* Info Grid */}
+                <div className="grid grid-cols-3 gap-2 mt-6">
+                  <div className="bg-card border rounded-xl px-2 py-2 flex flex-col justify-center min-h-[56px]">
+                    <p className="text-[9px] uppercase tracking-wide text-muted-foreground">Date</p>
+                    <p className="text-[10px] sm:text-xs font-semibold mt-1">
+                      {new Date(selectedConsultation.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="bg-card border rounded-xl px-2 py-2 flex flex-col justify-center min-h-[56px]">
+                    <p className="text-[9px] uppercase tracking-wide text-muted-foreground">Duration</p>
+                    <p className="text-[10px] sm:text-xs font-semibold mt-1">{selectedConsultation.duration_minutes || 0}m</p>
+                  </div>
+                  <div className="bg-card border rounded-xl px-2 py-2 flex flex-col justify-center min-h-[56px]">
+                    <p className="text-[9px] uppercase tracking-wide text-muted-foreground">Fee</p>
+                    <p className="text-[10px] sm:text-xs font-semibold mt-1">₹{selectedConsultation.total_amount?.toFixed(0)}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Content Tabs */}
+              <div className="flex-1 overflow-hidden p-5 sm:p-6 flex flex-col min-h-0">
+                {detailLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-6 w-6 animate-spin" /></div>
+                ) : (
+                  <Tabs defaultValue="chat" className="flex flex-col h-full">
+                    <TabsList className="w-full shrink-0">
+                      <TabsTrigger value="chat" className="flex-1 gap-1.5 text-xs">
+                        <MessageSquare className="w-4 h-4" /> Chat ({chatMessages.length})</TabsTrigger>
+                      <TabsTrigger value="recordings" className="flex-1 gap-1.5 text-xs"><FileVideo className="w-4 h-4" /> Recordings ({recordings.length})</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="chat" className="flex-1 mt-4 overflow-hidden min-h-0">
+                      {chatMessages.length === 0 ? (
+                        <div className="text-center py-10 text-muted-foreground">
+                          No messages in this session
+                        </div>
+                      ) : (
+                        <ScrollArea className="h-[300px] w-full pr-2">
+                          <div className="space-y-4 pb-4">
+                            {chatMessages.map((msg) => {
+                              const isOwn = msg.sender_id === user?.id;
+                              return (
+                                <div
+                                  key={msg.id}
+                                  className={`flex w-full ${isOwn ? 'justify-end' : 'justify-start'}`}
+                                >
+                                  <div
+                                    className={`max-w-[80%] rounded-xl px-4 py-2 text-sm ${isOwn
+                                      ? 'bg-primary text-primary-foreground rounded-br-none'
+                                      : 'bg-secondary text-secondary-foreground rounded-bl-none'
+                                      }`}
+                                  >
+                                    <p>{msg.content}</p>
+                                    <span className="text-[10px] opacity-70 block mt-1">
+                                      {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </ScrollArea>
+                      )}
+                    </TabsContent>
+                    <TabsContent value="recordings" className="flex-1 mt-4 overflow-hidden min-h-0">
+                      {recordings.length === 0 ? "No recordings" : "Recording player UI here..."}
+                    </TabsContent>
+                  </Tabs>
+                )}
+              </div>
+
+              {/* Action Footer */}
+              <div className="p-5 sm:p-6 border-t bg-background shrink-0 flex justify-end gap-2">
+                {/* Only show Rate button if consultation is completed and not yet rated */}
+                {selectedConsultation?.status === 'completed' && !ratedConsultationIds.has(selectedConsultation.id) && (
+                  <Button
+                    className={cn(acceptButtonStyle)}
+                    size="sm" onClick={() => setRatingTarget(selectedConsultation)}>
+                    <Star className="h-3.5 w-3.5 !fill-amber-400 !text-amber-400" />
+                    Rate Lawyer
+                  </Button>
+                )}
+
+                {selectedConsultation?.status === 'active' && (
+                  <Button
+                    // Use your pre-defined style, plus any overrides needed
+                    className={cn(acceptButtonStyle, "w-full sm:max-w-[140px] h-8.5 text-[11px] sm:text-xs font-semibold tracking-wide gap-1.5 order-1 sm:order-2")}
+                    onClick={() => {
+                      setDetailOpen(false);
+                      navigate(`/consultation/${selectedConsultation.id}`);
+                    }}
+                  >
+                    Continue Session
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+
+                <Button
+                  className={cn(rejectButtonStyle)}
+                  variant="outline" size="sm" onClick={() => setDetailOpen(false)}
+                >
+                  Close
+                </Button>
+
+
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+      {ratingTarget && user && (
+        <RatingDialog
+          open={!!ratingTarget}
+          onOpenChange={(open) => { if (!open) setRatingTarget(null); }}
+          consultationId={ratingTarget.id}
+          lawyerId={ratingTarget.lawyer_id}
+          clientId={user.id}
+          lawyerName={ratingTarget.lawyer_name || "Lawyer"}
+          lawyerAvatar={ratingTarget.lawyer_avatar || null}
+          onRated={() => {
+            // Update the local state to hide the button after submission
+            setRatedConsultationIds(prev => new Set([...prev, ratingTarget.id]));
+            setRatingTarget(null);
+            toast({ title: "Rating submitted successfully!" });
+          }}
+        />
+      )}
     </ClientLayout >
   );
 };

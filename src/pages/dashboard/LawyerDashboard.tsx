@@ -66,6 +66,8 @@ const LawyerDashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const wasOnlineBeforeInactiveRef = useRef(false);
 
   const [stats, setStats] = useState({
     walletBalance: 0,
@@ -76,7 +78,7 @@ const LawyerDashboard = () => {
     status: 'pending',
 
   });
-
+  // const isAvailableRef = useRef(false);
   const badgeItems: BadgeItem[] = [
     {
       label: "Real-time Sync",
@@ -131,6 +133,7 @@ const LawyerDashboard = () => {
   const [cancelledConsultations, setCancelledConsultations] = useState<ConsultationWithClient[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalConsultations, setTotalConsultations] = useState<number>(0);
+
 
   // Calculate profile completion
   const { completionPercentage, missingFields } = useMemo(() => {
@@ -253,6 +256,184 @@ const LawyerDashboard = () => {
     }
   }, [user, authLoading]);
 
+  useEffect(() => {
+    if (!user) return;
+
+    const goOfflineIfInactive = async () => {
+
+      console.log('TIMER FIRED');
+      console.log('isAvailable =', stats.isAvailable);
+      // if (!stats.isAvailable) return;
+      if (!isAvailableRef.current) return;
+
+      wasOnlineBeforeInactiveRef.current = true;
+
+      const { error } = await supabase
+        .from('lawyer_profiles')
+        .update({
+          is_available: false,
+          is_busy: false,
+          auto_offline: true,
+        })
+        .eq('user_id', user.id);
+      console.log('AUTO OFFLINE RESULT', error);
+
+      if (!error) {
+        setStats(prev => ({
+          ...prev,
+          isAvailable: false,
+        }));
+      }
+    };
+
+    const restoreOnlineIfNeeded = async () => {
+      if (!wasOnlineBeforeInactiveRef.current) return;
+
+      const { error } = await supabase
+        .from('lawyer_profiles')
+        .update({
+          is_available: true,
+          is_busy: false,
+          auto_offline: false,
+        })
+        .eq('user_id', user.id);
+
+      if (!error) {
+        wasOnlineBeforeInactiveRef.current = false;
+
+        setStats(prev => ({
+          ...prev,
+          isAvailable: true,
+        }));
+      }
+    };
+
+    const resetTimer = () => {
+      console.log('RESET TIMER');
+      restoreOnlineIfNeeded();
+
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+      }
+
+      inactivityTimerRef.current = setTimeout(() => {
+        goOfflineIfInactive();
+      }, 60000);
+    };
+
+    const events = [
+      'mousemove',
+      'mousedown',
+      'keydown',
+      'scroll',
+      'touchstart',
+      'focus'
+    ];
+
+    events.forEach(event =>
+      window.addEventListener(event, resetTimer)
+    );
+
+    resetTimer();
+
+    return () => {
+      events.forEach(event =>
+        window.removeEventListener(event, resetTimer)
+      );
+
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+      }
+    };
+    // }, [user, stats.isAvailable]);
+  }, [user]);
+
+  const isAvailableRef = useRef(false);
+
+  useEffect(() => {
+    isAvailableRef.current = stats.isAvailable;
+  }, [stats.isAvailable]);
+
+  // useEffect(() => {
+  //   if (!user) return;
+
+  //   const markOnline = async () => {
+  //     if (!autoOfflineRef.current) return;
+
+  //     const { error } = await supabase
+  //       .from('lawyer_profiles')
+  //       .update({
+  //         is_available: true,
+  //         is_busy: false,
+  //       })
+  //       .eq('user_id', user.id);
+
+  //     if (!error) {
+  //       autoOfflineRef.current = false;
+
+  //       setStats(prev => ({
+  //         ...prev,
+  //         isAvailable: true,
+  //       }));
+  //     }
+  //   };
+
+  //   const markOffline = async () => {
+  //     const { error } = await supabase
+  //       .from('lawyer_profiles')
+  //       .update({
+  //         is_available: false,
+  //         is_busy: false,
+  //       })
+  //       .eq('user_id', user.id);
+
+  //     if (!error) {
+  //       autoOfflineRef.current = true;
+
+  //       setStats(prev => ({
+  //         ...prev,
+  //         isAvailable: false,
+  //       }));
+  //     }
+  //   };
+
+  //   const resetTimer = () => {
+  //     if (inactivityTimerRef.current) {
+  //       clearTimeout(inactivityTimerRef.current);
+  //     }
+
+  //     markOnline();
+
+  //     inactivityTimerRef.current = setTimeout(() => {
+  //       markOffline();
+  //     }, 60000);
+  //   };
+
+  //   const events = [
+  //     'mousemove',
+  //     'mousedown',
+  //     'keydown',
+  //     'scroll',
+  //     'touchstart'
+  //   ];
+
+  //   events.forEach(event =>
+  //     window.addEventListener(event, resetTimer)
+  //   );
+
+  //   resetTimer();
+
+  //   return () => {
+  //     events.forEach(event =>
+  //       window.removeEventListener(event, resetTimer)
+  //     );
+
+  //     if (inactivityTimerRef.current) {
+  //       clearTimeout(inactivityTimerRef.current);
+  //     }
+  //   };
+  // }, [user]);
+
   const fetchDashboardData = async () => {
     if (!user) return;
 
@@ -341,15 +522,45 @@ const LawyerDashboard = () => {
     setLoading(false);
   };
 
+  // const toggleAvailability = async () => {
+  //   if (!user) return;
+  //   const newStatus = !stats.isAvailable;
+
+  //   const { error } = await supabase.from('lawyer_profiles').update({ is_available: newStatus, is_busy: false, }).eq('user_id', user.id);
+
+  //   if (!error) {
+  //     setStats(prev => ({ ...prev, isAvailable: newStatus }));
+  //     toast({ title: newStatus ? '✅ You are now online' : '⏸️ You are now offline' });
+  //   }
+  // };
+
   const toggleAvailability = async () => {
     if (!user) return;
+
+    // autoOfflineRef.current = false;
+
     const newStatus = !stats.isAvailable;
 
-    const { error } = await supabase.from('lawyer_profiles').update({ is_available: newStatus, is_busy: false, }).eq('user_id', user.id);
+    const { error } = await supabase
+      .from('lawyer_profiles')
+      .update({
+        is_available: newStatus,
+        is_busy: false,
+        auto_offline: false,
+      })
+      .eq('user_id', user.id);
 
     if (!error) {
-      setStats(prev => ({ ...prev, isAvailable: newStatus }));
-      toast({ title: newStatus ? '✅ You are now online' : '⏸️ You are now offline' });
+      setStats(prev => ({
+        ...prev,
+        isAvailable: newStatus,
+      }));
+
+      toast({
+        title: newStatus
+          ? '✅ You are now online'
+          : '⏸️ You are now offline'
+      });
     }
   };
 

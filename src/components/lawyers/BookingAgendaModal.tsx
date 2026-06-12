@@ -453,6 +453,20 @@ export const BookingAgendaModal = ({
             setStep('waiting');
             localStorage.removeItem(DRAFT_KEY);
 
+            // Clear agenda after 2 minutes to avoid storing long-term details
+            // This keeps the agenda visible to the lawyer for a short period,
+            // then removes it to avoid filling Supabase storage with sensitive text.
+            setTimeout(async () => {
+                try {
+                    await supabase
+                        .from('consultations')
+                        .update({ agenda: null })
+                        .eq('id', data.id);
+                } catch (err) {
+                    console.error('Failed to clear temporary agenda:', err);
+                }
+            }, 2 * 60 * 1000);
+
         }
 
         catch (error) {

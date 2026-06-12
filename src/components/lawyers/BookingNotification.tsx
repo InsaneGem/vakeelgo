@@ -161,7 +161,8 @@ export const BookingNotificationProvider = ({ children }: BookingNotificationPro
                 clientName: clientProfile?.full_name || 'Client',
                 clientAvatar: clientProfile?.avatar_url || undefined,
                 type: consultation.type,
-                agenda: cleanAgendaForDisplay(consultation.agenda),
+                // agenda: cleanAgendaForDisplay(consultation.agenda),
+                agenda: consultation.agenda, // <--- USE THIS (Raw agenda)
                 amount: rawLawyerEarnings, // Resolves exactly to 25 for a 43 INR payload!
                 countdown: 60,
               };

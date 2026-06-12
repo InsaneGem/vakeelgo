@@ -232,8 +232,9 @@ const ClientActiveSessions = () => {
                                             </div>
 
                                             <div className="min-w-0 space-y-1">
-                                                <h3 className="font-semibold text-[14px] leading-tight text-slate-900 dark:text-slate-100 tracking-tight group-hover:text-blue-600 transition-colors duration-200 truncate">
-                                                    {session.lawyer_name}
+                                                {/* <h3 className="font-semibold text-[14px] leading-tight text-slate-900 dark:text-slate-100 tracking-tight group-hover:text-blue-600 transition-colors duration-200 truncate"> */}
+                                                <h3 className="font-semibold text-[14px] leading-tight text-slate-900 dark:text-slate-100 tracking-tight group-hover:text-blue-600 transition-colors duration-200 whitespace-normal break-words">
+                                                    Adv. {session.lawyer_name}
                                                 </h3>
                                                 <div className="flex items-center gap-2 flex-wrap">
                                                     {/* Type Category Badge */}
@@ -285,7 +286,7 @@ const ClientActiveSessions = () => {
                                             <div className="text-right">
                                                 <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-medium tracking-wider mr-1.5">Paid:</span>
                                                 <span className="font-semibold text-xs text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-800/50 px-2 py-0.5 rounded border border-slate-100 dark:border-slate-700/40">
-                                                    ${Number(session.total_amount).toFixed(2)}
+                                                    ₹{Number(session.total_amount).toFixed(2)}
                                                 </span>
                                             </div>
                                         )}
