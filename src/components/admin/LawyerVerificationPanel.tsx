@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { 
+import {
   Shield, Clock, XCircle, CheckCircle, User, GraduationCap,
   Briefcase, Languages, DollarSign, Mail, Phone, Calendar,
   Eye, Edit, AlertTriangle, Search, Filter, RefreshCw, Loader2,
@@ -71,10 +71,13 @@ export const LawyerVerificationPanel = ({ onRefresh }: LawyerVerificationPanelPr
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState<Partial<LawyerProfile>>({});
   const [saving, setSaving] = useState(false);
+  // Pagination (5 per page) and compact layout
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 5;
 
   useEffect(() => {
     fetchLawyers();
-    
+
     // Real-time subscription
     const channel = supabase
       .channel('lawyer-verification-realtime')
@@ -133,9 +136,9 @@ export const LawyerVerificationPanel = ({ onRefresh }: LawyerVerificationPanelPr
       .eq('id', lawyer.id);
 
     if (!error) {
-      toast({ 
-        title: '✅ Lawyer Approved', 
-        description: `${lawyer.full_name} is now verified and can accept clients.` 
+      toast({
+        title: '✅ Lawyer Approved',
+        description: `${lawyer.full_name} is now verified and can accept clients.`
       });
       fetchLawyers();
       onRefresh?.();
@@ -151,9 +154,9 @@ export const LawyerVerificationPanel = ({ onRefresh }: LawyerVerificationPanelPr
       .eq('id', lawyer.id);
 
     if (!error) {
-      toast({ 
-        title: '❌ Lawyer Rejected', 
-        description: `${lawyer.full_name}'s application has been rejected.` 
+      toast({
+        title: '❌ Lawyer Rejected',
+        description: `${lawyer.full_name}'s application has been rejected.`
       });
       fetchLawyers();
       onRefresh?.();
@@ -169,9 +172,9 @@ export const LawyerVerificationPanel = ({ onRefresh }: LawyerVerificationPanelPr
       .eq('id', lawyer.id);
 
     if (!error) {
-      toast({ 
-        title: '⚠️ Lawyer Suspended', 
-        description: `${lawyer.full_name} has been suspended.` 
+      toast({
+        title: '⚠️ Lawyer Suspended',
+        description: `${lawyer.full_name} has been suspended.`
       });
       fetchLawyers();
       onRefresh?.();
@@ -258,13 +261,19 @@ export const LawyerVerificationPanel = ({ onRefresh }: LawyerVerificationPanelPr
   };
 
   const filteredLawyers = lawyers.filter(lawyer => {
-    const matchesSearch = 
+    const matchesSearch =
       lawyer.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       lawyer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       lawyer.bar_council_number?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || lawyer.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filteredLawyers.length / PAGE_SIZE));
+  const displayedLawyers = filteredLawyers.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  // reset page when filters/search/data change
+  useEffect(() => { setPage(1); }, [searchTerm, statusFilter, lawyers]);
 
   const pendingCount = lawyers.filter(l => l.status === 'pending').length;
 
@@ -307,9 +316,9 @@ export const LawyerVerificationPanel = ({ onRefresh }: LawyerVerificationPanelPr
                 Review and verify lawyer applications
               </CardDescription>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="gap-2"
               onClick={fetchLawyers}
               disabled={refreshing}
@@ -318,7 +327,7 @@ export const LawyerVerificationPanel = ({ onRefresh }: LawyerVerificationPanelPr
               Refresh
             </Button>
           </div>
-          
+
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-3 mt-4">
             <div className="relative flex-1">
@@ -345,9 +354,9 @@ export const LawyerVerificationPanel = ({ onRefresh }: LawyerVerificationPanelPr
             </Select>
           </div>
         </CardHeader>
-        
+
         <CardContent>
-          <ScrollArea className="h-[500px] pr-4">
+          <ScrollArea className="max-h-[60vh] sm:h-[500px] pr-4">
             {filteredLawyers.length === 0 ? (
               <div className="text-center py-12">
                 <User className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -355,33 +364,33 @@ export const LawyerVerificationPanel = ({ onRefresh }: LawyerVerificationPanelPr
               </div>
             ) : (
               <div className="space-y-4">
-                {filteredLawyers.map((lawyer) => (
-                  <Card 
-                    key={lawyer.id} 
+                {displayedLawyers.map((lawyer) => (
+                  <Card
+                    key={lawyer.id}
                     className={cn(
                       "transition-all duration-200 hover:shadow-md",
                       lawyer.status === 'pending' && "border-amber-500/30 bg-amber-500/5"
                     )}
                   >
-                    <CardContent className="p-4">
-                      <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+                    <CardContent className="p-3">
+                      <div className="flex flex-col lg:flex-row lg:items-center gap-3">
                         {/* Avatar & Basic Info */}
-                        <div className="flex items-center gap-4 flex-1">
-                          <Avatar className="h-14 w-14 border-2">
-                            <AvatarImage src={lawyer.avatar_url || ''} />
+                        <div className="flex items-center gap-3 flex-1">
+                          <Avatar className="h-12 w-12 border-2">
+                            <AvatarImage src={lawyer.avatar_url || ''} className="object-cover" />
                             <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                               {lawyer.full_name?.charAt(0) || 'L'}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <h3 className="font-semibold truncate">{lawyer.full_name}</h3>
+                              <h3 className="font-semibold truncate text-sm">{lawyer.full_name}</h3>
                               {getStatusBadge(lawyer.status)}
                             </div>
-                            <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground flex-wrap">
+                            <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground flex-wrap">
                               <span className="flex items-center gap-1">
                                 <Mail className="h-3.5 w-3.5" />
-                                {lawyer.email}
+                                <span className="truncate max-w-full break-words">{lawyer.email}</span>
                               </span>
                               {lawyer.bar_council_number && (
                                 <span className="flex items-center gap-1">
@@ -404,7 +413,7 @@ export const LawyerVerificationPanel = ({ onRefresh }: LawyerVerificationPanelPr
                             </div>
                           </div>
                         </div>
-                        
+
                         {/* Actions */}
                         <div className="flex items-center gap-2 flex-wrap">
                           <Button
@@ -416,7 +425,7 @@ export const LawyerVerificationPanel = ({ onRefresh }: LawyerVerificationPanelPr
                             <Eye className="h-4 w-4" />
                             View Details
                           </Button>
-                          
+
                           {lawyer.status === 'pending' && (
                             <>
                               <Button
@@ -438,7 +447,7 @@ export const LawyerVerificationPanel = ({ onRefresh }: LawyerVerificationPanelPr
                               </Button>
                             </>
                           )}
-                          
+
                           {lawyer.status === 'approved' && (
                             <Button
                               variant="outline"
@@ -450,7 +459,7 @@ export const LawyerVerificationPanel = ({ onRefresh }: LawyerVerificationPanelPr
                               Suspend
                             </Button>
                           )}
-                          
+
                           {(lawyer.status === 'rejected' || lawyer.status === 'suspended') && (
                             <Button
                               size="sm"
@@ -469,6 +478,14 @@ export const LawyerVerificationPanel = ({ onRefresh }: LawyerVerificationPanelPr
               </div>
             )}
           </ScrollArea>
+          {/* Pagination controls */}
+          <div className="flex items-center justify-between mt-3 px-2">
+            <div className="text-sm text-muted-foreground">Page {page} of {totalPages}</div>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="ghost" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Prev</Button>
+              <Button size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Next</Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -479,16 +496,14 @@ export const LawyerVerificationPanel = ({ onRefresh }: LawyerVerificationPanelPr
             <div className="flex items-center justify-between">
               <DialogTitle className="flex items-center gap-3">
                 <Avatar className="h-12 w-12">
-                  <AvatarImage src={selectedLawyer?.avatar_url || ''} />
+                  <AvatarImage src={selectedLawyer?.avatar_url || ''} className="object-cover" />
                   <AvatarFallback className="bg-primary/10 text-primary">
                     {selectedLawyer?.full_name?.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
-                <div>
-                  <span>{selectedLawyer?.full_name}</span>
-                  <div className="text-sm font-normal text-muted-foreground">
-                    {selectedLawyer?.email}
-                  </div>
+                <div className="min-w-0">
+                  <span className="block font-semibold truncate max-w-full">{selectedLawyer?.full_name}</span>
+                  <div className="text-sm font-normal text-muted-foreground truncate max-w-full">{selectedLawyer?.email}</div>
                 </div>
               </DialogTitle>
               {getStatusBadge(selectedLawyer?.status || 'pending')}
@@ -635,8 +650,8 @@ export const LawyerVerificationPanel = ({ onRefresh }: LawyerVerificationPanelPr
               {editMode && (
                 <div className="space-y-2">
                   <Label>Account Status</Label>
-                  <Select 
-                    value={editForm.status || 'pending'} 
+                  <Select
+                    value={editForm.status || 'pending'}
                     onValueChange={(value) => setEditForm(prev => ({ ...prev, status: value }))}
                   >
                     <SelectTrigger>

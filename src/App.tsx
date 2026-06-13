@@ -42,8 +42,6 @@ import Articles from "./pages/Articles";
 import Pricing from "./pages/Pricing";
 import ClientLawyerDetail from "./pages/ClientLawyerDetail";
 import ConsultationHistory from "./pages/dashboard/ClientConsultationhistory";
-// import ClientConsultation from "./pages/consultation/ClientConsultation";
-// import LawyerConsultation from "./pages/consultation/LawyerConsultation";
 import SavedLawyers from "./pages/SavedLawyers";
 import ClientActiveSessions from "./pages/dashboard/ClientActiveSessions";
 import ClientProcessing from "./pages/dashboard/ClientProcessing";
@@ -56,10 +54,15 @@ import { ClientLayout } from '@/components/layout/ClientLayout';
 import { LawyerLayout } from '@/components/layout/LawyerLayout';
 import Benefits from "./pages/Benefits";
 import AboutUs from "./pages/AboutUs";
-
-// import { ScrollToTop } from "./components/context/ScrollToTop";
 import { ScrollToTop } from './contexts/ScrollToTop';
 
+import { AdminLayout } from "@/components/layout/AdminLayout";
+import AdminClientPage from "@/components/admin/AdminClientPage"
+import AdminLawyerPage from "@/components/admin/AdminLawyerPage"
+import AdminLawyerVerificationPage from "@/components/admin/AdminLawyerVerificationPage"
+import AdminConsulationPage from "@/components/admin/AdminConsulationPage"
+import AdminDocumentVerificationPage from "@/components/admin/AdminDocumentVerificationPage"
+import AdminClientLawyerTransactionPage from "@/components/admin/AdminClientLawyerTransactionPage"
 
 const queryClient = new QueryClient();
 
@@ -97,7 +100,7 @@ const App = () => (
 
 
 
-// ==============================
+                // ==============================
                 // PUBLIC MAINLAYOUT ROUTES
                 // ==============================
 
@@ -178,6 +181,29 @@ const App = () => (
                 <Route path="/lawyer/rating" element={<LawyerRating />} />
                 <Route path="/lawyer/pending-requests" element={<LawyerPendingRequests />} />
                 <Route path="/dashboard/lawyer-active-sessions" element={<LawyerActiveSessions />} />
+
+
+                // ==============================
+                // ADMIN ROUTES
+                // ==============================
+                <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                <Route path="/admin/clientPage" element={<AdminClientPage />} />
+                <Route path="/admin/lawyerPage" element={<AdminLawyerPage />} />
+                <Route path="/admin/lawyerverificationPage" element={<AdminLawyerVerificationPage />} />
+                <Route path="/admin/consultationPage" element={<AdminConsulationPage />} />
+                <Route path="/admin/documentverificationPage" element={<AdminDocumentVerificationPage />} />
+                <Route path="/admin/AdminClientLawyerTransactionPage" element={<AdminClientLawyerTransactionPage />} />
+
+
+
+
+
+
+
+
+
+
+
 
 
 
