@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Search, Edit, Trash2, Save } from 'lucide-react';
+import AdminClientDetailsPage from "@/components/admin/AdminClientDetailsPage"
 
 
 interface ClientProfile {
@@ -131,8 +132,13 @@ const AdminClientPage = () => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
+
                                 {filteredClients.map((client) => (
-                                    <TableRow key={client.id}>
+                                    <TableRow key={client.id}
+                                        className="cursor-pointer hover:bg-slate-50 transition-colors" // Added cursor pointer
+                                        // onClick={() => navigate(`/admin/AdminClientDetailsPage/${client.id}`)} // Added navigation
+                                        onClick={() => navigate(`/admin/AdminClientDetailsPage/${client.id}`)}
+                                    >
                                         <TableCell className="pl-5">{client.full_name}</TableCell>
                                         <TableCell>{client.email}</TableCell>
                                         <TableCell>{client.phone || '—'}</TableCell>

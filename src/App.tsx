@@ -63,6 +63,8 @@ import AdminLawyerVerificationPage from "@/components/admin/AdminLawyerVerificat
 import AdminConsulationPage from "@/components/admin/AdminConsulationPage"
 import AdminDocumentVerificationPage from "@/components/admin/AdminDocumentVerificationPage"
 import AdminClientLawyerTransactionPage from "@/components/admin/AdminClientLawyerTransactionPage"
+import AdminClientDetailsPage from "@/components/admin/AdminClientDetailsPage"
+import AdminLawyerDetailsPage from "@/components/admin/AdminLawyerDetailsPage"
 
 const queryClient = new QueryClient();
 
@@ -193,8 +195,9 @@ const App = () => (
                 <Route path="/admin/consultationPage" element={<AdminConsulationPage />} />
                 <Route path="/admin/documentverificationPage" element={<AdminDocumentVerificationPage />} />
                 <Route path="/admin/AdminClientLawyerTransactionPage" element={<AdminClientLawyerTransactionPage />} />
-
-
+                {/* <Route path="/admin/AdminClientDetailsPage" element={<AdminClientDetailsPage />} /> */}
+                <Route path="/admin/AdminClientDetailsPage/:clientId" element={<AdminClientDetailsPage />} />
+                <Route path="/admin/AdminLawyerDetailsPage/:lawyerId" element={<AdminLawyerDetailsPage />} />
 
 
 

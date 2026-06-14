@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import AdminLawyerDetailsPage from "@/components/admin/AdminLawyerDetailsPage"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -209,11 +210,17 @@ const AdminLawyerPage = () => {
                     </div>
                 </div>
 
+
                 {/* Mobile cards */}
                 <div className="block lg:hidden divide-y divide-slate-50">
                     {filteredLawyers.map((l) => (
-                        <div key={l.id} className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50/70 transition-colors">
-                            <div className="min-w-0 flex-1">
+                        <div key={l.id}
+                            className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50/70 transition-colors cursor-pointer"
+                            onClick={() =>
+                                navigate(`/admin/AdminLawyerDetailsPage/${l.user_id}`)
+                            }
+                        >
+                            <div className="min-w-0 flex-1" onClick={() => navigate(`/admin/AdminLawyerDetailsPage/${l.user_id}`)}>
                                 <p className="font-medium text-sm text-slate-900 truncate">{l.full_name}</p>
                                 <p className="text-[11px] text-slate-400 truncate mt-0.5">{l.email}</p>
                                 <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
@@ -252,7 +259,12 @@ const AdminLawyerPage = () => {
                         </TableHeader>
                         <TableBody>
                             {filteredLawyers.map((l) => (
-                                <TableRow key={l.id} className="hover:bg-slate-50/60 border-slate-100 transition-colors">
+                                <TableRow key={l.id}
+                                    className="hover:bg-slate-50/60 border-slate-100 transition-colors cursor-pointer"
+                                    onClick={() =>
+                                        navigate(`/admin/AdminLawyerDetailsPage/${l.user_id}`)
+                                    }
+                                >
                                     <TableCell className="font-medium text-sm text-slate-900 pl-5">{l.full_name}</TableCell>
                                     <TableCell className="text-slate-400 text-xs max-w-[180px] truncate">{l.email}</TableCell>
                                     <TableCell>{getStatusBadge(l.status)}</TableCell>
