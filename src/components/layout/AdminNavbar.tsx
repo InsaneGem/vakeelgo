@@ -165,7 +165,7 @@ export const AdminNavbar = () => {
                             </div>
 
                             {/* FIND LEGAL HELP */}
-                            <div>
+                            {/* <div>
                                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 mb-2">
                                     Find Legal Help
                                 </p>
@@ -192,10 +192,10 @@ export const AdminNavbar = () => {
                                         </div>
                                     </button>
                                 </div>
-                            </div>
+                            </div> */}
 
                             {/* MY CASES */}
-                            <div>
+                            {/* <div>
                                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 mb-2">
                                     My Cases
                                 </p>
@@ -222,10 +222,10 @@ export const AdminNavbar = () => {
                                         </div>
                                     </button>
                                 </div>
-                            </div>
+                            </div> */}
 
                             {/* LEGAL RESOURCES */}
-                            <div>
+                            {/* <div>
                                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 mb-2">
                                     Legal Resources
                                 </p>
@@ -254,7 +254,7 @@ export const AdminNavbar = () => {
                                         <span className="text-sm">Consumer Protection</span>
                                     </button>
                                 </div>
-                            </div>
+                            </div> */}
 
 
                         </div>
