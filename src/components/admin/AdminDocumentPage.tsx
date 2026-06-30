@@ -51,7 +51,7 @@ interface ClientProfile {
     total_consultations?: number;
 }
 
-const AdminClientPage = () => {
+const AdminDocumentPage = () => {
     const { user, role, loading: authLoading } = useAuth();
     const navigate = useNavigate();
     const { toast } = useToast();
@@ -63,20 +63,7 @@ const AdminClientPage = () => {
     const [clientEditOpen, setClientEditOpen] = useState(false);
     const [editClientForm, setEditClientForm] = useState<Partial<ClientProfile & { wallet_balance: number }>>({});
     const [clientFilter, setClientFilter] = useState("all");
-    // const filteredClients = clients.filter((client) => {
-    //     const search = searchTerm.toLowerCase();
 
-    //     const matchesSearch =
-    //         client.full_name?.toLowerCase().includes(search) ||
-    //         client.email?.toLowerCase().includes(search) ||
-    //         client.id?.toLowerCase().includes(search);
-
-    //     const matchesStatus =
-    //         clientFilter === "all" ||
-    //         (client as any).status === clientFilter;
-
-    //     return matchesSearch && matchesStatus;
-    // });
     const filteredClients = clients.filter((client) => {
         const search = searchTerm.toLowerCase().trim();
 
@@ -495,4 +482,4 @@ const AdminClientPage = () => {
     );
 };
 
-export default AdminClientPage;
+export default AdminDocumentPage;

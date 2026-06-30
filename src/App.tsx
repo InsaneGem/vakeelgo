@@ -65,6 +65,9 @@ import AdminDocumentVerificationPage from "@/components/admin/AdminDocumentVerif
 import AdminClientLawyerTransactionPage from "@/components/admin/AdminClientLawyerTransactionPage"
 import AdminClientDetailsPage from "@/components/admin/AdminClientDetailsPage"
 import AdminLawyerDetailsPage from "@/components/admin/AdminLawyerDetailsPage"
+import AdminConsultationDetailsPage from "@/components/admin/AdminConsultationDetailsPage"
+import AdminPaymentReportPage from "@/components/admin/AdminPaymentReportPage"
+import AdminDocumentPage from "@/components/admin/AdminDocumentPage"
 
 const queryClient = new QueryClient();
 
@@ -198,8 +201,9 @@ const App = () => (
                 {/* <Route path="/admin/AdminClientDetailsPage" element={<AdminClientDetailsPage />} /> */}
                 <Route path="/admin/AdminClientDetailsPage/:clientId" element={<AdminClientDetailsPage />} />
                 <Route path="/admin/AdminLawyerDetailsPage/:lawyerId" element={<AdminLawyerDetailsPage />} />
-
-
+                <Route path="/admin/AdminConsultationDetailsPage/:consultationId" element={<AdminConsultationDetailsPage />} />
+                <Route path="/admin/AdminPaymentReportPage" element={<AdminPaymentReportPage />} />
+                <Route path="/admin/AdminDocumentPage" element={<AdminDocumentPage />} />
 
 
 

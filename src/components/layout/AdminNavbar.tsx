@@ -45,9 +45,11 @@ export const AdminNavbar = () => {
                 <div className="flex items-center justify-between h-14">
                     {/* Logo */}
                     <Link to="/admin/dashboard" className="flex items-center gap-2">
-                        <Scale className="h-8 w-8" />
+                        <span className="font-['Playfair_Display'] text-2xl font-bold tracking-tight text-slate-900 group-hover:text-primary transition-all duration-300">
+                            VakeelGo
+                        </span>
                         <div className="flex flex-col">
-                            <span className="font-serif text-xl font-semibold tracking-tight leading-none">LEGALMATE</span>
+                            <span className="font-serif text-xl font-semibold tracking-tight leading-none">VakeelGo</span>
                             <span className="text-[10px] text-muted-foreground font-medium tracking-widest uppercase">
                                 Admin Portal
                             </span>

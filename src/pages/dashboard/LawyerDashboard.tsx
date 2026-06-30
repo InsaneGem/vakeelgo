@@ -827,7 +827,7 @@ const LawyerDashboard = () => {
                 <p className="text-sm text-gray-300 mt-4 leading-relaxed">
                   Your professional dashboard to manage client consultations, track legal
                   cases, securely communicate with clients, and provide trusted legal
-                  services through the LegalMate platform.
+                  services through the VakeelGo platform.
                 </p>
 
               </div>

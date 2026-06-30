@@ -4,13 +4,23 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Mail, Phone, Clock, CalendarCheck } from 'lucide-react';
+import {
+    ArrowLeft,
+    Mail,
+    Phone,
+    Clock,
+    CalendarCheck,
+    IndianRupee,
+    Briefcase,
+    Shield, Search
+} from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 
 const ITEMS_PER_PAGE = 5;
 
@@ -221,22 +231,25 @@ const AdminClientDetailsPage = () => {
         if (clientId) fetchClientData();
     }, [clientId]);
 
-    if (loading) return <AdminLayout><div className="flex justify-center p-20 text-slate-500">Loading comprehensive client profile...</div></AdminLayout>;
+    if (loading) return <AdminLayout><div className="flex justify-center p-20 text-slate-500">Loading  client profile...</div></AdminLayout>;
 
     return (
         <AdminLayout>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-                <Button variant="ghost" className="pl-0 text-slate-500 hover:text-slate-900" onClick={() => navigate(-1)}>
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Back
-                </Button>
-
+            <div className="w-full max-w-7xl mx-auto px-2 sm:px-6 pt-[3px] pb-8 space-y-8 overflow-x-hidden box-border">
                 {/* Profile Card */}
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
-                    <div className="flex flex-col md:flex-row items-center gap-6">
-                        {/* <div className="h-20 w-20 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 text-2xl font-bold border">
-                            {client?.full_name?.charAt(0) || 'C'}
-                        </div> */}
-                        <div className="h-20 w-20 rounded-full overflow-hidden border">
+                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-8 text-white shadow-xl">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="hidden md:flex absolute top-3 left-4 z-50 items-center gap-2 text-slate-300 hover:text-white transition-colors "
+                    >
+                        <ArrowLeft className="h-5 w-5" />
+                    </button>
+                    <div className="absolute inset-0 opacity-10">
+                        <div className="absolute top-0 right-0 h-60 w-60 rounded-full bg-blue-500 blur-3xl" />
+                        <div className="absolute bottom-0 left-0 h-60 w-60 rounded-full bg-emerald-500 blur-3xl" />
+                    </div>
+                    <div className="relative z-10 flex flex-col lg:flex-row items-center gap-6 w-full min-w-0">
+                        <div className="h-24 w-24 shrink-0 rounded-full overflow-hidden border-4 border-white/20 bg-white/10 flex items-center justify-center text-3xl font-bold">
                             {client?.avatar_url ? (
                                 <img
                                     src={client.avatar_url}
@@ -244,239 +257,794 @@ const AdminClientDetailsPage = () => {
                                     className="w-full h-full object-cover"
                                 />
                             ) : (
-                                <div className="h-full w-full bg-slate-100 flex items-center justify-center text-slate-600 text-2xl font-bold">
-                                    {client?.full_name?.charAt(0) || 'C'}
+                                <div className="h-full w-full bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white text-3xl font-bold">
+                                    {client?.full_name?.charAt(0) || "C"}
                                 </div>
+
                             )}
                         </div>
-                        <div className="flex-1 text-center md:text-left">
-                            <h1 className="text-2xl font-bold text-slate-900">{client?.full_name || "Unknown Client"}</h1>
-                            <div className="flex flex-wrap gap-4 mt-2 text-slate-500 justify-center md:justify-start text-sm">
-                                <span className="flex items-center gap-1.5"><Mail className="h-4 w-4" /> {client?.email}</span>
-                                <span className="flex items-center gap-1.5"><Phone className="h-4 w-4" /> {client?.phone || "No phone provided"}</span>
-                                <span className="flex items-center gap-1.5"><CalendarCheck className="h-4 w-4" />  {client?.date_of_birth ? new Date(client.date_of_birth).toLocaleDateString() : 'Not Provided'}</span>
-                                <span className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> Joined: {new Date(client?.created_at).toLocaleDateString()}</span>
+
+                        <div className="flex-1 text-center lg:text-left">
+                            <h1 className="text-3xl font-bold tracking-tight">
+                                {client?.full_name || "Unknown Client"}
+                            </h1>
+
+                            <div className="flex flex-wrap justify-center lg:justify-start gap-4 mt-4 text-sm text-slate-300">
+
+                                <span className="flex items-center gap-2 min-w-0">
+                                    <Mail className="h-4 w-4" />
+                                    <span className="truncate max-w-[180px] sm:max-w-none">
+                                        {client?.email}
+                                    </span>
+                                </span>
+
+                                <span className="flex items-center gap-2">
+                                    <Phone className="h-4 w-4" />
+                                    {client?.phone || "Not Provided"}
+                                </span>
+
+                                <span className="flex items-center gap-2">
+                                    <CalendarCheck className="h-4 w-4" />
+                                    {client?.date_of_birth
+                                        ? new Date(
+                                            client.date_of_birth
+                                        ).toLocaleDateString()
+                                        : "Not Provided"}
+                                </span>
+                                <span className="flex items-center gap-2">
+                                    <Clock className="h-4 w-4" />
+                                    Joined: {new Date(client?.created_at).toLocaleDateString()}
+                                </span>
                             </div>
                         </div>
-                        <Badge className="bg-slate-900 text-white hover:bg-slate-800 capitalize px-4 py-1">{client?.status || "Active"}</Badge>
+                        <div className="w-full min-w-[260px] rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-3">
+                            <Badge className="bg-gradient-to-r from-emerald-600 to-green-600 text-white border-0 px-5 py-2">
+                                {client?.status || "Active"}
+                            </Badge>
+                        </div>
                     </div>
                 </div>
 
-                {/* Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <Card><CardContent className="pt-6"><div className="text-sm text-slate-500 font-medium mb-1">Wallet Balance</div><div className="text-2xl font-bold">₹{wallet?.balance?.toFixed(2) || '0.00'}</div></CardContent></Card>
-                    <Card><CardContent className="pt-6"><div className="text-sm text-slate-500 font-medium mb-1">Total Consultations Taken</div><div className="text-2xl font-bold">{consultations.length}</div></CardContent></Card>
-                    <Card><CardContent className="pt-6"><div className="text-sm text-slate-500 font-medium mb-1">Total Paid for Consultation</div><div className="text-2xl font-bold">₹{payments.filter(p => p.status === 'completed').reduce((acc, p) => acc + (p.amount || 0), 0).toFixed(2)}</div></CardContent></Card>
-                    <Card><CardContent className="pt-6"><div className="text-sm text-slate-500 font-medium mb-1">Role of User</div><div className="text-2xl font-bold capitalize">{clientRole?.role || 'Client'}</div></CardContent></Card>
+
+                {/* Premium Stats */}
+                <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
+                    <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 hover:shadow-xl transition-all duration-300">
+                        <CardContent className="p-3 sm:p-5">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-xs uppercase tracking-wider text-blue-600 font-semibold">
+                                        Wallet Balance
+                                    </p>
+                                    <h3 className="text-xl sm:text-3xl font-bold">
+                                        ₹{wallet?.balance?.toFixed(2) || "0.00"}
+                                    </h3>
+                                </div>
+                                <IndianRupee className="h-4 w-4 sm:h-6 sm:w-6" />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100 hover:shadow-xl transition-all duration-300">
+                        <CardContent className="p-3 sm:p-5">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-xs uppercase tracking-wider text-purple-600 font-semibold">
+                                        Consultations
+                                    </p>
+                                    <h3 className="text-xl sm:text-3xl font-bold">
+                                        {consultations.length}
+                                    </h3>
+                                    <p className="text-sm text-slate-500">
+                                        Total Sessions
+                                    </p>
+                                </div>
+                                <div className="h-9 w-9 sm:h-12 sm:w-12 rounded-xl">
+                                    <Clock className="h-4 w-4 sm:h-6 sm:w-6" />
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-50 to-emerald-100 hover:shadow-xl transition-all duration-300">
+                        <CardContent className="p-3 sm:p-5">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-xs uppercase tracking-wider text-emerald-600 font-semibold">
+                                        Spent
+                                    </p>
+                                    <h3 className="text-xl sm:text-3xl font-bold">
+                                        ₹{
+                                            payments
+                                                .filter(p => p.status === "completed")
+                                                .reduce((a, p) => a + (p.amount || 0), 0)
+                                                .toFixed(2)
+                                        }
+                                    </h3>
+                                    <p className="text-sm text-slate-500">
+                                        Total Paid
+                                    </p>
+                                </div>
+                                <div className="h-9 w-9 sm:h-12 sm:w-12 rounded-xl">
+                                    <IndianRupee className="h-4 w-4 sm:h-6 sm:w-6" />
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100 hover:shadow-xl transition-all duration-300">
+                        <CardContent className="p-3 sm:p-5">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-xs uppercase tracking-wider text-orange-600 font-semibold">
+                                        Status
+                                    </p>
+                                    <h3 className="text-sm uppercase  font-bold">
+                                        {clientRole?.role || "Client"}
+                                    </h3>
+                                    <p className="text-sm text-slate-500">
+                                        User Role
+                                    </p>
+                                </div>
+
+                                <div className="h-9 w-9 sm:h-12 sm:w-12 rounded-xl">
+                                    <Shield className="h-4 w-4 sm:h-6 sm:w-6" />
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
                 </div>
 
+
                 {/* Tabs */}
-                <Tabs defaultValue="consultations" className="w-full">
-                    <TabsList className="bg-slate-100 p-1">
-                        <TabsTrigger value="consultations">Consultations</TabsTrigger>
-                        <TabsTrigger value="payments">Payment History</TabsTrigger>
-                        <TabsTrigger value="account">Account Details</TabsTrigger>
+                <Tabs defaultValue="consultations" className="w-full overflow-hidden">
+
+                    <TabsList className="grid w-full grid-cols-3 p-1 bg-slate-100/80 border border-slate-200 rounded-2xl h-auto">
+                        <TabsTrigger
+                            value="consultations"
+                            className="rounded-xl py-2.5 text-sm font-semibold transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
+                        >
+                            Consultations
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="payments"
+                            className="rounded-xl py-2.5 text-sm font-semibold transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-600 data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
+                        >
+                            Payment History
+                        </TabsTrigger>
+
+                        <TabsTrigger
+                            value="details"
+                            className="rounded-xl py-2.5 text-sm font-semibold transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
+                        >
+                            Profile
+                        </TabsTrigger>
                     </TabsList>
 
                     {/* Consultations Tab */}
                     <TabsContent value="consultations" className="mt-6 space-y-4">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                            {/* <Input placeholder="Lawyer name..." className="text-xs h-9" onChange={(e) => setFilters({ ...filters, lawyer: e.target.value })} /> */}
-                            <Input
-                                placeholder="Search Lawyer Name, Lawyer ID, Consultation ID..."
-                                className="text-xs h-9"
-                                onChange={(e) =>
-                                    setFilters({
-                                        ...filters,
-                                        lawyer: e.target.value,
-                                    })
-                                }
-                            />
-                            <Select onValueChange={(val) => setFilters({ ...filters, status: val })}>
-                                <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Status</SelectItem>
-                                    <SelectItem value="completed">Completed</SelectItem>
-                                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                                    <SelectItem value="pending">Pending</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <Select onValueChange={(val) => setFilters({ ...filters, type: val })}>
-                                <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Type" /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Types</SelectItem>
-                                    <SelectItem value="video">Video</SelectItem>
-                                    <SelectItem value="audio">Audio</SelectItem>
-                                    <SelectItem value="chat">Chat</SelectItem>
-                                </SelectContent>
-                            </Select>
+                        <Card className="rounded-3xl border-0 shadow-lg bg-white">
+                            <CardContent className="p-3 sm:p-5">
+                                {/* Mobile */}
+                                <div className="block md:hidden space-y-2">
+                                    <div className="relative">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                                        <Input
+                                            placeholder="Search..."
+                                            className="pl-9 h-9 text-xs rounded-xl border-slate-200"
+                                            onChange={(e) =>
+                                                setFilters({
+                                                    ...filters,
+                                                    lawyer: e.target.value,
+                                                })
+                                            }
+                                        />
+                                    </div>
 
-                        </div>
-                        <Card className="overflow-hidden border-slate-200">
-                            <CardContent className="p-0">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Lawyer Name</TableHead>
-                                            <TableHead>Lawyer ID</TableHead>
-                                            <TableHead>Consultation Type</TableHead>
-                                            <TableHead>Consultation ID</TableHead>
-                                            <TableHead>Consultation Status</TableHead>
-                                            <TableHead className="text-right">Date</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {paginatedConsultations.map((c) => (
-                                            <TableRow key={c.id}>
-                                                <TableCell>{c.lawyer?.full_name}</TableCell>
-                                                <TableCell> {c.lawyer_id}</TableCell>
-                                                <TableCell className="capitalize">{c.type}</TableCell>
-                                                <TableCell> {c.id}</TableCell>
-                                                <TableCell><Badge variant="outline">{c.status}</Badge></TableCell>
-                                                <TableCell className="text-right">{new Date(c.created_at).toLocaleDateString()}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                                <div className="flex items-center justify-between mt-4 px-4 pb-4">
-                                    <p className="text-sm text-slate-500">
-                                        Showing {(consultationPage - 1) * ITEMS_PER_PAGE + 1}
-                                        -
-                                        {Math.min(
-                                            consultationPage * ITEMS_PER_PAGE,
-                                            filteredConsultations.length
-                                        )}
-                                        {" "}of {filteredConsultations.length}
-                                    </p>
 
                                     <div className="flex gap-2">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            disabled={consultationPage === 1}
-                                            onClick={() =>
-                                                setConsultationPage(prev => prev - 1)
+                                        <Select onValueChange={(val) => setFilters({ ...filters, status: val })}>
+                                            <SelectTrigger className="h-9 flex-1 text-xs rounded-xl">
+                                                <SelectValue placeholder="Status" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">All</SelectItem>
+                                                <SelectItem value="completed">Completed</SelectItem>
+                                                <SelectItem value="cancelled">Cancelled</SelectItem>
+                                                <SelectItem value="pending">Pending</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <Select onValueChange={(val) => setFilters({ ...filters, type: val })}>
+                                            <SelectTrigger className="h-9 flex-1 text-xs rounded-xl">
+                                                <SelectValue placeholder="Type" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">All</SelectItem>
+                                                <SelectItem value="video">Video</SelectItem>
+                                                <SelectItem value="audio">Audio</SelectItem>
+                                                <SelectItem value="chat">Chat</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <Input
+                                            type="date"
+                                            className="h-9 w-[120px] text-xs rounded-xl"
+                                            onChange={(e) =>
+                                                setFilters({
+                                                    ...filters,
+                                                    date: e.target.value
+                                                })
                                             }
-                                        >
-                                            Previous
-                                        </Button>
-
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            disabled={
-                                                consultationPage >=
-                                                Math.ceil(
-                                                    filteredConsultations.length /
-                                                    ITEMS_PER_PAGE
-                                                )
-                                            }
-                                            onClick={() =>
-                                                setConsultationPage(prev => prev + 1)
-                                            }
-                                        >
-                                            Next
-                                        </Button>
+                                        />
                                     </div>
                                 </div>
+
+                                {/* Desktop */}
+                                <div className="hidden md:grid grid-cols-12 gap-3">
+
+                                    <div className="col-span-5 relative">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+
+                                        <Input
+                                            placeholder="Search Client Name, Client ID, Consultation ID..."
+                                            className="pl-10 h-11 rounded-xl"
+                                            onChange={(e) =>
+                                                setFilters({
+                                                    ...filters,
+                                                    lawyer: e.target.value
+                                                })
+                                            }
+                                        />
+                                    </div>
+
+                                    <div className="col-span-2">
+                                        <Select
+                                            onValueChange={(val) =>
+                                                setFilters({
+                                                    ...filters,
+                                                    status: val
+                                                })
+                                            }
+                                        >
+                                            <SelectTrigger className="h-11 rounded-xl">
+                                                <SelectValue placeholder="Status" />
+                                            </SelectTrigger>
+
+                                            <SelectContent>
+                                                <SelectItem value="all">All Status</SelectItem>
+                                                <SelectItem value="completed">Completed</SelectItem>
+                                                <SelectItem value="cancelled">Cancelled</SelectItem>
+                                                <SelectItem value="pending">Pending</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <div className="col-span-2">
+                                        <Select
+                                            onValueChange={(val) =>
+                                                setFilters({
+                                                    ...filters,
+                                                    type: val
+                                                })
+                                            }
+                                        >
+                                            <SelectTrigger className="h-11 rounded-xl">
+                                                <SelectValue placeholder="Consultation Type" />
+                                            </SelectTrigger>
+
+                                            <SelectContent>
+                                                <SelectItem value="all">All Types</SelectItem>
+                                                <SelectItem value="video">Video</SelectItem>
+                                                <SelectItem value="audio">Audio</SelectItem>
+                                                <SelectItem value="chat">Chat</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <div className="col-span-3">
+                                        <Input
+                                            type="date"
+                                            className="h-11 rounded-xl"
+                                            onChange={(e) =>
+                                                setFilters({
+                                                    ...filters,
+                                                    date: e.target.value
+                                                })
+                                            }
+                                        />
+                                    </div>
+
+                                </div>
+
                             </CardContent>
+
                         </Card>
+
+
+
+
+
+
+                        <Card className="mt-6 border-0 bg-transparent shadow-none">
+                            <div className="grid gap-5">
+                                {paginatedConsultations.map((c) => (
+                                    <Card
+                                        key={c.id}
+                                        className="
+                                        rounded-3xl
+                                         border border-yellow-300
+                                          bg-gradient-to-br
+                                           from-yellow-100
+                                           via-amber-50
+                                           to-yellow-200
+                                           shadow-md
+                                           hover:shadow-xl
+                                           hover:-translate-y-1
+                                           transition-all
+                                           duration-300
+                                           overflow-hidden
+                                           max-w-5xl
+                                           mx-auto
+                                           w-full
+                                                   "
+                                    >
+                                        {/* Header */}
+                                        <CardContent className="p-4 sm:p-5 md:p-6">
+                                            <div className="flex items-start justify-between gap-3 mb-5">
+                                                <div className="min-w-0 flex-1">
+                                                    <h3 className="font-bold text-slate-900 text-base md:text-lg break-words">
+                                                        {c.lawyer?.full_name || "Unknown Client"}
+                                                    </h3>
+                                                </div>
+                                                <Badge
+                                                    className={
+                                                        c.status === "completed"
+                                                            ? "bg-emerald-100 text-emerald-700 border-emerald-200"
+                                                            : c.status === "pending"
+                                                                ? "bg-amber-100 text-amber-700 border-amber-200"
+                                                                : "bg-red-100 text-red-700 border-red-200"
+                                                    }
+                                                >
+                                                    {c.status}
+                                                </Badge>
+
+                                            </div>
+                                            {/* Details */}
+                                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                                                {/* Left Section */}
+                                                <div
+                                                    className="
+                                                  rounded-2xl
+                                                         bg-gradient-to-br
+                                                         from-stone-50
+                                                         via-amber-50/40
+                                                         to-stone-100
+                                                         border
+                                                         border-amber-200/50
+                                                         p-4
+                                                         space-y-4
+                                                         shadow-sm
+                                                     "
+                                                >
+
+                                                    <div>
+                                                        <p className="text-xs font-medium text-slate-500">
+                                                            Lawyer Name
+                                                        </p>
+
+                                                        <p className="text-sm font-semibold text-slate-900 mt-1">
+                                                            {c.lawyer?.full_name}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-medium text-slate-500">
+                                                            Lawyer ID
+                                                        </p>
+
+                                                        <p className="text-xs font-mono break-all text-slate-700 mt-1">
+                                                            {c.lawyer_id}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-medium text-slate-500">
+                                                            Consultation Type
+                                                        </p>
+
+                                                        <p className="text-sm capitalize text-slate-900 mt-1">
+                                                            {c.type}
+                                                        </p>
+                                                    </div>
+
+                                                </div>
+                                                {/* Right Section */}
+                                                <div
+                                                    className="
+                                                         rounded-2xl
+                                                         bg-gradient-to-br
+                                                         from-stone-50
+                                                         via-amber-50/40
+                                                         to-stone-100
+                                                         border
+                                                         border-amber-200/50
+                                                         p-4
+                                                         space-y-4
+                                                         shadow-sm
+                                                     "
+                                                >
+                                                    <div>
+                                                        <p className="text-xs font-medium text-slate-500">
+                                                            Consultation ID
+                                                        </p>
+
+                                                        <p className="text-xs font-mono break-all text-slate-700 mt-1">
+                                                            {c.id}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-medium text-slate-500">
+                                                            Status
+                                                        </p>
+
+                                                        <p className="text-sm capitalize text-slate-900 mt-1">
+                                                            {c.status}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-medium text-slate-500">
+                                                            Consultation Date
+                                                        </p>
+
+                                                        <p className="text-sm text-slate-900 mt-1">
+                                                            {new Date(c.created_at).toLocaleDateString()}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+
+
+                                ))}
+
+                            </div>
+                        </Card>
+                        <div className="flex items-center justify-between mt-4">
+                            <p className="text-sm text-slate-500">
+                                Showing {(consultationPage - 1) * ITEMS_PER_PAGE + 1}
+                                -
+                                {Math.min(
+                                    consultationPage * ITEMS_PER_PAGE,
+                                    filteredConsultations.length
+                                )}
+                                {" "}of {filteredConsultations.length}
+                            </p>
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={consultationPage === 1}
+                                    onClick={() =>
+                                        setConsultationPage(prev => prev - 1)
+                                    }
+                                >
+                                    Previous
+                                </Button>
+
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={
+                                        consultationPage >=
+                                        Math.ceil(
+                                            filteredConsultations.length /
+                                            ITEMS_PER_PAGE
+                                        )
+                                    }
+                                    onClick={() =>
+                                        setConsultationPage(prev => prev + 1)
+                                    }
+                                >
+                                    Next
+                                </Button>
+                            </div>
+                        </div>
                     </TabsContent>
 
                     {/* Payments Tab */}
-                    <TabsContent value="payments" className="mt-6 space-y-4">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                            <Input placeholder="Lawyer name..." className="text-xs h-9" onChange={(e) => setPaymentFilters({ ...paymentFilters, lawyer: e.target.value })} />
-                            <Select onValueChange={(val) => setPaymentFilters({ ...paymentFilters, status: val })}>
-                                <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Status</SelectItem>
-                                    <SelectItem value="completed">Completed</SelectItem>
-                                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                                    <SelectItem value="pending">Pending</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <Input type="date" className="text-xs h-9" onChange={(e) => setPaymentFilters({ ...paymentFilters, date: e.target.value })} />
-                        </div>
-                        <Card>
-                            <CardContent className="p-0">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Lawyer</TableHead>
-                                            <TableHead>Amount</TableHead>
-                                            <TableHead>Payment ID</TableHead>
-                                            <TableHead>Mode</TableHead>
-                                            <TableHead>Status</TableHead>
-                                            <TableHead className="text-right">Date</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {paginatedPayments.map((p) => (
-                                            <TableRow key={p.id}>
-                                                <TableCell>{p.lawyer?.full_name}</TableCell>
-                                                <TableCell>₹{p.amount?.toFixed(2)}</TableCell>
-                                                <TableCell className="font-mono text-xs">
-                                                    {p.payment_id}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {p.payment_mode || "RAZORPAY"}
-                                                </TableCell>
-                                                <TableCell><Badge variant="outline">{p.status}</Badge></TableCell>
-
-                                                <TableCell className="text-right">{new Date(p.created_at).toLocaleDateString()}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                                <div className="flex items-center justify-between mt-4 px-4 pb-4">
-                                    <p className="text-sm text-slate-500">
-                                        Showing {(paymentPage - 1) * ITEMS_PER_PAGE + 1}
-                                        -
-                                        {Math.min(
-                                            paymentPage * ITEMS_PER_PAGE,
-                                            filteredPayments.length
-                                        )}
-                                        {" "}of {filteredPayments.length}
-                                    </p>
-
+                    <TabsContent value="payments" className="mt-6">
+                        <Card className="rounded-3xl border-0 shadow-lg bg-white mb-6">
+                            <CardContent className="p-3 sm:p-5">
+                                <div className="block md:hidden space-y-2">
+                                    <div className="relative">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                                        <Input
+                                            placeholder="Search Payments..."
+                                            className="pl-9 h-9 text-xs rounded-xl"
+                                            onChange={(e) =>
+                                                setPaymentFilters({
+                                                    ...paymentFilters,
+                                                    lawyer: e.target.value,
+                                                })
+                                            }
+                                        />
+                                    </div>
                                     <div className="flex gap-2">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            disabled={paymentPage === 1}
-                                            onClick={() =>
-                                                setPaymentPage(prev => prev - 1)
+                                        <Select
+                                            onValueChange={(val) =>
+                                                setPaymentFilters({
+                                                    ...paymentFilters,
+                                                    status: val,
+                                                })
                                             }
                                         >
-                                            Previous
-                                        </Button>
+                                            <SelectTrigger className="h-9 flex-1 text-xs rounded-xl">
+                                                <SelectValue placeholder="Status" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">All Status</SelectItem>
+                                                <SelectItem value="completed">Completed</SelectItem>
+                                                <SelectItem value="cancelled">Cancelled</SelectItem>
+                                                <SelectItem value="pending">Pending</SelectItem>
+                                            </SelectContent>
+                                        </Select>
 
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            disabled={
-                                                paymentPage >=
-                                                Math.ceil(
-                                                    filteredPayments.length /
-                                                    ITEMS_PER_PAGE
-                                                )
+                                        <Input
+                                            type="date"
+                                            className="h-9 w-[120px] text-xs rounded-xl"
+                                            onChange={(e) =>
+                                                setPaymentFilters({
+                                                    ...paymentFilters,
+                                                    date: e.target.value,
+                                                })
                                             }
-                                            onClick={() =>
-                                                setPaymentPage(prev => prev + 1)
+                                        />
+                                    </div>
+                                </div>
+                                <div className="hidden md:grid grid-cols-12 gap-3">
+                                    <div className="col-span-7 relative">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                        <Input
+                                            placeholder="Search Lawyer Name, Lawyer ID, Payment ID..."
+                                            className="pl-10 h-11 rounded-xl"
+                                            onChange={(e) =>
+                                                setPaymentFilters({
+                                                    ...paymentFilters,
+                                                    lawyer: e.target.value
+                                                })
+                                            }
+                                        />
+                                    </div>
+                                    <div className="col-span-2">
+                                        <Select
+                                            onValueChange={(val) =>
+                                                setPaymentFilters({
+                                                    ...paymentFilters,
+                                                    status: val
+                                                })
                                             }
                                         >
-                                            Next
-                                        </Button>
+                                            <SelectTrigger className="h-11 rounded-xl">
+                                                <SelectValue placeholder="Status" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">All Status</SelectItem>
+                                                <SelectItem value="completed">Completed</SelectItem>
+                                                <SelectItem value="cancelled">Cancelled</SelectItem>
+                                                <SelectItem value="pending">Pending</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="col-span-3">
+                                        <Input
+                                            type="date"
+                                            className="h-11 rounded-xl"
+                                            onChange={(e) =>
+                                                setPaymentFilters({
+                                                    ...paymentFilters,
+                                                    date: e.target.value
+                                                })
+                                            }
+                                        />
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
+                        {/* Payment Filters */}
+                        <Card className="mt-6 border-0 bg-transparent shadow-none">
+                            <div className="grid gap-5">
+                                {paginatedPayments.map((p) => (
+                                    <Card
+                                        key={p.id}
+                                        className="
+                                            rounded-3xl
+                                                    border border-yellow-300
+                                                     bg-gradient-to-br
+                                                     from-yellow-100
+                                                     via-amber-50
+                                                     to-yellow-200
+                                                     shadow-md
+                                                     hover:shadow-xl
+                                                     hover:-translate-y-1
+                                                     transition-all
+                                                     duration-300
+                                                     overflow-hidden
+                                                     max-w-5xl
+                                                     mx-auto
+                                                     w-full
+                                                 "
+                                    >
+                                        <CardContent className="p-4 sm:p-5 md:p-6">
+                                            {/* Header */}
+                                            <div className="flex items-start justify-between gap-3 mb-5">
+                                                <div className="min-w-0 flex-1">
+                                                    <h3 className="font-bold text-slate-900 text-base md:text-lg break-words">
+                                                        {p.lawyer?.full_name || "Unknown Lawyer"}
+                                                    </h3>
+                                                </div>
+                                                <Badge
+                                                    className={`
+                                                                 shrink-0
+                                                                 ${p.status === "completed"
+                                                            ? "bg-emerald-100 text-emerald-700 border-emerald-200"
+                                                            : p.status === "pending"
+                                                                ? "bg-amber-100 text-amber-700 border-amber-200"
+                                                                : "bg-red-100 text-red-700 border-red-200"
+                                                        }
+                                                             `}
+                                                >
+                                                    {p.status}
+                                                </Badge>
+                                            </div>
+
+                                            {/* Details */}
+                                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                                                {/* Left */}
+                                                <div
+                                                    className="
+                                         rounded-2xl
+                                         bg-gradient-to-br
+                                         from-stone-50
+                                         via-amber-50/40
+                                         to-stone-100
+                                         border
+                                         border-amber-200/50
+                                         p-4
+                                         space-y-4
+                                         shadow-sm
+                                    "
+                                                >
+                                                    <div>
+                                                        <p className="text-xs font-medium text-slate-500">
+                                                            Lawyer Name
+                                                        </p>
+
+                                                        <p className="text-sm font-semibold text-slate-900 mt-1">
+                                                            {p.lawyer?.full_name}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-medium text-slate-500">
+                                                            Amount
+                                                        </p>
+
+                                                        <p className="text-xl font-bold text-emerald-600 mt-1">
+                                                            ₹{p.amount?.toFixed(2)}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-medium text-slate-500">
+                                                            Payment Mode
+                                                        </p>
+
+                                                        <p className="text-sm text-slate-900 mt-1">
+                                                            {p.payment_mode ||
+                                                                p.payment_method ||
+                                                                "RAZORPAY"}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                {/* Right */}
+                                                <div
+                                                    className="
+                                         rounded-2xl
+                                         bg-gradient-to-br
+                                         from-stone-50
+                                         via-amber-50/40
+                                         to-stone-100
+                                         border
+                                         border-amber-200/50
+                                         p-4
+                                         space-y-4
+                                         shadow-sm
+                                     "
+                                                >
+                                                    <div>
+                                                        <p className="text-xs font-medium text-slate-500">
+                                                            Payment ID
+                                                        </p>
+
+                                                        <p className="text-xs font-mono break-all text-slate-700 mt-1">
+                                                            {p.payment_id ||
+                                                                p.razorpay_payment_id ||
+                                                                p.id}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-medium text-slate-500">
+                                                            Consultation Status
+                                                        </p>
+
+                                                        <p className="text-sm capitalize text-slate-900 mt-1">
+                                                            {p.status}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-medium text-slate-500">
+                                                            Payment Date
+                                                        </p>
+
+                                                        <p className="text-sm text-slate-900 mt-1">
+                                                            {new Date(p.created_at).toLocaleDateString()}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        </Card>
+                        <div className="flex items-center justify-between mt-4">
+                            <p className="text-sm text-slate-500">
+                                Showing {(paymentPage - 1) * ITEMS_PER_PAGE + 1}
+                                -
+                                {Math.min(
+                                    paymentPage * ITEMS_PER_PAGE,
+                                    filteredPayments.length
+                                )}
+                                {" "}of {filteredPayments.length}
+                            </p>
+
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={paymentPage === 1}
+                                    onClick={() =>
+                                        setPaymentPage(prev => prev - 1)
+                                    }
+                                >
+                                    Previous
+                                </Button>
+
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={
+                                        paymentPage >=
+                                        Math.ceil(
+                                            filteredPayments.length /
+                                            ITEMS_PER_PAGE
+                                        )
+                                    }
+                                    onClick={() =>
+                                        setPaymentPage(prev => prev + 1)
+                                    }
+                                >
+                                    Next
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* ****************************** */}
+
                     </TabsContent>
 
 
-                    {/* Account Details Tab */}
-                    <TabsContent value="account" className="mt-6">
+                    {/* Professional Info Tab */}
+                    {/* <TabsTrigger
+                        value="account"
+                        className="rounded-xl py-2.5 text-sm font-semibold transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+                    >
                         <Card>
                             <CardHeader><CardTitle>Profile Metadata</CardTitle></CardHeader>
                             <CardContent className="text-sm grid grid-cols-2 gap-4">
@@ -484,10 +1052,79 @@ const AdminClientDetailsPage = () => {
                                 <div><p className="text-slate-500">Last Updated</p><p>{client?.updated_at ? new Date(client.updated_at).toLocaleString() : 'N/A'}</p></div>
                             </CardContent>
                         </Card>
+                    </TabsContent> */}
+                    <TabsContent value="account" className="mt-6">
+
+                        <Card className="rounded-[32px] border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-sky-50 shadow-xl overflow-hidden">
+
+                            <CardHeader>
+                                <CardTitle className="text-xl">
+                                    Account Information
+                                </CardTitle>
+                            </CardHeader>
+
+                            <CardContent>
+
+                                <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
+
+                                    <Card>
+                                        <CardContent className="p-4">
+                                            <p className="text-slate-500 text-sm">
+                                                User ID
+                                            </p>
+                                            <p className="font-mono text-xs break-all mt-2">
+                                                {client?.id}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card>
+                                        <CardContent className="p-4">
+                                            <p className="text-slate-500 text-sm">
+                                                Role
+                                            </p>
+                                            <p className="font-semibold mt-2 capitalize">
+                                                {clientRole?.role || "Client"}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card>
+                                        <CardContent className="p-4">
+                                            <p className="text-slate-500 text-sm">
+                                                Wallet Balance
+                                            </p>
+                                            <p className="font-semibold mt-2">
+                                                ₹{wallet?.balance?.toFixed(2) || "0.00"}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card>
+                                        <CardContent className="p-4">
+                                            <p className="text-slate-500 text-sm">
+                                                Last Updated
+                                            </p>
+                                            <p className="font-semibold mt-2">
+                                                {client?.updated_at
+                                                    ? new Date(
+                                                        client.updated_at
+                                                    ).toLocaleString()
+                                                    : "N/A"}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+
+                                </div>
+
+                            </CardContent>
+
+                        </Card>
+
                     </TabsContent>
-                </Tabs>
+                </Tabs >
             </div>
-        </AdminLayout>
+        </AdminLayout >
     );
 };
 

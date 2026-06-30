@@ -73,7 +73,7 @@ const Terms = () => {
             Terms of Service
           </h1>
           <p className="text-slate-400 text-xs sm:text-sm max-w-2xl mx-auto leading-relaxed font-light tracking-wide">
-            Please review these binding rules before using LegalMate. By executing live sessions, you accept these platform parameters.
+            Please review these binding rules before using VakeelGo. By executing live sessions, you accept these platform parameters.
           </p>
           <div className="inline-block mt-5 px-4 py-1.5 bg-slate-900/90 border border-slate-800/60 text-slate-400 rounded-full text-[11px] font-mono tracking-wider uppercase">
             Updated: {lastUpdated}
@@ -162,7 +162,7 @@ const Terms = () => {
                   <h2 className="font-serif text-base sm:text-lg font-bold text-slate-900 tracking-tight">1. Acceptance of Terms</h2>
                 </div>
                 <div className="space-y-3 text-xs sm:text-sm leading-relaxed text-slate-600 font-normal">
-                  <p>By accessing, setting up an profile, or utilizing LegalMate (&quot;the Platform&quot;), you agree to be governed by these Terms of Service, along with all applicable state and federal bar parameters.</p>
+                  <p>By accessing, setting up an profile, or utilizing VakeelGo (&quot;the Platform&quot;), you agree to be governed by these Terms of Service, along with all applicable state and federal bar parameters.</p>
                   <p>If you disagree with any segment, rule, or mechanism, you are entirely prohibited from entering or triggering interactions across our system interfaces.</p>
                 </div>
               </section>
@@ -176,7 +176,7 @@ const Terms = () => {
                   <h2 className="font-serif text-base sm:text-lg font-bold text-slate-900 tracking-tight">2. Per-Minute Digital Consultations</h2>
                 </div>
                 <p className="text-xs sm:text-sm leading-relaxed text-slate-600 mb-4">
-                  LegalMate operates strictly as an intermediary technology framework linking verified legal independent practitioners with active consumers. We provide low-latency channels specifically measured on a granular <span className="text-slate-950 font-semibold underline underline-offset-2 decoration-slate-200">pay-per-minute</span> architecture.
+                  VakeelGo operates strictly as an intermediary technology framework linking verified legal independent practitioners with active consumers. We provide low-latency channels specifically measured on a granular <span className="text-slate-950 font-semibold underline underline-offset-2 decoration-slate-200">pay-per-minute</span> architecture.
                 </p>
                 <div className="bg-slate-50/70 border border-slate-200/60 rounded-xl p-3.5 text-xs text-slate-600 grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-4 shadow-inner">
                   <div className="flex items-center gap-2"><span className="h-1.5 w-1.5 bg-slate-900 rounded-full" /> Per-Minute Chat Channels</div>
@@ -186,7 +186,7 @@ const Terms = () => {
                 </div>
                 <div className="border-l-2 border-slate-900 bg-slate-50 rounded-r-xl p-3.5">
                   <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed">
-                    <strong className="text-slate-900">Notice:</strong> LegalMate does not distribute legal advice. All actions, answers, opinions, and legal filings made remain the direct responsibility of the independent counsel.
+                    <strong className="text-slate-900">Notice:</strong> VakeelGo does not distribute legal advice. All actions, answers, opinions, and legal filings made remain the direct responsibility of the independent counsel.
                   </p>
                 </div>
               </section>
@@ -271,7 +271,7 @@ const Terms = () => {
                   <h2 className="font-serif text-base sm:text-lg font-bold text-slate-900 tracking-tight">7. Limitation of Liability</h2>
                 </div>
                 <p className="text-xs leading-relaxed text-slate-700 bg-slate-50 border border-slate-200/60 p-3.5 rounded-xl">
-                  LegalMate carries zero direct liability for missing data arrays, server dropouts, malpractice committed by independent counselors, dropped RTC lines, or financial damages resulting from direct contract interpretations.
+                  VakeelGo carries zero direct liability for missing data arrays, server dropouts, malpractice committed by independent counselors, dropped RTC lines, or financial damages resulting from direct contract interpretations.
                 </p>
               </section>
 
@@ -286,9 +286,9 @@ const Terms = () => {
                 <div className="bg-slate-950 text-slate-200 rounded-2xl p-5 mt-4 relative overflow-hidden shadow-xl transition-all duration-300 hover:scale-[1.005]">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-slate-900 rounded-full blur-2xl opacity-40" />
                   <h4 className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider mb-1.5">Compliance Directory</h4>
-                  <p className="text-sm font-semibold text-white">LegalMate Technologies Corp.</p>
+                  <p className="text-sm font-semibold text-white">VakeelGo Technologies Corp.</p>
                   <div className="text-xs text-slate-300 mt-2 space-y-1">
-                    <p>Contact Email: <span className="text-white underline underline-offset-4 decoration-slate-800 font-medium">legal@legalmate.com</span></p>
+                    <p>Contact Email: <span className="text-white underline underline-offset-4 decoration-slate-800 font-medium">legal@VakeelGo.com</span></p>
                     <p className="text-slate-500 text-[11px] pt-2.5 mt-2.5 border-t border-slate-900">Corporate Address: 123 Legal Avenue, New York, NY 10001</p>
                   </div>
                 </div>

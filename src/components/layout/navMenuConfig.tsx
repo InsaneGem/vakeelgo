@@ -42,7 +42,7 @@ export const navMenuConfig: NavMenuSection[] = [
         title: "For Lawyers",
         items: [
             { label: "Join Platform", href: "/signup?role=lawyer", description: "Register as a legal professional" },
-            { label: "Benefits", href: "/benefits", description: "Why lawyers choose LegalMate" },
+            { label: "Benefits", href: "/benefits", description: "Why lawyers choose VakeelGo" },
             { label: "Pricing", href: "/pricing", description: "Transparent platform fees" },
 
         ],

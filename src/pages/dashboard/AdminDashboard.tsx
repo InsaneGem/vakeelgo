@@ -143,6 +143,10 @@ const AdminDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [lawyerFilter, setLawyerFilter] = useState<string>('all');
 
+  const [openPaymentReports, setOpenPaymentReports] = useState(0);
+  const [openDocuments, setOpenDocuments] = useState(0);
+  const [openVerification, setOpenVerification] = useState(0);
+
   // ── Effects (unchanged) ────────────────────────────────────────────────────
   useEffect(() => {
     if (!authLoading) {
@@ -163,6 +167,17 @@ const AdminDashboard = () => {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => { fetchDashboardData(); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'withdrawal_requests' }, () => { fetchDashboardData(); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'user_roles' }, () => { fetchDashboardData(); })
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'payment_reports'
+        },
+        () => {
+          fetchDashboardData();
+        }
+      )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [user, role]);
@@ -178,7 +193,36 @@ const AdminDashboard = () => {
       ]);
       const { data: revenueData } = await supabase.from('consultations').select('commission_amount').eq('status', 'completed');
       const totalRevenue = revenueData?.reduce((sum, c) => sum + (c.commission_amount || 0), 0) || 0;
+      const { data, count, error } = await supabase
+        .from("payment_reports")
+        .select("*", {
+          count: "exact",
+        })
+        .eq("admin_status", "open");
+
+      console.log("Payment Reports:", data);
+      console.log("Count:", count);
+      console.log("Error:", error);
+
+      setOpenPaymentReports(count || 0);
+
+
+
       setStats({ totalClients: clientsRes.count || 0, totalLawyers: lawyersRes.count || 0, pendingLawyers: pendingRes.count || 0, totalConsultations: consultationsRes.count || 0, totalRevenue });
+
+      const { data: docData, count: docCount, error: docError } = await supabase
+        .from("lawyer_documents") // or your real table name
+        .select("*", { count: "exact" })
+        .eq("status", "pending");
+
+      setOpenDocuments(docCount || 0);
+
+      const { count: verificationCount } = await supabase
+        .from("lawyer_profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending");
+
+      setOpenVerification(verificationCount || 0);
 
       const { data: lawyersData } = await supabase.from('lawyer_profiles').select('*').order('created_at', { ascending: false });
       if (lawyersData) {
@@ -431,16 +475,78 @@ const AdminDashboard = () => {
             {[
               { label: 'Clients', value: stats.totalClients, icon: Users, color: 'text-violet-500', bg: 'bg-violet-50', path: '/admin/clientPage' },
               { label: 'Lawyers', value: stats.totalLawyers, icon: Briefcase, color: 'text-blue-500', bg: 'bg-blue-50', path: '/admin/lawyerPage' },
-              { label: 'Verification', value: stats.totalVerificationRequests, icon: Users, color: 'text-violet-500', bg: 'bg-violet-50', path: '/admin/lawyerverificationPage' },
+              { label: 'Verification', value: openVerification, icon: Users, color: 'text-violet-500', bg: 'bg-violet-50', path: '/admin/lawyerverificationPage' },
               { label: 'Pending', value: stats.pendingLawyers, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-50' },
               { label: 'Consultations', value: stats.totalConsultations, icon: MessageSquare, color: 'text-sky-500', bg: 'bg-sky-50', path: '/admin/consultationPage' },
               { label: 'Revenue', value: `₹${stats.totalRevenue.toFixed(0)}`, icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-              { label: 'Documents', value: stats.totalDocuments, icon: FileText, color: 'text-green-500', bg: 'bg-green-50', path: '/admin/documentverificationPage' },
+              {
+                label: 'Documents',
+                value: openDocuments,
+                icon: FileText,
+                color: 'text-green-500',
+                bg: 'bg-green-50',
+                path: '/admin/documentverificationPage'
+              },
               { label: 'Client/Lawyer Transactions', value: stats.totalTransaction, icon: TrendingUp, color: 'text-green-500', bg: 'bg-green-50', path: '/admin/AdminClientLawyerTransactionPage' },
+              {
+                label: 'Payment Reports',
+                value: openPaymentReports,
+                icon: CreditCard,
+                color: 'text-red-600',
+                bg: 'bg-red-50',
+                path: '/admin/AdminPaymentReportPage'
+              },
             ].map(({ label, value, icon: Icon, color, bg, path }) => (
               <div key={label}
                 onClick={path ? () => navigate(path) : undefined}
-                className="bg-white rounded-2xl border border-slate-100 shadow-sm px-3.5 py-3 sm:px-4 sm:py-3.5 flex items-center justify-between gap-2 hover:shadow-md transition-shadow">
+                className={`
+    relative
+    bg-white
+    rounded-2xl
+    px-3.5
+    py-3
+    sm:px-4
+    sm:py-3.5
+    flex
+    items-center
+    justify-between
+    gap-2
+    transition-all
+    cursor-pointer
+    hover:shadow-md
+
+  ${(label === "Payment Reports" && openPaymentReports > 0) ||
+                    (label === "Documents" && openDocuments > 0) ||
+                    (label === "Verification" && openVerification > 0)
+                    ? "border-2 border-red-500 shadow-lg shadow-red-300 animate-pulse"
+                    : "border border-slate-100 shadow-sm"
+                  }
+  `}
+              >
+                {label === "Payment Reports" && openPaymentReports > 0 && (
+                  <span className="absolute top-2 right-2 h-3 w-3 rounded-full bg-red-600 animate-ping"></span>
+                )}
+
+                {label === "Payment Reports" && openPaymentReports > 0 && (
+                  <span className="absolute top-2 right-2 h-3 w-3 rounded-full bg-red-600"></span>
+                )}
+                {label === "Documents" && openDocuments > 0 && (
+                  <span className="absolute top-2 right-2 h-3 w-3 rounded-full bg-red-600 animate-ping"></span>
+                )}
+
+                {label === "Documents" && openDocuments > 0 && (
+                  <span className="absolute top-2 right-2 h-3 w-3 rounded-full bg-red-600"></span>
+                )}
+
+                {label === "Verification" && openVerification > 0 && (
+                  <span className="absolute top-2 right-2 h-3 w-3 rounded-full bg-red-600 animate-ping"></span>
+                )}
+
+                {label === "Verification" && openVerification > 0 && (
+                  <span className="absolute top-2 right-2 h-3 w-3 rounded-full bg-red-600"></span>
+                )}
+
+
                 <div className="min-w-0">
                   <p className="text-[10px] sm:text-xs text-slate-400 font-medium uppercase tracking-wide truncate">{label}</p>
                   <p className="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5 tabular-nums">{value}</p>
@@ -478,176 +584,21 @@ const AdminDashboard = () => {
             </div>
 
             {/* ── Verification tab ── */}
-            <TabsContent value="verification">
+            {/* <TabsContent value="verification">
               <LawyerVerificationPanel onRefresh={fetchDashboardData} />
-            </TabsContent>
+            </TabsContent> */}
 
             {/* ── Lawyers tab ── */}
-            <TabsContent value="lawyers">
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                {/* Card header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-4 sm:px-5 border-b border-slate-100">
-                  <h2 className="font-semibold text-slate-900 text-sm sm:text-base">Manage Lawyers</h2>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1 sm:w-52">
-                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                      <Input placeholder="Search lawyers…" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-8 h-8 text-xs rounded-lg border-slate-200 focus:border-slate-400 bg-slate-50" />
-                    </div>
-                    <Select value={lawyerFilter} onValueChange={setLawyerFilter}>
-                      <SelectTrigger className="h-8 w-28 text-xs rounded-lg border-slate-200 bg-slate-50">
-                        <SelectValue placeholder="Filter" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All</SelectItem>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="approved">Approved</SelectItem>
-                        <SelectItem value="rejected">Rejected</SelectItem>
-                        <SelectItem value="suspended">Suspended</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
 
-                {/* Mobile cards */}
-                <div className="block lg:hidden divide-y divide-slate-50">
-                  {filteredLawyers.map((lawyer) => (
-                    <div key={lawyer.id} className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50/70 transition-colors">
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm text-slate-900 truncate">{lawyer.full_name}</p>
-                        <p className="text-[11px] text-slate-400 truncate mt-0.5">{lawyer.email}</p>
-                        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                          {getStatusBadge(lawyer.status)}
-                          <span className="text-[11px] text-slate-400">{lawyer.experience_years || 0} yrs</span>
-                          <span className="text-[11px] text-slate-400">₹{lawyer.price_per_minute}/min</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-0.5 flex-shrink-0">
-                        {lawyer.status === 'pending' && (<><ApproveBtn onClick={() => approveLawyer(lawyer)} /><RejectBtn onClick={() => rejectLawyer(lawyer)} /></>)}
-                        {lawyer.status === 'approved' && <BanBtn onClick={() => rejectLawyer(lawyer)} />}
-                        {lawyer.status === 'rejected' && <ApproveBtn onClick={() => approveLawyer(lawyer)} />}
-                        <EditBtn onClick={() => openLawyerEdit(lawyer)} />
-                        <DeleteBtn onClick={() => deleteLawyer(lawyer)} />
-                      </div>
-                    </div>
-                  ))}
-                  {filteredLawyers.length === 0 && (
-                    <div className="text-center py-12 text-slate-400 text-sm">No lawyers found</div>
-                  )}
-                </div>
-
-                {/* Desktop table */}
-                <div className="hidden lg:block overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-slate-50/80 hover:bg-slate-50/80">
-                        <TableHead className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide pl-5">Name</TableHead>
-                        <TableHead className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Email</TableHead>
-                        <TableHead className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Status</TableHead>
-                        <TableHead className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Exp.</TableHead>
-                        <TableHead className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Pricing</TableHead>
-                        <TableHead className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Available</TableHead>
-                        <TableHead className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide text-right pr-5">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredLawyers.map((lawyer) => (
-                        <TableRow key={lawyer.id} className="hover:bg-slate-50/60 border-slate-100 transition-colors">
-                          <TableCell className="font-medium text-sm text-slate-900 pl-5">{lawyer.full_name}</TableCell>
-                          <TableCell className="text-slate-400 text-xs max-w-[180px] truncate">{lawyer.email}</TableCell>
-                          <TableCell>{getStatusBadge(lawyer.status)}</TableCell>
-                          <TableCell className="text-slate-600 text-xs">{lawyer.experience_years || 0} yrs</TableCell>
-                          <TableCell className="text-slate-600 text-xs">₹{lawyer.price_per_minute}/min</TableCell>
-                          <TableCell>
-                            <Badge className={`text-[11px] px-2 py-0.5 rounded-full font-medium border ${lawyer.is_available ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
-                              {lawyer.is_available ? 'Online' : 'Offline'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right pr-5">
-                            <div className="flex items-center justify-end gap-0.5">
-                              {lawyer.status === 'pending' && (<><ApproveBtn onClick={() => approveLawyer(lawyer)} /><RejectBtn onClick={() => rejectLawyer(lawyer)} /></>)}
-                              {lawyer.status === 'rejected' && <ApproveBtn onClick={() => approveLawyer(lawyer)} />}
-                              {lawyer.status === 'approved' && <BanBtn onClick={() => rejectLawyer(lawyer)} />}
-                              <EditBtn onClick={() => openLawyerEdit(lawyer)} />
-                              <DeleteBtn onClick={() => deleteLawyer(lawyer)} />
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                      {filteredLawyers.length === 0 && (
-                        <TableRow><TableCell colSpan={7} className="text-center py-12 text-slate-400 text-sm">No lawyers found</TableCell></TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-            </TabsContent>
-
-            {/* ── Clients tab ── */}
 
 
             {/* ── Documents tab ── */}
-            <TabsContent value="documents">
+            {/* <TabsContent value="documents">
               <DocumentVerification />
-            </TabsContent>
+            </TabsContent> */}
 
             {/* ── Consultations tab ── */}
-            <TabsContent value="consultations">
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                <div className="px-4 py-4 sm:px-5 border-b border-slate-100">
-                  <h2 className="font-semibold text-slate-900 text-sm sm:text-base">All Consultations</h2>
-                </div>
 
-                {/* Mobile cards */}
-                <div className="block lg:hidden divide-y divide-slate-50">
-                  {consultations.map((c) => (
-                    <div key={c.id} className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-slate-50/70 transition-colors">
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm text-slate-900 truncate">{c.client_name} → {c.lawyer_name}</p>
-                        <p className="text-[11px] text-slate-400 mt-0.5">{c.type} · {new Date(c.created_at).toLocaleDateString()}</p>
-                        <div className="mt-1.5">{getConsultationStatusBadge(c.status)}</div>
-                      </div>
-                      <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                        <span className="font-semibold text-sm text-slate-900">₹{c.total_amount?.toFixed(2) || '0.00'}</span>
-                        <EditBtn onClick={() => openConsultationEdit(c)} />
-                      </div>
-                    </div>
-                  ))}
-                  {consultations.length === 0 && (
-                    <div className="text-center py-12 text-slate-400 text-sm">No consultations found</div>
-                  )}
-                </div>
-
-                {/* Desktop table */}
-                <div className="hidden lg:block overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-slate-50/80 hover:bg-slate-50/80">
-                        {['Client', 'Lawyer', 'Type', 'Status', 'Amount', 'Date', 'Actions'].map((h, i) => (
-                          <TableHead key={h} className={`text-[11px] font-semibold text-slate-500 uppercase tracking-wide ${i === 0 ? 'pl-5' : ''} ${h === 'Actions' ? 'text-right pr-5' : ''}`}>{h}</TableHead>
-                        ))}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {consultations.map((consultation) => (
-                        <TableRow key={consultation.id} className="hover:bg-slate-50/60 border-slate-100 transition-colors">
-                          <TableCell className="font-medium text-sm text-slate-900 pl-5">{consultation.client_name}</TableCell>
-                          <TableCell className="text-slate-600 text-sm">{consultation.lawyer_name}</TableCell>
-                          <TableCell><Badge variant="outline" className="capitalize text-[11px] px-2 py-0.5 rounded-full border-slate-200 text-slate-600">{consultation.type}</Badge></TableCell>
-                          <TableCell>{getConsultationStatusBadge(consultation.status)}</TableCell>
-                          <TableCell className="text-slate-700 font-medium text-xs">₹{consultation.total_amount?.toFixed(2) || '0.00'}</TableCell>
-                          <TableCell className="text-slate-400 text-xs">{new Date(consultation.created_at).toLocaleDateString()}</TableCell>
-                          <TableCell className="text-right pr-5"><EditBtn onClick={() => openConsultationEdit(consultation)} /></TableCell>
-                        </TableRow>
-                      ))}
-                      {consultations.length === 0 && (
-                        <TableRow><TableCell colSpan={7} className="text-center py-12 text-slate-400 text-sm">No consultations found</TableCell></TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-            </TabsContent>
 
             {/* ── Transactions tab ── */}
             <TabsContent value="transactions">
@@ -778,7 +729,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* ── Lawyer Edit Dialog ── */}
-      <Dialog open={lawyerEditOpen} onOpenChange={setLawyerEditOpen}>
+      {/* <Dialog open={lawyerEditOpen} onOpenChange={setLawyerEditOpen}>
         <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto rounded-2xl p-0 gap-0">
           <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
             <DialogTitle className="text-base font-semibold text-slate-900">Edit Lawyer</DialogTitle>
@@ -850,84 +801,10 @@ const AdminDashboard = () => {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
 
       {/* ── Client Edit Dialog ── */}
-      <Dialog open={clientEditOpen} onOpenChange={setClientEditOpen}>
-        <DialogContent className="rounded-2xl p-0 gap-0">
-          <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
-            <DialogTitle className="text-base font-semibold text-slate-900">Edit Client</DialogTitle>
-            <DialogDescription className="text-xs text-slate-400 mt-0.5">{selectedClient?.full_name} · {selectedClient?.email}</DialogDescription>
-          </DialogHeader>
-          <div className="px-6 py-5 space-y-4">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-slate-600">Full Name</Label>
-              <Input value={editClientForm.full_name || ''} onChange={(e) => setEditClientForm({ ...editClientForm, full_name: e.target.value })} className="h-9 text-sm rounded-lg border-slate-200" />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-slate-600">Phone</Label>
-              <Input value={editClientForm.phone || ''} onChange={(e) => setEditClientForm({ ...editClientForm, phone: e.target.value })} className="h-9 text-sm rounded-lg border-slate-200" />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-slate-600">Wallet Balance (₹)</Label>
-              <Input type="number" step="0.01" value={editClientForm.wallet_balance || 0} onChange={(e) => setEditClientForm({ ...editClientForm, wallet_balance: parseFloat(e.target.value) || 0 })} className="h-9 text-sm rounded-lg border-slate-200" />
-            </div>
-          </div>
-          <DialogFooter className="px-6 py-4 border-t border-slate-100 gap-2">
-            <Button variant="outline" onClick={() => setClientEditOpen(false)} className="h-9 text-sm rounded-lg border-slate-200">Cancel</Button>
-            <Button onClick={saveClientEdit} className="h-9 text-sm rounded-lg bg-slate-900 hover:bg-slate-800 gap-1.5">
-              <Save className="h-3.5 w-3.5" /> Save Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
-      {/* ── Consultation Edit Dialog ── */}
-      <Dialog open={consultationEditOpen} onOpenChange={setConsultationEditOpen}>
-        <DialogContent className="rounded-2xl p-0 gap-0">
-          <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
-            <DialogTitle className="text-base font-semibold text-slate-900">Edit Consultation</DialogTitle>
-            <DialogDescription className="text-xs text-slate-400 mt-0.5">
-              {selectedConsultation?.client_name} → {selectedConsultation?.lawyer_name}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="px-6 py-5 space-y-4">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-slate-600">Status</Label>
-              <Select value={editConsultationForm.status || ''} onValueChange={(v) => setEditConsultationForm({ ...editConsultationForm, status: v })}>
-                <SelectTrigger className="h-9 text-sm rounded-lg border-slate-200"><SelectValue placeholder="Select status" /></SelectTrigger>
-                <SelectContent>
-                  {['pending', 'active', 'completed', 'cancelled'].map(s => <SelectItem key={s} value={s} className="capitalize">{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-slate-600">Total (₹)</Label>
-                <Input type="number" step="0.01" value={editConsultationForm.total_amount || 0} onChange={(e) => setEditConsultationForm({ ...editConsultationForm, total_amount: parseFloat(e.target.value) || 0 })} className="h-9 text-sm rounded-lg border-slate-200" />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-slate-600">Commission (₹)</Label>
-                <Input type="number" step="0.01" value={editConsultationForm.commission_amount || 0} onChange={(e) => setEditConsultationForm({ ...editConsultationForm, commission_amount: parseFloat(e.target.value) || 0 })} className="h-9 text-sm rounded-lg border-slate-200" />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-slate-600">Lawyer (₹)</Label>
-                <Input type="number" step="0.01" value={editConsultationForm.lawyer_amount || 0} onChange={(e) => setEditConsultationForm({ ...editConsultationForm, lawyer_amount: parseFloat(e.target.value) || 0 })} className="h-9 text-sm rounded-lg border-slate-200" />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-slate-600">Notes</Label>
-              <Textarea value={editConsultationForm.notes || ''} onChange={(e) => setEditConsultationForm({ ...editConsultationForm, notes: e.target.value })} rows={3} className="text-sm rounded-lg border-slate-200 resize-none" />
-            </div>
-          </div>
-          <DialogFooter className="px-6 py-4 border-t border-slate-100 gap-2">
-            <Button variant="outline" onClick={() => setConsultationEditOpen(false)} className="h-9 text-sm rounded-lg border-slate-200">Cancel</Button>
-            <Button onClick={saveConsultationEdit} className="h-9 text-sm rounded-lg bg-slate-900 hover:bg-slate-800 gap-1.5">
-              <Save className="h-3.5 w-3.5" /> Save Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </AdminLayout>
   );
 };

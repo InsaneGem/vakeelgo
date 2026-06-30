@@ -49,10 +49,10 @@ export const LawyerFooter = () => {
             <div>
               <Link to="/dashboard" className="inline-flex items-center gap-2 group transition-opacity hover:opacity-90">
                 <Scale className="h-6 w-6 text-zinc-400 group-hover:text-white transition-colors" />
-                <span className="font-serif text-lg font-bold tracking-wider text-white">LEGALMATE</span>
+                <span className="font-serif text-lg font-bold tracking-wider text-white">VakeelGo</span>
               </Link>
               <p className="mt-3 text-xs text-zinc-400 leading-relaxed max-w-sm">
-                Grow your legal practice with LegalMate. Connect with clients seeking expert legal advice via chat, audio, or video consultations.
+                Grow your legal practice with VakeelGo. Connect with clients seeking expert legal advice via chat, audio, or video consultations.
               </p>
             </div>
 
@@ -140,7 +140,7 @@ export const LawyerFooter = () => {
         <div className="container mx-auto px-4 sm:px-6 py-5">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-[11px] uppercase tracking-wider text-zinc-500 text-center sm:text-left">
-              © {currentYear} LEGALMATE. All rights reserved.
+              © {currentYear} VakeelGo. All rights reserved.
             </p>
             <div className="flex items-center gap-4">
               {[

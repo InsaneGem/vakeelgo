@@ -6,11 +6,11 @@ import {
 } from '@/components/ui/accordion';
 const faqs = [
   {
-    question: 'How does LEGALMATE work?',
-    answer: 'LEGALMATE connects you with verified lawyers for instant consultations via chat, audio, or video. Simply browse lawyers, choose one based on your legal need, and start a session. You pay only for the time you use.',
+    question: 'How does VakeelGo work?',
+    answer: 'VakeelGo connects you with verified lawyers for instant consultations via chat, audio, or video. Simply browse lawyers, choose one based on your legal need, and start a session. You pay only for the time you use.',
   },
   {
-    question: 'Are the lawyers on LEGALMATE verified?',
+    question: 'Are the lawyers on VakeelGo verified?',
     answer: 'Yes, every lawyer on our platform goes through a rigorous verification process including bar council credential checks, identity verification, and professional background screening.',
   },
   {
@@ -40,7 +40,7 @@ export const FAQSection = () => {
             <p className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-3">FAQ</p>
             <h2 className="font-serif text-3xl md:text-4xl font-bold mb-4">Frequently Asked Questions</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Find answers to common questions about using LEGALMATE.
+              Find answers to common questions about using VakeelGo.
             </p>
           </div>
           <div className="max-w-3xl mx-auto">

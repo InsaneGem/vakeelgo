@@ -60,10 +60,9 @@ export const Navbar = () => {
 
           {/* LOGO */}
           <Link to="/" className="flex items-center gap-2 group">
-            <Scale className="h-8 w-8 transition-transform group-hover:scale-110 duration-300" />
-            <span className="font-serif text-xl font-semibold tracking-tight 
-            group-hover:text-primary transition-colors duration-300">
-              LEGALMATE
+            <img src="/vakeelgologo.png" alt="LEGALMATE" className="h-12 w-12 object-contain" />
+            <span className="font-['Playfair_Display'] text-2xl font-bold tracking-tight text-slate-900 group-hover:text-primary transition-all duration-300">
+              VakeelGo
             </span>
           </Link>
 

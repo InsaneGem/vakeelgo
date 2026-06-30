@@ -88,6 +88,8 @@ interface PaymentTransaction {
     report_issue_type?: string | null;
     report_description?: string | null;
     report_status?: string | null;
+    admin_status?: string | null;
+    admin_comment?: string | null;
 }
 
 const statusConfig: Record<
@@ -263,21 +265,7 @@ const ClientTransactionHistory = () => {
                     )
                     .in('id', lawyerIds);
 
-                // const merged = payments.map(payment => {
-                //     const lawyer = profiles?.find(
-                //         p => p.id === payment.lawyer_id
-                //     );
 
-                //     return {
-                //         ...payment,
-                //         lawyer_name:
-                //             lawyer?.full_name ||
-                //             'Legal Professional',
-
-                //         lawyer_avatar:
-                //             lawyer?.avatar_url || null
-                //     };
-                // });
 
                 const consultationIds = payments
                     .map(p => p.consultation_id)
@@ -317,8 +305,11 @@ const ClientTransactionHistory = () => {
                         report_description:
                             report?.issue_message || null,
 
-                        report_status:
-                            report?.status || 'pending'
+                        admin_status:
+                            report?.admin_status || "open",
+
+                        admin_comment:
+                            report?.admin_comment || ""
                     };
                 });
 
@@ -1078,17 +1069,49 @@ const ClientTransactionHistory = () => {
                                     Status
                                 </p>
 
-                                <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3">
-                                    <p className="text-sm font-medium text-amber-700">
-                                        Your issue is under review
+                                <div
+                                    className={`rounded-lg border p-3 ${selectedReport?.admin_status === "closed"
+                                        ? "border-emerald-500/20 bg-emerald-500/10"
+                                        : "border-amber-500/20 bg-amber-500/10"
+                                        }`}
+                                >
+                                    <p
+                                        className={`text-sm font-medium ${selectedReport?.admin_status === "closed"
+                                            ? "text-emerald-700"
+                                            : "text-amber-700"
+                                            }`}
+                                    >
+                                        {selectedReport?.admin_status === "closed"
+                                            ? "Your issue has been resolved"
+                                            : "Your issue is under review"}
                                     </p>
 
                                     <p className="text-xs text-muted-foreground mt-1">
-                                        Expected resolution within
-                                        4-5 working days.
+                                        {selectedReport?.admin_status === "closed"
+                                            ? "Our support team has successfully resolved your reported issue."
+                                            : "Expected resolution within 4–5 working days."}
                                     </p>
                                 </div>
                             </div>
+
+
+                            {/* Admin Resolution */}
+                            {selectedReport?.admin_status === "closed" && (
+                                <div className="mt-6 border-t pt-5">
+                                    <h4 className="text-sm font-semibold text-slate-700 mb-3">
+                                        Admin Comment
+                                    </h4>
+
+                                    <div className="space-y-3">
+                                        <div>
+                                            <div className="rounded-lg border bg-slate-50 p-4 whitespace-pre-wrap text-xs">
+                                                {selectedReport?.admin_comment}
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Close */}
                             <div className="flex justify-end pt-2">

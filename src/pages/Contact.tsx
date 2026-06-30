@@ -102,8 +102,8 @@ const Contact = () => {
                   </div>
                   <div className="space-y-1">
                     <h3 className="text-xs sm:text-sm font-serif font-bold text-slate-900 tracking-tight">Email Network</h3>
-                    <p className="text-slate-600 text-xs font-mono font-light tracking-tight select-all">support@legalmate.com</p>
-                    <p className="text-slate-400 text-xs font-mono font-light tracking-tight select-all">info@legalmate.com</p>
+                    <p className="text-slate-600 text-xs font-mono font-light tracking-tight select-all">support@VakeelGo.com</p>
+                    <p className="text-slate-400 text-xs font-mono font-light tracking-tight select-all">info@VakeelGo.com</p>
                   </div>
                 </div>
               </CardContent>

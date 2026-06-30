@@ -19,7 +19,7 @@ import {
 const featuredArticle = {
   title: 'Digital Personal Data Protection Act: What Every Indian Citizen Should Know',
   category: 'Technology Law',
-  author: 'LEGALMATE Editorial',
+  author: 'VakeelGo Editorial',
   date: 'May 2026',
   readTime: '8 min read',
   image: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?q=80&w=1200&auto=format&fit=crop',
@@ -145,7 +145,7 @@ const Articles = () => {
           <div className="relative z-10 max-w-lg mx-auto">
             <Scale className="h-10 w-10 text-white mx-auto mb-6" />
             <h2 className="font-serif text-2xl font-bold text-white mb-4">Need Professional Legal Advice?</h2>
-            <p className="text-slate-400 text-sm mb-8 font-light">Consult verified experts on LEGALMATE for personalized guidance.</p>
+            <p className="text-slate-400 text-sm mb-8 font-light">Consult verified experts on VakeelGo for personalized guidance.</p>
             <Button onClick={() => navigate('/signup?role=client')} className="bg-white text-slate-950 hover:bg-slate-100 rounded-xl px-8">Consult a Lawyer</Button>
           </div>
         </div>

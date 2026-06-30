@@ -1,3 +1,7 @@
+
+
+
+
 import { useState, useEffect } from 'react';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,7 +16,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { formatLawyerName } from '@/lib/lawyer-utils';
-import { useLocation } from "react-router-dom";
 import {
     Users, Briefcase, TrendingUp, CheckCircle, XCircle, Clock, Shield, Eye,
     GraduationCap, Languages, DollarSign, Search, Edit, Ban, UserCheck,
@@ -21,48 +24,55 @@ import {
 // import{useNavigate}
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
-import AdminConsultationDetailsPage from "@/components/admin/AdminConsultationDetailsPage"
+import AdminPaymentReportDetailsPage from "@/components/admin/AdminPaymentReportDetailsPage"
 
 
-interface Consultation {
+interface PaymentReport {
     id: string;
-    client_id: string;
-    lawyer_id: string;
+    consultation_id: string;
+    client_name: string;
+    lawyer_name: string;
+
+    admin_status: string;
+    duration_minutes: number;
+    booked_duration_minutes: number;
     type: string;
-    status: string;
+
+
     total_amount: number | null;
-    commission_amount: number | null;
     lawyer_amount: number | null;
+    commission_amount: number | null;
+
     notes: string | null;
     created_at: string;
+
     client_name?: string;
     lawyer_name?: string;
 }
 
-const AdminConsultationsPage = () => {
+
+const AdminPaymentReportPage = () => {
     const { toast } = useToast();
-    const [consultations, setConsultations] = useState<Consultation[]>([]);
-    const [selectedConsultation, setSelectedConsultation] = useState<Consultation | null>(null);
-    const [consultationEditOpen, setConsultationEditOpen] = useState(false);
-    const [editConsultationForm, setEditConsultationForm] = useState<Partial<Consultation>>({});
+    const [paymentReports, setPaymentReports] = useState<PaymentReport[]>([]);
+    const [selectedReport, setSelectedReport] = useState<PaymentReport | null>(null);
+    const [reportEditOpen, setReportEditOpen] = useState(false);
+    const [editReportForm, setEditReportForm] = useState<Partial<PaymentReport>>({});
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
 
-
     const itemsPerPage = 5;
-    const filteredConsultations = consultations.filter((consultation) => {
+    const filteredPaymentReports = paymentReports.filter((report) => {
         const search = searchTerm.toLowerCase().trim();
 
         return (
-            consultation.client_name?.toLowerCase().includes(search) ||
-            consultation.lawyer_name?.toLowerCase().includes(search) ||
-            consultation.type?.toLowerCase().includes(search) ||
-            consultation.status?.toLowerCase().includes(search) ||
-            consultation.id?.toLowerCase().includes(search)
+            report.client_name?.toLowerCase().includes(search) ||
+            report.lawyer_name?.toLowerCase().includes(search) ||
+            report.admin_status?.toLowerCase().includes(search) ||
+            report.id?.toLowerCase().includes(search)
         );
     });
-    const totalItems = filteredConsultations.length;
+    const totalItems = filteredPaymentReports.length;
 
     const totalPages = Math.ceil(
         totalItems / itemsPerPage
@@ -71,8 +81,8 @@ const AdminConsultationsPage = () => {
     const startIndex =
         (currentPage - 1) * itemsPerPage;
 
-    const paginatedConsultations =
-        filteredConsultations.slice(
+    const paginatedPaymentReports =
+        filteredPaymentReports.slice(
             startIndex,
             startIndex + itemsPerPage
         );
@@ -82,46 +92,214 @@ const AdminConsultationsPage = () => {
     }, [searchTerm]);
 
     useEffect(() => {
-        fetchConsultations();
-        const channel = supabase.channel('consultations-page-realtime')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'consultations' }, fetchConsultations)
+        fetchPaymentReports();
+        const channel = supabase.channel('paymentReports-page-realtime')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'payment_reports' }, fetchPaymentReports)
             .subscribe();
         return () => { supabase.removeChannel(channel); };
     }, []);
 
-    const fetchConsultations = async () => {
-        const { data: consultationsData } = await supabase.from('consultations').select('*').order('created_at', { ascending: false });
-        if (consultationsData) {
-            const allUserIds = [...new Set([...consultationsData.map(c => c.client_id), ...consultationsData.map(c => c.lawyer_id)])];
-            const { data: allProfiles } = await supabase.from('profiles').select('id, full_name').in('id', allUserIds);
-            setConsultations(consultationsData.map(c => ({
-                ...c,
-                client_name: allProfiles?.find(p => p.id === c.client_id)?.full_name || 'Unknown',
-                lawyer_name: formatLawyerName(allProfiles?.find(p => p.id === c.lawyer_id)?.full_name, 'Unknown'),
-            })));
+    const fetchPaymentReports = async () => {
+        // 1. Get payment reports
+        const { data: reportsData, error } = await supabase
+            .from("payment_reports")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+        if (error || !reportsData) return;
+
+        // 2. Get all consultation ids from reports
+        const consultationIds = reportsData.map(r => r.consultation_id);
+
+        // 3. Fetch consultations
+        // 3. Fetch consultations along with duration and type
+        const { data: consultationsData } = await supabase
+            .from("consultations")
+            .select(`
+    id,
+    client_id,
+    lawyer_id,
+    total_amount,
+    lawyer_amount,
+    commission_amount,
+    duration_minutes,
+    booked_duration_minutes,
+    type
+  `)
+            .in("id", consultationIds);
+
+        if (!consultationsData) {
+            setPaymentReports(reportsData);
+            return;
         }
+
+        const allUserIds = [
+            ...new Set([
+                ...consultationsData.map(c => c.client_id),
+                ...consultationsData.map(c => c.lawyer_id),
+            ]),
+        ];
+        const lawyerIds = [
+            ...new Set(consultationsData.map(c => c.lawyer_id))
+        ];
+
+
+
+        const { data: profiles } = await supabase
+            .from("profiles")
+            .select("id, full_name")
+            .in("id", allUserIds);
+
+
+        // 8. Merge everything
+        const finalData = reportsData.map(report => {
+
+            const consultation = consultationsData.find(
+                c => c.id === report.consultation_id
+            );
+
+            const client = profiles?.find(
+                p => p.id === consultation?.client_id
+            );
+
+            const lawyer = profiles?.find(
+                p => p.id === consultation?.lawyer_id
+            );
+
+
+            return {
+                ...report,
+                consultation_id: consultation?.id,
+                client_name: client?.full_name || "Unknown",
+                lawyer_name: lawyer?.full_name || "Unknown",
+
+                booked_duration_minutes:
+                    consultation?.booked_duration_minutes ?? 0,
+
+                duration_minutes:
+                    consultation?.duration_minutes ?? 0,
+
+                total_amount: consultation?.total_amount ?? 0,
+                // lawyer_amount: lawyerAmount,
+                lawyer_amount: consultation?.lawyer_amount ?? 0,
+                commission_amount: consultation?.commission_amount ?? 0,
+            };
+        });
+
+        setPaymentReports(finalData);
+        console.log(finalData);
     };
 
-    const openConsultationEdit = (consultation: Consultation) => {
-        setSelectedConsultation(consultation);
-        setEditConsultationForm({ status: consultation.status, total_amount: consultation.total_amount, commission_amount: consultation.commission_amount, lawyer_amount: consultation.lawyer_amount, notes: consultation.notes || '' });
-        setConsultationEditOpen(true);
+    const fetchConsultations = async () => {
+        const { data: consultationsData } = await supabase
+            .from("consultations")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+        if (!consultationsData) return;
+
+        const clientIds = [
+            ...new Set(consultationsData.map(c => c.client_id)),
+        ];
+
+        const lawyerIds = [
+            ...new Set(consultationsData.map(c => c.lawyer_id)),
+        ];
+
+        // Client names
+        const { data: profiles } = await supabase
+            .from("profiles")
+            .select("id, full_name")
+            .in("id", clientIds);
+
+        // Lawyer names + prices
+        const { data: lawyerProfiles } = await supabase
+            .from("lawyer_profiles")
+            .select(`
+    user_id,
+    chat_price_per_minute,
+    audio_price_per_minute,
+    video_price_per_minute
+  `)
+            .in("user_id", lawyerIds);
+
+        const formatted = consultationsData.map((c) => {
+            const client = profiles?.find(
+                p => p.id === c.client_id
+            );
+
+            const lawyerProfile = lawyerProfiles?.find(
+                lp => lp.user_id === consultation.lawyer_id
+            );
+
+            let lawyerAmount = 0;
+
+            if (lawyerProfile) {
+                const bookedMinutes =
+                    Number(consultation.booked_duration_minutes) || 0;
+
+                if (consultation.type === "chat") {
+                    lawyerAmount =
+                        (Number(lawyerProfile.chat_price_per_minute) || 0) *
+                        bookedMinutes;
+                }
+
+                if (consultation.type === "audio") {
+                    lawyerAmount =
+                        (Number(lawyerProfile.audio_price_per_minute) || 0) *
+                        bookedMinutes;
+                }
+
+                if (consultation.type === "video") {
+                    lawyerAmount =
+                        (Number(lawyerProfile.video_price_per_minute) || 0) *
+                        bookedMinutes;
+                }
+            }
+
+            return {
+                ...consultation,
+                // lawyer_amount: lawyerAmount,
+                lawyer_amount: consultation?.lawyer_amount ?? 0,
+            };
+        });
+
+        setConsultations(formatted);
     };
 
-    const saveConsultationEdit = async () => {
-        if (!selectedConsultation) return;
-        const { error } = await supabase.from('consultations').update({ status: editConsultationForm.status as any, total_amount: editConsultationForm.total_amount, commission_amount: editConsultationForm.commission_amount, lawyer_amount: editConsultationForm.lawyer_amount, notes: editConsultationForm.notes }).eq('id', selectedConsultation.id);
-        if (!error) { toast({ title: 'Success', description: 'Consultation updated.' }); fetchConsultations(); setConsultationEditOpen(false); }
+    const openPaymentReportEdit = (report: PaymentReport) => {
+        setSelectedReport(report);
+        setEditReportForm({ admin_status: report.admin_status, total_amount: report.total_amount, commission_amount: report.commission_amount, lawyer_amount: report.lawyer_amount, notes: report.notes || '' });
+        setReportEditOpen(true);
+    };
+
+    const savePaymentReportEdit = async () => {
+        if (!selectedReport) return;
+        const { error } = await supabase.from('paymentReports').update({ admin_status: editReportForm.admin_status as any, total_amount: editReportForm.total_amount, commission_amount: editReportForm.commission_amount, lawyer_amount: editReportForm.lawyer_amount, notes: editReportForm.notes }).eq('id', selectedReport.id);
+        if (!error) { toast({ title: 'Success', description: 'PaymentReport updated.' }); fetchPaymentReports(); setReportEditOpen(false); }
         else { toast({ title: 'Error', description: 'Failed to update.', variant: 'destructive' }); }
     };
 
-    const getConsultationStatusBadge = (status: string | null) => {
-        switch (status) {
+    const getPaymentReportStatusBadge = (admin_status: string | null) => {
+        switch (admin_status) {
             case 'completed': return <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium text-[11px] px-2 py-0.5 rounded-full">Completed</Badge>;
             case 'active': return <Badge className="bg-blue-50 text-blue-700 border border-blue-200 font-medium text-[11px] px-2 py-0.5 rounded-full">Active</Badge>;
             case 'pending': return <Badge className="bg-amber-50 text-amber-700 border border-amber-200 font-medium text-[11px] px-2 py-0.5 rounded-full">Pending</Badge>;
             case 'cancelled': return <Badge className="bg-red-50 text-red-700 border border-red-200 font-medium text-[11px] px-2 py-0.5 rounded-full">Cancelled</Badge>;
-            default: return <Badge variant="outline" className="text-[11px] px-2 py-0.5 rounded-full">{status}</Badge>;
+            default: return <Badge variant="outline" className="text-[11px] px-2 py-0.5 rounded-full">{admin_status}</Badge>;
+            case 'open':
+                return (
+                    <Badge className="bg-red-50 text-red-700 border border-red-200 font-medium text-[11px] px-2 py-0.5 rounded-full">
+                        Open
+                    </Badge>
+                );
+
+            case 'closed':
+                return (
+                    <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium text-[11px] px-2 py-0.5 rounded-full">
+                        Closed
+                    </Badge>
+                );
         }
     };
 
@@ -177,19 +355,19 @@ const AdminConsultationsPage = () => {
                     <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
                         <div>
                             <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-                                Manage Clients/Lawyer Consulation
+                                Payment Report
                             </h1>
                             <p className="text-slate-300 mt-2 text-sm md:text-base">
-                                View, manage and monitor all consulatation details
+                                View and manage all client payment reports.
                             </p>
                         </div>
                         <div className="grid grid-cols-1 gap-3">
 
 
                             <div className="bg-white/10 backdrop-blur-lg rounded-2xl px-5 py-3 border border-white/10">
-                                <p className="text-slate-300 text-xs font-semibold uppercase tracking-wider">Total No of Consulation</p>
+                                <p className="text-slate-300 text-xs font-semibold uppercase tracking-wider">Total Payment Report</p>
                                 <h3 className="text-2xl font-bold text-emerald-400 mt-0.5">
-                                    {consultations.length}
+                                    {paymentReports.length}
                                 </h3>
                             </div>
                         </div>
@@ -202,7 +380,7 @@ const AdminConsultationsPage = () => {
                             <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
 
                             <Input
-                                placeholder="Search by Client, Lawyer, Type, Status..."
+                                placeholder="Search by Client, Lawyer, Report ID, Status..."
                                 value={searchTerm}
                                 onChange={(e) =>
                                     setSearchTerm(e.target.value)
@@ -214,45 +392,15 @@ const AdminConsultationsPage = () => {
                 </Card>
 
 
-                {/* Table code remains identical to the original... */}
-                {/* <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                    <Table>
-                      
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="bg-slate-50/80 hover:bg-slate-50/80">
-                                    {['Client', 'Lawyer', 'Type', 'Status', 'Amount', 'Date', 'Actions'].map((h, i) => (
-                                        <TableHead key={h} className={`text-[11px] font-semibold text-slate-500 uppercase tracking-wide ${i === 0 ? 'pl-5' : ''} ${h === 'Actions' ? 'text-right pr-5' : ''}`}>{h}</TableHead>
-                                    ))}
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {consultations.map((consultation) => (
-                                    <TableRow key={consultation.id} className="hover:bg-slate-50/60 border-slate-100 transition-colors">
-                                        <TableCell className="font-medium text-sm text-slate-900 pl-5">{consultation.client_name}</TableCell>
-                                        <TableCell className="text-slate-600 text-sm">{consultation.lawyer_name}</TableCell>
-                                        <TableCell><Badge variant="outline" className="capitalize text-[11px] px-2 py-0.5 rounded-full border-slate-200 text-slate-600">{consultation.type}</Badge></TableCell>
-                                        <TableCell>{getConsultationStatusBadge(consultation.status)}</TableCell>
-                                        <TableCell className="text-slate-700 font-medium text-xs">₹{consultation.total_amount?.toFixed(2) || '0.00'}</TableCell>
-                                        <TableCell className="text-slate-400 text-xs">{new Date(consultation.created_at).toLocaleDateString()}</TableCell>
-                                        <TableCell className="text-right pr-5"><EditBtn onClick={() => openConsultationEdit(consultation)} /></TableCell>
-                                    </TableRow>
-                                ))}
-                                {consultations.length === 0 && (
-                                    <TableRow><TableCell colSpan={7} className="text-center py-12 text-slate-400 text-sm">No consultations found</TableCell></TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </Table>
-                </div> */}
+
                 <div className="w-full bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-100/40 overflow-hidden">
                     <div className="block md:hidden divide-y divide-slate-100 bg-white">
 
-                        {paginatedConsultations.map((consultation) => (
+                        {paginatedPaymentReports.map((report) => (
 
                             <div
-                                key={consultation.id}
-                                onClick={() => navigate(`/admin/AdminConsultationDetailsPage/${consultation.id}`)}
+                                key={report.id}
+                                // onClick={() => navigate(`/admin/AdminPaymentReportDetailsPage/${report.id}`)}
                                 className="p-5 mb-4 mx-3 mt-3 rounded-2xl bg-gradient-to-br from-slate-50 to-white border border-slate-200 shadow-sm hover:shadow-lg hover:border-indigo-200 transition-all duration-300"
                             >
 
@@ -262,73 +410,89 @@ const AdminConsultationsPage = () => {
                                     <div className="flex-1 min-w-0">
 
                                         <p className="text-xs uppercase font-semibold text-slate-600">
-                                            Client : {consultation.client_name}
+                                            Client : {report.client_name}
                                         </p>
 
                                         <p className="text-xs uppercase font-semibold text-slate-600">
-                                            Lawyer : {consultation.lawyer_name}
+                                            Lawyer : {report.lawyer_name}
                                         </p>
 
                                     </div>
 
-                                    {/* {getConsultationStatusBadge(
-                                        consultation.status
-                                    )} */}
+
 
                                 </div>
 
-                                {/* Consultation Details */}
+                                {/* PaymentReport Details */}
                                 <div className="grid grid-cols-2 gap-3">
 
-                                    <div>
-                                        <p className="text-[11px] uppercase font-medium text-slate-400">
-                                            Type
-                                        </p>
 
-                                        <Badge
-                                            variant="outline"
-                                            className="mt-1 capitalize"
-                                        >
-                                            {consultation.type}
-                                        </Badge>
-                                    </div>
 
                                     <div>
                                         <p className="text-[11px] uppercase font-medium text-slate-400">
-                                            Amount
+                                            Client paid Amount
                                         </p>
 
                                         <p className="font-semibold text-emerald-600 mt-1">
-                                            ₹{consultation.total_amount?.toFixed(2) || "0.00"}
+                                            ₹{report.total_amount?.toFixed(2) || "0.00"}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[11px] uppercase font-medium text-slate-400">
+                                            Lawyer received
+                                        </p>
+
+                                        <p className="font-semibold text-emerald-600 mt-1">
+                                            ₹{report.lawyer_amount?.toFixed(2) || "0.00"}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[11px] uppercase font-medium text-slate-400">
+                                            Booked Duration
+                                        </p>
+
+                                        <p className="font-semibold text-slate-700 mt-1">
+                                            {report.booked_duration_minutes} min
                                         </p>
                                     </div>
 
                                     <div>
                                         <p className="text-[11px] uppercase font-medium text-slate-400">
-                                            Date
+                                            Attended Duration
+                                        </p>
+
+                                        <p className="font-semibold text-slate-700 mt-1">
+                                            {report.duration_minutes} min
+                                        </p>
+                                    </div>
+
+
+                                    <div>
+                                        <p className="text-[11px] uppercase font-medium text-slate-400">
+                                            Report Date
                                         </p>
 
                                         <p className="text-sm text-slate-700 mt-1">
                                             {new Date(
-                                                consultation.created_at
+                                                report.created_at
                                             ).toLocaleDateString()}
                                         </p>
                                     </div>
 
                                     <div>
                                         <p className="text-[11px] uppercase font-medium text-slate-400">
-                                            Consultation ID
+                                            Payment Report ID
                                         </p>
 
                                         <p className="text-xs text-slate-700 mt-1 break-all">
-                                            {consultation.id}
+                                            {report.id}
                                         </p>
                                     </div>
 
                                 </div>
 
                                 {/* Notes */}
-                                {consultation.notes && (
+                                {report.notes && (
                                     <div className="rounded-xl bg-slate-50 p-3 border border-slate-100">
 
                                         <p className="text-[11px] uppercase font-medium text-slate-400 mb-1">
@@ -336,7 +500,7 @@ const AdminConsultationsPage = () => {
                                         </p>
 
                                         <p className="text-sm text-slate-700 line-clamp-3">
-                                            {consultation.notes}
+                                            {report.notes}
                                         </p>
 
                                     </div>
@@ -351,18 +515,14 @@ const AdminConsultationsPage = () => {
                                         </p>
 
                                         <div className="mt-1">
-                                            {getConsultationStatusBadge(
-                                                consultation.status
+                                            {getPaymentReportStatusBadge(
+                                                report.admin_status
                                             )}
                                         </div>
                                     </div>
 
                                     <EditBtn
-                                        onClick={() =>
-                                            openConsultationEdit(
-                                                consultation
-                                            )
-                                        }
+                                        onClick={() => navigate(`/admin/AdminConsultationDetailsPage/${report.consultation_id}`)}
                                     />
 
                                 </div>
@@ -371,9 +531,9 @@ const AdminConsultationsPage = () => {
 
                         ))}
 
-                        {paginatedConsultations.length === 0 && (
+                        {paginatedPaymentReports.length === 0 && (
                             <div className="text-center py-12 text-slate-400 text-sm">
-                                No Consultation Found
+                                No PaymentReport Found
                             </div>
                         )}
 
@@ -388,11 +548,13 @@ const AdminConsultationsPage = () => {
 
                                     <TableHead className="pl-6">Client</TableHead>
                                     <TableHead>Lawyer</TableHead>
-                                    <TableHead>Consulation ID</TableHead>
-                                    <TableHead>Type</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Amount</TableHead>
-                                    <TableHead>Date</TableHead>
+                                    <TableHead>Report ID</TableHead>
+                                    <TableHead>Admin Status</TableHead>
+                                    <TableHead>Attended Duration</TableHead>
+                                    <TableHead>Total Amount</TableHead>
+                                    <TableHead>Lawyer Amount</TableHead>
+                                    <TableHead>Booked Duration</TableHead>
+                                    <TableHead>Created At</TableHead>
                                     <TableHead className="text-right pr-6">Management</TableHead>
 
                                 </TableRow>
@@ -400,56 +562,58 @@ const AdminConsultationsPage = () => {
 
                             <TableBody>
 
-                                {paginatedConsultations.map((consultation) => (
+                                {paginatedPaymentReports.map((report) => (
 
                                     <TableRow
-                                        key={consultation.id}
-                                        onClick={() => navigate(`/admin/AdminConsultationDetailsPage/${consultation.id}`)}
+                                        key={report.id}
+                                        // onClick={() => navigate(`/admin/AdminPaymentReportDetailsPage/${report.id}`)}
                                         className="group hover:bg-slate-50/40 border-b border-slate-100 last:border-none transition-all duration-150"
                                     >
 
                                         <TableCell className="font-semibold text-slate-900 text-xs  py-4 pl-6">
 
-                                            {consultation.client_name}
+                                            {report.client_name}
                                         </TableCell>
 
                                         <TableCell className="font-semibold text-slate-900 text-xs ">
-                                            {consultation.lawyer_name}
+                                            {report.lawyer_name}
                                         </TableCell>
 
                                         <TableCell className="text-slate-700 text-xs">
-                                            {consultation.id}
+                                            {report.id}
                                         </TableCell>
 
-                                        <TableCell>
-                                            <Badge variant="outline">
-                                                {consultation.type}
-                                            </Badge>
-                                        </TableCell>
+
 
                                         <TableCell>
-                                            {getConsultationStatusBadge(
-                                                consultation.status
+                                            {getPaymentReportStatusBadge(
+                                                report.admin_status
                                             )}
+                                        </TableCell>
+                                        <TableCell>
+                                            {report.duration_minutes} min
                                         </TableCell>
 
                                         <TableCell className="text-slate-700 font-medium text-xs">
-                                            ₹{consultation.total_amount?.toFixed(2) || "0.00"}
+                                            ₹{report.total_amount?.toFixed(2) || "0.00"}
+                                        </TableCell>
+                                        <TableCell>
+                                            ₹{report.lawyer_amount?.toFixed(2) || "0.00"}
+                                        </TableCell>
+
+                                        <TableCell>
+                                            {report.booked_duration_minutes} min
                                         </TableCell>
 
                                         <TableCell className="text-slate-500 text-xs">
                                             {new Date(
-                                                consultation.created_at
+                                                report.created_at
                                             ).toLocaleDateString()}
                                         </TableCell>
 
                                         <TableCell className="text-right pr-6">
                                             <EditBtn
-                                                onClick={() =>
-                                                    openConsultationEdit(
-                                                        consultation
-                                                    )
-                                                }
+                                                onClick={() => navigate(`/admin/AdminConsultationDetailsPage/${report.consultation_id}`)}
                                             />
                                         </TableCell>
 
@@ -457,13 +621,13 @@ const AdminConsultationsPage = () => {
 
                                 ))}
 
-                                {paginatedConsultations.length === 0 && (
+                                {paginatedPaymentReports.length === 0 && (
                                     <TableRow>
                                         <TableCell
-                                            colSpan={7}
+                                            colSpan={9}
                                             className="text-center py-16 text-slate-400 text-sm font-medium"
                                         >
-                                            No Consultation Found
+                                            No PaymentReport Found
                                         </TableCell>
                                     </TableRow>
                                 )}
@@ -482,7 +646,7 @@ const AdminConsultationsPage = () => {
                             {Math.min(
                                 startIndex + itemsPerPage,
                                 totalItems
-                            )} of {totalItems} consultations
+                            )} of {totalItems} paymentReports
                         </p>
 
                         <div className="flex items-center gap-2">
@@ -517,20 +681,20 @@ const AdminConsultationsPage = () => {
                 )}
             </div>
 
-            <Dialog open={consultationEditOpen} onOpenChange={setConsultationEditOpen}>
+            <Dialog open={reportEditOpen} onOpenChange={setReportEditOpen}>
                 {/* ... (Copy Dialog implementation from original code) ... */}
 
                 <DialogContent className="rounded-2xl p-0 gap-0">
                     <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
-                        <DialogTitle className="text-base font-semibold text-slate-900">Edit Consultation</DialogTitle>
+                        <DialogTitle className="text-base font-semibold text-slate-900">Edit PaymentReport</DialogTitle>
                         <DialogDescription className="text-xs text-slate-400 mt-0.5">
-                            {selectedConsultation?.client_name} → {selectedConsultation?.lawyer_name}
+                            {selectedReport?.client_name} → {selectedReport?.lawyer_name}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="px-6 py-5 space-y-4">
                         <div className="space-y-1.5">
                             <Label className="text-xs font-medium text-slate-600">Status</Label>
-                            <Select value={editConsultationForm.status || ''} onValueChange={(v) => setEditConsultationForm({ ...editConsultationForm, status: v })}>
+                            <Select value={editReportForm.admin_status || ''} onValueChange={(v) => setEditReportForm({ ...editReportForm, admin_status: v })}>
                                 <SelectTrigger className="h-9 text-sm rounded-lg border-slate-200"><SelectValue placeholder="Select status" /></SelectTrigger>
                                 <SelectContent>
                                     {['pending', 'active', 'completed', 'cancelled'].map(s => <SelectItem key={s} value={s} className="capitalize">{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}
@@ -540,25 +704,25 @@ const AdminConsultationsPage = () => {
                         <div className="grid grid-cols-3 gap-3">
                             <div className="space-y-1.5">
                                 <Label className="text-xs font-medium text-slate-600">Total (₹)</Label>
-                                <Input type="number" step="0.01" value={editConsultationForm.total_amount || 0} onChange={(e) => setEditConsultationForm({ ...editConsultationForm, total_amount: parseFloat(e.target.value) || 0 })} className="h-9 text-sm rounded-lg border-slate-200" />
+                                <Input type="number" step="0.01" value={editReportForm.total_amount || 0} onChange={(e) => setEditReportForm({ ...editReportForm, total_amount: parseFloat(e.target.value) || 0 })} className="h-9 text-sm rounded-lg border-slate-200" />
                             </div>
                             <div className="space-y-1.5">
                                 <Label className="text-xs font-medium text-slate-600">Commission (₹)</Label>
-                                <Input type="number" step="0.01" value={editConsultationForm.commission_amount || 0} onChange={(e) => setEditConsultationForm({ ...editConsultationForm, commission_amount: parseFloat(e.target.value) || 0 })} className="h-9 text-sm rounded-lg border-slate-200" />
+                                <Input type="number" step="0.01" value={editReportForm.commission_amount || 0} onChange={(e) => setEditReportForm({ ...editReportForm, commission_amount: parseFloat(e.target.value) || 0 })} className="h-9 text-sm rounded-lg border-slate-200" />
                             </div>
                             <div className="space-y-1.5">
                                 <Label className="text-xs font-medium text-slate-600">Lawyer (₹)</Label>
-                                <Input type="number" step="0.01" value={editConsultationForm.lawyer_amount || 0} onChange={(e) => setEditConsultationForm({ ...editConsultationForm, lawyer_amount: parseFloat(e.target.value) || 0 })} className="h-9 text-sm rounded-lg border-slate-200" />
+                                <Input type="number" step="0.01" value={editReportForm.lawyer_amount || 0} onChange={(e) => setEditReportForm({ ...editReportForm, lawyer_amount: parseFloat(e.target.value) || 0 })} className="h-9 text-sm rounded-lg border-slate-200" />
                             </div>
                         </div>
                         <div className="space-y-1.5">
                             <Label className="text-xs font-medium text-slate-600">Notes</Label>
-                            <Textarea value={editConsultationForm.notes || ''} onChange={(e) => setEditConsultationForm({ ...editConsultationForm, notes: e.target.value })} rows={3} className="text-sm rounded-lg border-slate-200 resize-none" />
+                            <Textarea value={editReportForm.notes || ''} onChange={(e) => setEditReportForm({ ...editReportForm, notes: e.target.value })} rows={3} className="text-sm rounded-lg border-slate-200 resize-none" />
                         </div>
                     </div>
                     <DialogFooter className="px-6 py-4 border-t border-slate-100 gap-2">
-                        <Button variant="outline" onClick={() => setConsultationEditOpen(false)} className="h-9 text-sm rounded-lg border-slate-200">Cancel</Button>
-                        <Button onClick={saveConsultationEdit} className="h-9 text-sm rounded-lg bg-slate-900 hover:bg-slate-800 gap-1.5">
+                        <Button variant="outline" onClick={() => setReportEditOpen(false)} className="h-9 text-sm rounded-lg border-slate-200">Cancel</Button>
+                        <Button onClick={savePaymentReportEdit} className="h-9 text-sm rounded-lg bg-slate-900 hover:bg-slate-800 gap-1.5">
                             <Save className="h-3.5 w-3.5" /> Save Changes
                         </Button>
                     </DialogFooter>
@@ -569,4 +733,4 @@ const AdminConsultationsPage = () => {
     );
 };
 
-export default AdminConsultationsPage;
+export default AdminPaymentReportPage;

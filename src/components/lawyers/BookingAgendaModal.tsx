@@ -51,7 +51,7 @@ const DOCUMENT_OPTIONS = [
     { value: 'will_share', label: 'Will share during consultation' },
 
 ];
-const DRAFT_KEY = 'legalmate_booking_agenda_draft';
+const DRAFT_KEY = 'VakeelGo_booking_agenda_draft';
 
 interface LawyerInfo {
     id: string;
@@ -440,6 +440,7 @@ export const BookingAgendaModal = ({
                     status: 'pending',
                     total_amount: sessionCost,
                     duration_minutes: selectedMinutes,
+                    booked_duration_minutes: selectedMinutes,
                     agenda: fullAgenda,
                     payment_status: 'unpaid',
                 })

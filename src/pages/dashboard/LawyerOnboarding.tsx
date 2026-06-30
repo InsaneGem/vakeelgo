@@ -363,27 +363,45 @@ const LawyerOnboarding = () => {
                 />
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Input
-                    placeholder="Bar Council Number"
-                    value={profileData.bar_council_number}
-                    onChange={(e) =>
-                      setProfileData(prev => ({
-                        ...prev,
-                        bar_council_number: e.target.value
-                      }))
-                    }
-                  />
-                  <Input
-                    type="number"
-                    placeholder="Experience (years)"
-                    value={profileData.experience_years}
-                    onChange={(e) =>
-                      setProfileData(prev => ({
-                        ...prev,
-                        experience_years: parseInt(e.target.value) || 0
-                      }))
-                    }
-                  />
+                  <div className="space-y-1">
+                    <Label className="text-slate-700 font-semibold text-xs">Bar Council Number</Label>
+                    <Input
+                      placeholder="e.g., MAH/12345/2026 or D/987/2025"
+                      maxLength={20} // Enforces the safe professional maximum limit
+                      value={profileData.bar_council_number}
+                      onChange={(e) => {
+                        // Automatically converts all letters to uppercase as they type 
+                        // to maintain a standardized clean format in your database
+                        const upperValue = e.target.value.toUpperCase();
+
+                        setProfileData(prev => ({
+                          ...prev,
+                          bar_council_number: upperValue
+                        }))
+                      }}
+                      className="uppercase placeholder:normal-case font-mono tracking-wide text-sm" // Styles text beautifully for enrollment numbers
+                    />
+                    <p className="text-[10px] text-slate-400 font-medium">
+                      Format: State Code / Registration Number / Year
+                    </p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-slate-700 font-semibold text-xs">Experience</Label>
+                    <Input
+                      type="number"
+                      placeholder="Experience (years)"
+                      min={0}
+                      max={60}
+                      value={profileData.experience_years || ""}
+                      onChange={(e) =>
+                        setProfileData(prev => ({
+                          ...prev,
+                          experience_years: parseInt(e.target.value) || 0
+                        }))
+                      }
+                    />
+                  </div>
                 </div>
               </div>
             </OnboardingStepCard>
@@ -417,7 +435,10 @@ const LawyerOnboarding = () => {
                   { key: 'video_price_per_minute', label: 'Video', description: 'Face-to-face call' },
                 ].map(({ key, label, description }) => {
                   const value = profileData[key as keyof typeof profileData] as number;
-                  const hasError = value < 5 || value > 100;
+                  // const hasError = value < 5 || value > 100;
+                  const hasError =
+                    value !== '' &&
+                    (Number(value) < 5 || Number(value) > 100);
                   return (
                     <div key={key} className="space-y-2">
                       <Label>{label} Rate (₹ / min)</Label>
@@ -427,15 +448,16 @@ const LawyerOnboarding = () => {
                         max={100}
                         step={1}
                         placeholder="Enter rate"
-                        value={value}
+                        // value={value}
+                        value={value ?? ''}
                         className={hasError ? 'border-destructive' : ''}
+
                         onChange={(e) => {
-                          const rawValue = e.target.value;
-                          const parsed = parseFloat(rawValue);
-                          const val = Number.isNaN(parsed) ? 0 : parsed;
+                          const value = e.target.value;
+
                           setProfileData(prev => ({
                             ...prev,
-                            [key]: val
+                            [key]: value === '' ? '' : Number(value)
                           }));
                         }}
                       />

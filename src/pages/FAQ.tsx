@@ -14,11 +14,11 @@ const faqCategories = [
     title: 'Getting Started',
     questions: [
       {
-        q: 'How do I create an account on LEGALMATE?',
+        q: 'How do I create an account on VakeelGo?',
         a: 'Creating an account is simple. Click on "Get Started" or "Sign Up" button, enter your email address, create a password, and fill in your basic details. You can sign up as a client seeking legal advice or as a lawyer offering services.'
       },
       {
-        q: 'Is LEGALMATE free to use?',
+        q: 'Is VakeelGo free to use?',
         a: 'Creating an account and browsing lawyer profiles is completely free. You only pay when you book a consultation with a lawyer. Each lawyer sets their own consultation rates, which are clearly displayed on their profile.'
       },
       {
@@ -26,7 +26,7 @@ const faqCategories = [
         a: 'You can search for lawyers by practice area, experience level, language, ratings, and availability. Each lawyer profile includes their qualifications, specializations, client reviews, and consultation rates to help you make an informed decision.'
       },
       {
-        q: 'Are the lawyers on LEGALMATE verified?',
+        q: 'Are the lawyers on VakeelGo verified?',
         a: 'Yes, all lawyers on our platform undergo a thorough verification process. We verify their Bar Council registration, educational qualifications, and professional credentials before they can offer consultations.'
       }
     ]
@@ -84,7 +84,7 @@ const faqCategories = [
     title: 'For Lawyers',
     questions: [
       {
-        q: 'How can I join LEGALMATE as a lawyer?',
+        q: 'How can I join VakeelGo as a lawyer?',
         a: 'Click on "Join as Lawyer" and complete the registration process. You will need to provide your Bar Council registration number, educational qualifications, and practice details. Our team will verify your credentials within 24-48 hours.'
       },
       {
@@ -97,7 +97,7 @@ const faqCategories = [
       },
       {
         q: 'What is the platform commission?',
-        a: 'LEGALMATE charges a small commission on each consultation to maintain the platform and provide support services. The exact rate is disclosed during registration.'
+        a: 'VakeelGo charges a small commission on each consultation to maintain the platform and provide support services. The exact rate is disclosed during registration.'
       }
     ]
   },
@@ -107,14 +107,14 @@ const faqCategories = [
     questions: [
       {
         q: 'What browsers are supported?',
-        a: 'LEGALMATE works best on the latest versions of Chrome, Firefox, Safari, and Edge. For video consultations, we recommend using Chrome or Firefox for the best experience.'
+        a: 'VakeelGo works best on the latest versions of Chrome, Firefox, Safari, and Edge. For video consultations, we recommend using Chrome or Firefox for the best experience.'
       },
       {
         q: 'I am having issues with video/audio. What should I do?',
         a: 'First, ensure your browser has permission to access your camera and microphone. Check your internet connection and try refreshing the page. If issues persist, try using a different browser or contact our support team.'
       },
       {
-        q: 'Is my data secure on LEGALMATE?',
+        q: 'Is my data secure on VakeelGo?',
         a: 'Absolutely. We use industry-standard encryption for all communications and data storage. Your conversations are protected by end-to-end encryption, and we comply with all applicable data protection regulations.'
       },
       {

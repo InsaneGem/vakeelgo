@@ -235,7 +235,7 @@
 //                             Need Professional Legal Guidance?
 //                         </h2>
 //                         <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
-//                             Connect with experienced lawyers on LEGALMATE for personalized legal
+//                             Connect with experienced lawyers on VakeelGo for personalized legal
 //                             advice and consultations.
 //                         </p>
 //                         <Button

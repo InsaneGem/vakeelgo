@@ -37,7 +37,7 @@ const Benefits = () => {
                 <div className="container mx-auto px-4 text-center">
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-slate-900 border border-slate-800 text-slate-400 rounded-full text-[10px] font-mono tracking-widest uppercase mb-6">
                         <Scale className="h-3 w-3" />
-                        <span>Why LegalMate</span>
+                        <span>Why VakeelGo</span>
                     </div>
                     <h1 className="font-serif text-5xl sm:text-6xl font-bold text-white mb-6 tracking-tight">
                         Empowering Your Legal Practice

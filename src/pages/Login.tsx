@@ -90,7 +90,7 @@ const Login = () => {
             {/* <div className="flex items-center gap-2 mb-4 sm:mb-6">
               <Scale className="h-6 w-6 sm:h-7 sm:w-7" />
               <span className="font-serif text-lg sm:text-xl font-semibold">
-                LEGALMATE
+                VakeelGo
               </span>
             </div> */}
 

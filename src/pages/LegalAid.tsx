@@ -68,8 +68,8 @@ const proBonoInfo = [
   },
   {
     icon: Shield,
-    title: 'LEGALMATE Pro Bono Initiative',
-    description: 'On LEGALMATE, select lawyers offer free initial consultations for eligible clients. Look for the "Pro Bono Available" badge on lawyer profiles to find lawyers offering free legal assistance.'
+    title: 'VakeelGo Pro Bono Initiative',
+    description: 'On VakeelGo, select lawyers offer free initial consultations for eligible clients. Look for the "Pro Bono Available" badge on lawyer profiles to find lawyers offering free legal assistance.'
   },
 ];
 
@@ -283,7 +283,7 @@ const LegalAid = () => {
               Connect with Qualified Counsel
             </h2>
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-light mb-6">
-              Whether matching protocols qualify you for state-sponsored statutory assistance or you require flexible, tiered private billing options, LegalMate bridges connection points seamlessly.
+              Whether matching protocols qualify you for state-sponsored statutory assistance or you require flexible, tiered private billing options, VakeelGo bridges connection points seamlessly.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3">

@@ -28,7 +28,7 @@ const AboutUs = () => {
                         Democratizing Legal Access
                     </h1>
                     <p className="text-slate-400 text-lg max-w-2xl mx-auto font-light leading-relaxed">
-                        LegalMate was founded on the belief that everyone deserves transparent,
+                        VakeelGo was founded on the belief that everyone deserves transparent,
                         secure, and instant access to professional legal expertise.
                     </p>
                 </div>
@@ -38,7 +38,7 @@ const AboutUs = () => {
             <section className="py-24 container mx-auto px-4 max-w-4xl">
                 <div className="space-y-16">
                     <div className="text-center">
-                        <h2 className="text-3xl font-serif font-bold text-slate-950 mb-6">The LegalMate Vision</h2>
+                        <h2 className="text-3xl font-serif font-bold text-slate-950 mb-6">The VakeelGo Vision</h2>
                         <p className="text-slate-600 leading-relaxed text-lg font-light">
                             We bridge the gap between people in need of legal guidance and the professionals
                             best equipped to provide it. By removing the traditional barriers of hidden costs
@@ -70,7 +70,7 @@ const AboutUs = () => {
                     <h3 className="text-2xl font-serif font-bold text-slate-950 mb-4">Join our growing community</h3>
                     <p className="text-slate-600 mb-8 max-w-sm mx-auto">
                         Whether you are a client seeking advice or a lawyer looking to expand your reach,
-                        LegalMate is here to support you.
+                        VakeelGo is here to support you.
                     </p>
                     <div className="flex gap-4 justify-center">
                         <button onClick={() => navigate('/signup?role=client')}

@@ -11,7 +11,7 @@ const testimonials = [
     name: 'Priya Sharma',
     role: 'Business Owner',
     rating: 5,
-    text: 'LEGALMATE made it incredibly easy to get quick legal advice for my startup. The video consultation was seamless and the lawyer was extremely knowledgeable.',
+    text: 'VakeelGo made it incredibly easy to get quick legal advice for my startup. The video consultation was seamless and the lawyer was extremely knowledgeable.',
   },
   {
     name: 'Rahul Verma',
@@ -29,7 +29,7 @@ const testimonials = [
     name: 'Mohammed Khan',
     role: 'HR Manager',
     rating: 5,
-    text: 'Our company now uses LEGALMATE for all employee-related legal queries. The multi-language support is a huge plus for our diverse team.',
+    text: 'Our company now uses VakeelGo for all employee-related legal queries. The multi-language support is a huge plus for our diverse team.',
   },
   {
     name: 'Sneha Patel',
@@ -46,7 +46,7 @@ export const TestimonialSection = () => {
           <p className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-3">Testimonials</p>
           <h2 className="font-serif text-3xl md:text-4xl font-bold mb-4">What Our Clients Say</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Thousands of clients trust LEGALMATE for their legal needs.
+            Thousands of clients trust VakeelGo for their legal needs.
           </p>
         </div>
         <div className="max-w-5xl mx-auto px-12">

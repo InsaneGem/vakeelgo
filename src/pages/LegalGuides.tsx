@@ -343,7 +343,7 @@ const LegalGuides = () => {
             <h4 className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest mb-2">Advisory Pipeline</h4>
             <h2 className="text-xl sm:text-2xl font-serif font-bold text-white mb-3">Need Professional Legal Assistance?</h2>
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-light mb-6">
-              These blueprints act strictly as informational maps. For granular advisory workflows or litigation defense actions, initiate secure lines with verified legal teams across the LegalMate cluster.
+              These blueprints act strictly as informational maps. For granular advisory workflows or litigation defense actions, initiate secure lines with verified legal teams across the VakeelGo cluster.
             </p>
 
             <Button

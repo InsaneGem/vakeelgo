@@ -1210,7 +1210,7 @@ const ClientDashboard = () => {
           {/* Why Clients Trust Us */}
           <div className="mb-8 rounded-2xl bg-primary text-primary-foreground p-6 sm:p-8">
             <div className="text-center mb-6">
-              <h2 className="font-serif text-2xl font-bold mb-2">Why Clients Trust LegalMate</h2>
+              <h2 className="font-serif text-2xl font-bold mb-2">Why Clients Trust VakeelGo</h2>
               <p className="text-sm opacity-80 max-w-xl mx-auto">
                 We bridge the gap between clients and qualified legal professionals, making expert legal advice accessible, affordable, and convenient for everyone.
               </p>

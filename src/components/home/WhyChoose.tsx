@@ -43,7 +43,7 @@ export const WhyChoose = () => {
 
             {/* HEADER */}
             <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
-              Why LEGALMATE
+              Why VakeelGo
             </p>
 
             <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold mb-4 leading-tight">
@@ -51,7 +51,7 @@ export const WhyChoose = () => {
             </h2>
 
             <p className="text-muted-foreground text-sm sm:text-base mb-6 leading-relaxed max-w-xl">
-              LEGALMATE connects you with top-tier legal professionals through a modern, secure, and affordable platform built for today's world.
+              VakeelGo connects you with top-tier legal professionals through a modern, secure, and affordable platform built for today's world.
             </p>
 
             {/* ADVANTAGES LIST */}

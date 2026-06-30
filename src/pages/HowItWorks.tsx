@@ -81,7 +81,7 @@ const HowItWorks = () => {
             Operational Blueprint
           </div>
           <h1 className="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-white mb-5">
-            How LegalMate Works
+            How VakeelGo Works
           </h1>
           <p className="text-slate-400 text-xs sm:text-base max-w-2xl mx-auto leading-relaxed font-light tracking-wide">
             Getting expert legal advice has been streamlined into structured workflow pathways. Follow our simple sequential pipeline to connect directly with verified counsel.
@@ -154,7 +154,7 @@ const HowItWorks = () => {
             <div className="text-center max-w-xl mx-auto mb-12">
               <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400 block mb-1">Ecosystem Standards</span>
               <h2 className="font-serif text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                Why Choose LegalMate?
+                Why Choose VakeelGo?
               </h2>
             </div>
 

@@ -16,7 +16,7 @@ export const ForLawyersCTA = () => {
           <div className="animate-slide-up">
             <p className="text-sm font-semibold uppercase tracking-widest text-primary-foreground/60 mb-3">For Legal Professionals</p>
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-primary-foreground mb-6">
-              Grow Your Legal Practice with LEGALMATE
+              Grow Your Legal Practice with VakeelGo
             </h2>
             <p className="text-primary-foreground/70 mb-8 leading-relaxed">
               Join our network of verified lawyers and connect with clients seeking expert legal advice.

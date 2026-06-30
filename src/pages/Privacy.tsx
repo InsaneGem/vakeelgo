@@ -78,7 +78,7 @@ const Privacy = () => {
             Privacy Policy
           </h1>
           <p className="text-slate-400 text-xs sm:text-sm max-w-2xl mx-auto leading-relaxed font-light tracking-wide">
-            Your trust is our highest priority. Learn how LegalMate protects your confidential personal records, session meta-data, and enterprise communications using globally recognized compliance structures.
+            Your trust is our highest priority. Learn how VakeelGo protects your confidential personal records, session meta-data, and enterprise communications using globally recognized compliance structures.
           </p>
           <div className="inline-block mt-5 px-4 py-1.5 bg-slate-900/90 border border-slate-800/60 text-slate-400 rounded-full text-[11px] font-mono tracking-wider uppercase">
             Last Updated: {lastUpdated}
@@ -101,7 +101,7 @@ const Privacy = () => {
               <Eye className="h-7 w-7 text-slate-950 mb-3" />
               <h3 className="font-serif font-bold text-slate-900 text-sm mb-1.5">No Commercial Monetization</h3>
               <p className="text-slate-600 text-xs leading-relaxed max-w-xs">
-                LegalMate has never sold or rented user behavior graphs, profile definitions, or query variables to brokerage pipelines.
+                VakeelGo has never sold or rented user behavior graphs, profile definitions, or query variables to brokerage pipelines.
               </p>
             </div>
             <div className="flex flex-col items-center text-center p-6 bg-slate-50/50 border border-slate-200/60 rounded-2xl transition-all duration-300 hover:scale-[1.02] hover:bg-white hover:shadow-md">
@@ -254,7 +254,7 @@ const Privacy = () => {
                 </p>
                 <div className="border-l-2 border-slate-950 bg-slate-50 border-y border-r border-slate-200/50 rounded-r-xl p-4 shadow-xs">
                   <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed">
-                    <strong className="text-slate-950 block mb-0.5">Zero Interception Guarantee:</strong> Consultation recordings or transcripts are strictly encrypted at the source layer. LegalMate systems cannot access, monitor, index, or parse the legal substance of your counsel rooms.
+                    <strong className="text-slate-950 block mb-0.5">Zero Interception Guarantee:</strong> Consultation recordings or transcripts are strictly encrypted at the source layer. VakeelGo systems cannot access, monitor, index, or parse the legal substance of your counsel rooms.
                   </p>
                 </div>
               </section>
@@ -295,7 +295,7 @@ const Privacy = () => {
                   </h2>
                 </div>
                 <p className="text-xs sm:text-sm leading-relaxed text-slate-600 mb-3">
-                  Regardless of your domestic geolocation, LegalMate grants all registered users standard sovereign control over their records:
+                  Regardless of your domestic geolocation, VakeelGo grants all registered users standard sovereign control over their records:
                 </p>
                 <ul className="space-y-2 text-xs text-slate-600 pl-4 list-disc marker:text-slate-400">
                   <li className="leading-relaxed"><strong className="text-slate-900">Right to Erasure (Forgotten):</strong> Submit a system request to permanently scrub relational references within 30 processing days.</li>
@@ -331,9 +331,9 @@ const Privacy = () => {
                 <div className="bg-slate-950 text-slate-200 rounded-2xl p-6 mt-4 relative overflow-hidden shadow-xl transition-all duration-300 hover:scale-[1.005]">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-slate-900 rounded-full blur-2xl opacity-40" />
                   <h4 className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider mb-1.5">Privacy Taskforce</h4>
-                  <p className="text-sm font-semibold text-white">LEGALMATE Technologies Corp.</p>
+                  <p className="text-sm font-semibold text-white">VakeelGo Technologies Corp.</p>
                   <div className="text-xs text-slate-300 mt-3 space-y-1">
-                    <p>Inquiries: <span className="text-white underline underline-offset-4 decoration-slate-800 font-medium">privacy@legalmate.com</span></p>
+                    <p>Inquiries: <span className="text-white underline underline-offset-4 decoration-slate-800 font-medium">privacy@VakeelGo.com</span></p>
                     <p className="text-slate-500 text-[11px] pt-3 mt-3 border-t border-slate-900">Corporate Address: 123 Legal Avenue, Suite 500, New York, NY 10001</p>
                   </div>
                 </div>

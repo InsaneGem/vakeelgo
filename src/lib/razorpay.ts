@@ -130,7 +130,7 @@ export const initiateRazorpayPayment = async ({
             key: key_id,
             amount,
             currency,
-            name: 'LEGALMATE',
+            name: 'VakeelGo',
             description: 'Consultation Payment',
             order_id,
 

@@ -79,7 +79,7 @@
 //       title: 'Account created!',
 //       description: selectedRole === 'lawyer'
 //         ? 'Your account is pending approval. You can complete your profile now.'
-//         : 'Welcome to LEGALMATE!',
+//         : 'Welcome to VakeelGo!',
 //     });
 
 //     navigate(selectedRole === 'lawyer' ? '/lawyer/dashboard' : '/dashboard');
@@ -98,12 +98,12 @@
 
 //             <div className="flex items-center gap-2 mb-8">
 //               <Scale className="h-8 w-8" />
-//               <span className="font-serif text-2xl font-semibold">LEGALMATE</span>
+//               <span className="font-serif text-2xl font-semibold">VakeelGo</span>
 //             </div>
 
 //             <h1 className="font-serif text-3xl font-bold mb-2">Create an account</h1>
 //             <p className="text-muted-foreground mb-8">
-//               Get started with LEGALMATE today
+//               Get started with VakeelGo today
 //             </p>
 
 //             {/* Role Selection */}
@@ -354,7 +354,7 @@ const Signup = () => {
       description:
         selectedRole === 'lawyer'
           ? 'Your account is pending approval.'
-          : 'Welcome to LEGALMATE!',
+          : 'Welcome to VakeelGo!',
     });
 
     navigate(selectedRole === 'lawyer' ? '/lawyer/dashboard' : '/dashboard');

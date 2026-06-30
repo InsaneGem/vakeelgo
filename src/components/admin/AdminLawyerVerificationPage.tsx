@@ -18,7 +18,7 @@ const AdminLawyerVerificationPage = () => {
     return (
         <AdminLayout>
             <div className="max-w-screen-xl mx-auto px-6 py-8">
-                <h1 className="text-2xl font-bold mb-6">Lawyer Verification</h1>
+                {/* <h1 className="text-2xl font-bold mb-6">Lawyer Verification</h1> */}
                 {/* Pass any necessary props or logic here */}
                 <LawyerVerificationPanel />
             </div>
