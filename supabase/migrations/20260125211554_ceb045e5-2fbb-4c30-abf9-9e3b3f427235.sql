@@ -252,11 +252,26 @@ SET search_path = public
 AS $$
 BEGIN
   INSERT INTO public.profiles (id, email, full_name)
-  VALUES (NEW.id, NEW.email, COALESCE(NEW.raw_user_meta_data->>'full_name', 'User'));
-  
+  VALUES (NEW.id, NEW.email, COALESCE(NEW.raw_user_meta_data->>'full_name', 'User'))
+  ON CONFLICT (id) DO NOTHING;
+
   INSERT INTO public.wallets (user_id)
-  VALUES (NEW.id);
-  
+  VALUES (NEW.id)
+  ON CONFLICT (user_id) DO NOTHING;
+
+  INSERT INTO public.user_roles (user_id, role)
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.raw_user_meta_data->>'role', 'client')::public.user_role
+  )
+  ON CONFLICT (user_id, role) DO NOTHING;
+
+  IF NEW.raw_user_meta_data->>'role' = 'lawyer' THEN
+    INSERT INTO public.lawyer_profiles (user_id)
+    VALUES (NEW.id)
+    ON CONFLICT (user_id) DO NOTHING;
+  END IF;
+
   RETURN NEW;
 END;
 $$;

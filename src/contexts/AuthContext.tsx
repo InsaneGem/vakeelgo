@@ -92,29 +92,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           emailRedirectTo: window.location.origin,
           data: {
             full_name: fullName,
+            role: selectedRole,
           },
         },
       });
 
       if (error) throw error;
-
-      if (data.user) {
-        // Create user role
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({ user_id: data.user.id, role: selectedRole });
-
-        if (roleError) throw roleError;
-
-        // If lawyer, create lawyer profile
-        if (selectedRole === 'lawyer') {
-          const { error: lawyerError } = await supabase
-            .from('lawyer_profiles')
-            .insert({ user_id: data.user.id });
-
-          if (lawyerError) throw lawyerError;
-        }
-      }
+      if (!data.user) throw new Error('Unable to create user account.');
 
       return { error: null };
     } catch (error) {
