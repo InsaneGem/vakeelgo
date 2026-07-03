@@ -1,284 +1,11 @@
-// import { useState } from 'react';
-// import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-// import { useAuth } from '@/contexts/AuthContext';
-// import { Button } from '@/components/ui/button';
-// import { Input } from '@/components/ui/input';
-// import { Label } from '@/components/ui/label';
-// import { Scale, ArrowLeft, Loader2, User, Briefcase, CalendarIcon } from 'lucide-react';
-// import { useToast } from '@/hooks/use-toast';
-// import { cn } from '@/lib/utils';
-// import { supabase } from '@/integrations/supabase/client';
-// import { format } from 'date-fns';
-// import { Calendar } from '@/components/ui/calendar';
-// import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-// import { MainLayout } from '@/components/layout/MainLayout';
 
-// const Signup = () => {
-//   const [searchParams] = useSearchParams();
-//   const initialRole = searchParams.get('role') === 'lawyer' ? 'lawyer' : 'client';
-
-//   const [fullName, setFullName] = useState('');
-//   const [email, setEmail] = useState('');
-//   const [password, setPassword] = useState('');
-//   const [dateOfBirth, setDateOfBirth] = useState<Date | undefined>(undefined);
-//   const [selectedRole, setSelectedRole] = useState<'client' | 'lawyer'>(initialRole);
-//   const [loading, setLoading] = useState(false);
-//   const { signUp } = useAuth();
-//   const navigate = useNavigate();
-//   const { toast } = useToast();
-
-//   const handleSubmit = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     setLoading(true);
-
-//     if (password.length < 6) {
-//       toast({
-//         variant: 'destructive',
-//         title: 'Invalid password',
-//         description: 'Password must be at least 6 characters long.',
-//       });
-//       setLoading(false);
-//       return;
-//     }
-
-//     if (!dateOfBirth) {
-//       toast({
-//         variant: 'destructive',
-//         title: 'Date of birth required',
-//         description: 'Please select your date of birth.',
-//       });
-//       setLoading(false);
-//       return;
-//     }
-
-
-//     const { error } = await signUp(email, password, fullName, selectedRole);
-
-//     if (error) {
-//       toast({
-//         variant: 'destructive',
-//         title: 'Sign up failed',
-//         description: error.message,
-//       });
-//       setLoading(false);
-//       return;
-//     }
-//     // Save date of birth to profile
-//     if (dateOfBirth) {
-//       const { data: sessionData } = await supabase.auth.getSession();
-//       if (sessionData?.session?.user) {
-//         await supabase
-//           .from('profiles')
-
-//           .update({ date_of_birth: format(dateOfBirth, 'yyyy-MM-dd') } as any)
-//           .eq('id', sessionData.session.user.id);
-//       }
-//     }
-
-//     toast({
-//       title: 'Account created!',
-//       description: selectedRole === 'lawyer'
-//         ? 'Your account is pending approval. You can complete your profile now.'
-//         : 'Welcome to VakeelGo!',
-//     });
-
-//     navigate(selectedRole === 'lawyer' ? '/lawyer/dashboard' : '/dashboard');
-//   };
-
-//   return (
-//     <MainLayout>
-//       <div className="min-h-screen flex">
-//         {/* Left Panel - Form */}
-//         <div className="flex-1 flex flex-col justify-center px-8 md:px-16 lg:px-24 py-12">
-//           <div className="max-w-md w-full mx-auto">
-//             <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8">
-//               <ArrowLeft className="h-4 w-4" />
-//               Back to home
-//             </Link>
-
-//             <div className="flex items-center gap-2 mb-8">
-//               <Scale className="h-8 w-8" />
-//               <span className="font-serif text-2xl font-semibold">VakeelGo</span>
-//             </div>
-
-//             <h1 className="font-serif text-3xl font-bold mb-2">Create an account</h1>
-//             <p className="text-muted-foreground mb-8">
-//               Get started with VakeelGo today
-//             </p>
-
-//             {/* Role Selection */}
-//             <div className="grid grid-cols-2 gap-4 mb-8">
-//               <button
-//                 type="button"
-//                 onClick={() => setSelectedRole('client')}
-//                 className={cn(
-//                   'p-4 rounded-lg border-2 text-left transition-all',
-//                   selectedRole === 'client'
-//                     ? 'border-primary bg-primary/5'
-//                     : 'border-border hover:border-primary/50'
-//                 )}
-//               >
-//                 <User className="h-6 w-6 mb-2" />
-//                 <div className="font-semibold">Client</div>
-//                 <div className="text-sm text-muted-foreground">Get legal advice</div>
-//               </button>
-//               <button
-//                 type="button"
-//                 onClick={() => setSelectedRole('lawyer')}
-//                 className={cn(
-//                   'p-4 rounded-lg border-2 text-left transition-all',
-//                   selectedRole === 'lawyer'
-//                     ? 'border-primary bg-primary/5'
-//                     : 'border-border hover:border-primary/50'
-//                 )}
-//               >
-//                 <Briefcase className="h-6 w-6 mb-2" />
-//                 <div className="font-semibold">Lawyer</div>
-//                 <div className="text-sm text-muted-foreground">Offer consultations</div>
-//               </button>
-//             </div>
-
-//             <form onSubmit={handleSubmit} className="space-y-6">
-//               <div className="space-y-2">
-//                 <Label htmlFor="fullName">Full Name</Label>
-//                 <Input
-//                   id="fullName"
-//                   type="text"
-//                   placeholder="John Doe"
-//                   value={fullName}
-//                   onChange={(e) => setFullName(e.target.value)}
-//                   required
-//                   className="h-12"
-//                 />
-//               </div>
-
-//               <div className="space-y-2">
-//                 <Label htmlFor="email">Email</Label>
-//                 <Input
-//                   id="email"
-//                   type="email"
-//                   placeholder="you@example.com"
-//                   value={email}
-//                   onChange={(e) => setEmail(e.target.value)}
-//                   required
-//                   className="h-12"
-//                 />
-//               </div>
-
-//               <div className="space-y-2">
-//                 <Label htmlFor="password">Password</Label>
-//                 <Input
-//                   id="password"
-//                   type="password"
-//                   placeholder="••••••••"
-//                   value={password}
-//                   onChange={(e) => setPassword(e.target.value)}
-//                   required
-//                   minLength={6}
-//                   className="h-12"
-//                 />
-//                 <p className="text-xs text-muted-foreground">Minimum 6 characters</p>
-//               </div>
-
-//               <div className="space-y-2">
-//                 <Label>Date of Birth</Label>
-//                 <Popover>
-//                   <PopoverTrigger asChild>
-//                     <Button
-//                       variant="outline"
-//                       className={cn(
-//                         'w-full h-12 justify-start text-left font-normal',
-//                         !dateOfBirth && 'text-muted-foreground'
-//                       )}
-//                     >
-//                       <CalendarIcon className="mr-2 h-4 w-4" />
-//                       {dateOfBirth ? format(dateOfBirth, 'PPP') : <span>DOB</span>}
-//                     </Button>
-//                   </PopoverTrigger>
-//                   <PopoverContent className="w-auto p-0" align="start">
-//                     <Calendar
-//                       mode="single"
-//                       selected={dateOfBirth}
-//                       onSelect={setDateOfBirth}
-//                       disabled={(date) =>
-//                         date > new Date() || date < new Date("1900-01-01")
-//                       }
-//                       initialFocus
-//                       captionLayout="dropdown-buttons"
-//                       fromYear={1900}
-//                       toYear={new Date().getFullYear()}
-//                       className="rounded-2xl p-4"
-//                       classNames={{
-//                         caption_label: "hidden",
-//                         dropdown:
-//                           "h-9 rounded-lg border border-border bg-background px-2 text-sm font-medium shadow-sm hover:bg-muted transition-all",
-//                         nav_button:
-//                           "h-8 w-8 rounded-lg hover:bg-muted transition-all",
-//                         day_selected:
-//                           "bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg",
-//                         day_today:
-//                           "border border-primary text-primary rounded-lg",
-//                       }}
-//                     />
-//                   </PopoverContent>
-//                 </Popover>
-//               </div>
-
-//               <Button type="submit" className="w-full h-12" disabled={loading}>
-//                 {loading ? (
-//                   <>
-//                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-//                     Creating account...
-//                   </>
-//                 ) : (
-//                   `Sign Up as ${selectedRole === 'lawyer' ? 'Lawyer' : 'Client'}`
-//                 )
-
-//                 }
-//               </Button>
-//             </form>
-
-//             <p className="text-center mt-8 text-muted-foreground">
-//               Already have an account?{' '}
-//               <Link to="/login" className="text-foreground font-medium hover:underline">
-//                 Sign in
-//               </Link>
-//             </p>
-//           </div>
-//         </div>
-
-//         {/* Right Panel - Decorative */}
-//         <div className="hidden lg:flex flex-1 hero-gradient items-center justify-center p-16">
-//           <div className="max-w-md text-white">
-//             <h2 className="font-serif text-4xl font-bold mb-6">
-//               {selectedRole === 'lawyer'
-//                 ? 'Join Our Network of Legal Experts'
-//                 : 'Get Expert Legal Help Today'
-//               }
-//             </h2>
-//             <p className="text-white/70 text-lg">
-//               {selectedRole === 'lawyer'
-//                 ? 'Set your own rates, work on your schedule, and help clients with their legal needs.'
-//                 : 'Connect with verified lawyers for consultations via chat, audio, or video calls.'
-//               }
-//             </p>
-//           </div>
-//         </div>
-//       </div>
-//     </MainLayout>
-//   );
-
-// };
-
-
-// export default Signup;
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  Scale, ArrowLeft, Loader2, User, Briefcase, CalendarIcon
+  Scale, ArrowLeft, Loader2, User, Briefcase, CalendarIcon, Eye, EyeOff
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -295,27 +22,129 @@ const Signup = () => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [dateOfBirth, setDateOfBirth] = useState<Date | undefined>(undefined);
   const [selectedRole, setSelectedRole] = useState<'client' | 'lawyer'>(initialRole);
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [checkingEmail, setCheckingEmail] = useState(false);
+  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   const { signUp } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Check if email already exists in database
+  const checkEmailExists = useCallback(async (emailValue: string) => {
+    if (!emailValue.trim()) {
+      setEmailError('');
+      return false;
+    }
+
+    setCheckingEmail(true);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', emailValue)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error checking email:', error);
+        return false;
+      }
+
+      if (data) {
+        setEmailError('This email has already been registered');
+        return true;
+      } else {
+        setEmailError('');
+        return false;
+      }
+    } catch (error) {
+      console.error('Error checking email existence:', error);
+      return false;
+    } finally {
+      setCheckingEmail(false);
+    }
+  }, []);
+
+  // Handle email change with debouncing
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newEmail = e.target.value;
+    setEmail(newEmail);
+
+    // Clear existing timeout
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+
+    // Set new timeout for email validation
+    debounceTimer.current = setTimeout(() => {
+      checkEmailExists(newEmail);
+    }, 500); // 500ms debounce
+  };
+
+  // Validate password
+  const validatePassword = (passwordValue: string) => {
+    const errors: string[] = [];
+
+    if (passwordValue.length < 8) {
+      errors.push('At least 8 characters');
+    }
+
+    if (!/[A-Z]/.test(passwordValue)) {
+      errors.push('Capital letter');
+    }
+
+    if (!/[a-z]/.test(passwordValue)) {
+      errors.push('Small letter');
+    }
+
+    if (!/[0-9]/.test(passwordValue)) {
+      errors.push('Digit');
+    }
+
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(passwordValue)) {
+      errors.push('Special character');
+    }
+
+    setPasswordErrors(errors);
+    return errors.length === 0;
+  };
+
+  // Handle password change
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    validatePassword(newPassword);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
-    if (password.length < 6) {
+    // Check if email error exists
+    if (emailError) {
+      toast({
+        variant: 'destructive',
+        title: 'Invalid email',
+        description: emailError,
+      });
+      return;
+    }
+
+    // Check if password has errors
+    if (passwordErrors.length > 0) {
       toast({
         variant: 'destructive',
         title: 'Invalid password',
-        description: 'Password must be at least 6 characters long.',
+        description: 'Password must meet all requirements.',
       });
-      setLoading(false);
       return;
     }
+
+    setLoading(true);
 
     if (!dateOfBirth) {
       toast({
@@ -351,13 +180,13 @@ const Signup = () => {
 
     toast({
       title: 'Account created!',
-      description:
-        selectedRole === 'lawyer'
-          ? 'Your account is pending approval.'
-          : 'Welcome to VakeelGo!',
+      description: 'Check your email to confirm the account.',
     });
 
-    navigate(selectedRole === 'lawyer' ? '/lawyer/dashboard' : '/dashboard');
+    // Wait 5 seconds before navigating
+    setTimeout(() => {
+      navigate(selectedRole === 'lawyer' ? '/lawyer/dashboard' : '/dashboard');
+    }, 8000);
   };
 
   return (
@@ -442,19 +271,63 @@ bg-gradient-to-br from-background via-background to-muted/40">
                 type="email"
                 placeholder="Manish@gmail.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={handleEmailChange}
                 required
-                className="h-10 sm:h-12 rounded-lg sm:rounded-xl text-sm"
+                className={cn(
+                  'h-10 sm:h-12 rounded-lg sm:rounded-xl text-sm',
+                  emailError && 'border-red-500 focus-visible:ring-red-500'
+                )}
               />
+              {emailError && (
+                <p className="text-xs sm:text-sm text-red-500 font-medium">
+                  {emailError}
+                </p>
+              )}
+              {checkingEmail && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Checking email...
+                </p>
+              )}
 
-              <Input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="h-10 sm:h-12 rounded-lg sm:rounded-xl text-sm"
-              />
+              <div className="relative">
+                <Input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Password"
+                  value={password}
+                  onChange={handlePasswordChange}
+                  required
+                  className={cn(
+                    'h-10 sm:h-12 rounded-lg sm:rounded-xl text-sm pr-10',
+                    passwordErrors.length > 0 && 'border-red-500 focus-visible:ring-red-500'
+                  )}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition"
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+              {passwordErrors.length > 0 && (
+                <div className="text-xs sm:text-sm text-red-500 font-medium space-y-1">
+                  <p>Password must contain:</p>
+                  <div className="space-y-0.5">
+                    {passwordErrors.map((error) => (
+                      <p key={error} className="flex items-center gap-2">
+                        <span className="text-red-500">•</span>
+                        {error}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* DOB */}
               <Popover>
@@ -517,7 +390,7 @@ bg-gradient-to-br from-background via-background to-muted/40">
               <Button
                 type="submit"
                 className="w-full h-10 sm:h-12 rounded-lg sm:rounded-xl text-sm sm:text-base font-semibold"
-                disabled={loading}
+                disabled={loading || !!emailError || checkingEmail || passwordErrors.length > 0}
               >
                 {loading ? (
                   <>
