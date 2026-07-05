@@ -53,9 +53,9 @@ export const Footer = () => {
             </div>
 
             <div className="space-y-2.5 pt-2">
-              <a href="mailto:insanegem142012@gmail.com" className="flex items-center gap-2.5 text-xs text-zinc-400 hover:text-white transition-colors w-fit">
+              <a href="mailto:vakeelgo.official@gmail.com" className="flex items-center gap-2.5 text-xs text-zinc-400 hover:text-white transition-colors w-fit">
                 <Mail className="h-3.5 w-3.5 text-zinc-500" />
-                insanegem142012@gmail.com
+                vakeelgo.official@gmail.com
               </a>
               <a href="tel:+919281472291" className="flex items-center gap-2.5 text-xs text-zinc-400 hover:text-white transition-colors w-fit">
                 <Phone className="h-3.5 w-3.5 text-zinc-500" />
@@ -130,7 +130,7 @@ export const Footer = () => {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-[11px] uppercase tracking-wider text-zinc-500 text-center sm:text-left order-2 sm:order-1">© {currentYear} VakeelGo. All rights reserved.</p>
             <div className="flex items-center gap-4 order-1 sm:order-2">
-              {[{ href: "https://facebook.com", icon: Facebook }, { href: "https://twitter.com", icon: Twitter }, { href: "https://linkedin.com", icon: Linkedin }, { href: "https://instagram.com", icon: Instagram }].map((social, idx) => { const Icon = social.icon; return (<a key={idx} href={social.href} target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-white transition-colors p-1 hover:bg-zinc-900 rounded-md"><Icon className="h-4 w-4" /></a>); })}
+              {[{ href: "https://facebook.com", icon: Facebook }, { href: "https://twitter.com", icon: Twitter }, { href: "https://linkedin.com", icon: Linkedin }, { href: "https://www.instagram.com/vakeelgo.com_/", icon: Instagram }].map((social, idx) => { const Icon = social.icon; return (<a key={idx} href={social.href} target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-white transition-colors p-1 hover:bg-zinc-900 rounded-md"><Icon className="h-4 w-4" /></a>); })}
             </div>
             <p className="text-[11px] uppercase tracking-wider text-zinc-500 text-center sm:text-right hidden md:block order-3">Trusted by thousands worldwide</p>
           </div>

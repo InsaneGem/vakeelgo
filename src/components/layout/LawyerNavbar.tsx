@@ -61,7 +61,7 @@ export const LawyerNavbar = () => {
           {/* Logo */}
           <Link to="/lawyer/dashboard" className="flex items-center gap-2">
             {/* <Scale className="h-8 w-8" /> */}
-            <img src="/vakeelgologo.png" alt="LEGALMATE" className="h-12 w-12 object-contain" />
+            <img src="/logoTab.ico" alt="LEGALMATE" className="h-12 w-12 object-contain" />
             <div className="flex flex-col">
               <span className="font-['Playfair_Display'] text-2xl font-bold tracking-tight text-slate-900 group-hover:text-primary transition-all duration-300">
                 VakeelGo

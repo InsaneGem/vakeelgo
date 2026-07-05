@@ -57,9 +57,9 @@ export const LawyerFooter = () => {
             </div>
 
             <div className="space-y-2.5 pt-2">
-              <a href="mailto:insanegem142012@gmail.com" className="flex items-center gap-2.5 text-xs text-zinc-400 hover:text-white transition-colors w-fit">
+              <a href="mailto:vakeelgo.official@gmail.com" className="flex items-center gap-2.5 text-xs text-zinc-400 hover:text-white transition-colors w-fit">
                 <Mail className="h-3.5 w-3.5 text-zinc-500" />
-                insanegem142012@gmail.com
+                vakeelgo.official@gmail.com
               </a>
               <a href="tel:+919281472291" className="flex items-center gap-2.5 text-xs text-zinc-400 hover:text-white transition-colors w-fit">
                 <Phone className="h-3.5 w-3.5 text-zinc-500" />
@@ -147,7 +147,7 @@ export const LawyerFooter = () => {
                 { href: "https://facebook.com", icon: Facebook },
                 { href: "https://twitter.com", icon: Twitter },
                 { href: "https://linkedin.com", icon: Linkedin },
-                { href: "https://instagram.com", icon: Instagram }
+                { href: "https://www.instagram.com/vakeelgo.com_/", icon: Instagram }
               ].map((social, idx) => {
                 const Icon = social.icon;
                 return (

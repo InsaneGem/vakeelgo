@@ -39,4 +39,4 @@ serve(async () => {
   }
 
   return new Response("Cleanup completed");
-});
+}); 

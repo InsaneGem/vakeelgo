@@ -45,7 +45,8 @@ export const ClientNavbar = () => {
         <div className="flex items-center justify-between h-14">
           {/* Logo */}
           <Link to="/dashboard" className="flex items-center gap-2">
-            <Scale className="h-8 w-8" />
+            {/* <Scale className="h-8 w-8" /> */}
+            <img src="/logoTab.ico" alt="LEGALMATE" className="h-12 w-12 object-contain" />
             <div className="flex flex-col">
               <span className="font-['Playfair_Display'] text-2xl font-bold tracking-tight text-slate-900 group-hover:text-primary transition-all duration-300">
                 VakeelGo
@@ -53,6 +54,7 @@ export const ClientNavbar = () => {
               <span className="text-[10px] text-muted-foreground font-medium tracking-widest uppercase">Client Portal</span>
             </div>
           </Link>
+
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-1">
