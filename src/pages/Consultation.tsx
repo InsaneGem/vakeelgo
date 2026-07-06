@@ -3634,7 +3634,7 @@ const Consultation = () => {
       </div >
 
       {/* ═══ RATING DIALOG ═══ */}
-      <Dialog Dialog Dialog
+      <Dialog Dialog
         open={showRating && isClient}
         onOpenChange={(open) => {
           if (!open) {
@@ -3710,7 +3710,7 @@ const Consultation = () => {
       </Dialog >
 
       {/* ═══ MOOD DIALOG ═══ */}
-      <Dialog Dialog Dialog open={showMoodDialog} onOpenChange={() => { }}>
+      <Dialog Dialog open={showMoodDialog} onOpenChange={() => { }}>
         <DialogContent className="sm:max-w-[380px] p-0 gap-0 overflow-hidden rounded-2xl [&>button]:hidden">
           <div className="p-6 sm:p-8 text-center">
             <div className="w-14 h-14 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-4">
