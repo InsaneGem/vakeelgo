@@ -295,13 +295,13 @@ const AdminClientDetailsPage = () => {
                                     <Clock className="h-4 w-4" />
                                     Joined: {new Date(client?.created_at).toLocaleDateString()}
                                 </span>
+                                <Badge className="bg-gradient-to-r from-emerald-600 to-green-600 text-white border-0 px-5 py-2">
+                                    {client?.status || "Active"}
+                                </Badge>
+
                             </div>
                         </div>
-                        <div className="w-full min-w-[260px] rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-3">
-                            <Badge className="bg-gradient-to-r from-emerald-600 to-green-600 text-white border-0 px-5 py-2">
-                                {client?.status || "Active"}
-                            </Badge>
-                        </div>
+
                     </div>
                 </div>
 
@@ -399,23 +399,24 @@ const AdminClientDetailsPage = () => {
                 {/* Tabs */}
                 <Tabs defaultValue="consultations" className="w-full overflow-hidden">
 
-                    <TabsList className="grid w-full grid-cols-3 p-1 bg-slate-100/80 border border-slate-200 rounded-2xl h-auto">
+                    <TabsList className="grid w-full grid-cols-3 gap-1 rounded-2xl border border-slate-200 bg-slate-100/80 p-1 h-auto">
                         <TabsTrigger
                             value="consultations"
-                            className="rounded-xl py-2.5 text-sm font-semibold transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
+                            className="rounded-xl px-2 py-2 text-[11px] sm:text-xs md:text-sm font-semibold text-center leading-tight transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
                         >
                             Consultations
                         </TabsTrigger>
+
                         <TabsTrigger
                             value="payments"
-                            className="rounded-xl py-2.5 text-sm font-semibold transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-600 data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
+                            className="rounded-xl px-2 py-2 text-[11px] sm:text-xs md:text-sm font-semibold text-center leading-tight transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-600 data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
                         >
                             Payment History
                         </TabsTrigger>
 
                         <TabsTrigger
-                            value="details"
-                            className="rounded-xl py-2.5 text-sm font-semibold transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
+                            value="account"
+                            className="rounded-xl px-2 py-2 text-[11px] sm:text-xs md:text-sm font-semibold text-center leading-tight transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
                         >
                             Profile
                         </TabsTrigger>
@@ -1040,87 +1041,105 @@ const AdminClientDetailsPage = () => {
                     </TabsContent>
 
 
-                    {/* Professional Info Tab */}
-                    {/* <TabsTrigger
-                        value="account"
-                        className="rounded-xl py-2.5 text-sm font-semibold transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-purple-600 data-[state=active]:text-white"
-                    >
-                        <Card>
-                            <CardHeader><CardTitle>Profile Metadata</CardTitle></CardHeader>
-                            <CardContent className="text-sm grid grid-cols-2 gap-4">
-                                <div><p className="text-slate-500">User ID</p><p className="font-mono">{client?.id}</p></div>
-                                <div><p className="text-slate-500">Last Updated</p><p>{client?.updated_at ? new Date(client.updated_at).toLocaleString() : 'N/A'}</p></div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent> */}
+                    {/* Account Information */}
                     <TabsContent value="account" className="mt-6">
-
-                        <Card className="rounded-[32px] border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-sky-50 shadow-xl overflow-hidden">
-
-                            <CardHeader>
-                                <CardTitle className="text-xl">
-                                    Account Information
+                        <Card className="rounded-3xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-sky-50 shadow-xl overflow-hidden">
+                            <CardHeader className="border-b bg-white/70 backdrop-blur-sm">
+                                <CardTitle className="text-lg sm:text-xl font-bold text-slate-800">
+                                    Client Account Information
                                 </CardTitle>
                             </CardHeader>
 
-                            <CardContent>
+                            <CardContent className="p-4 sm:p-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
 
-                                <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
+                                    {[
+                                        {
+                                            label: "Full Name",
+                                            value: client?.full_name || "N/A",
+                                        },
+                                        {
+                                            label: "Email Address",
+                                            value: client?.email || "N/A",
+                                        },
+                                        {
+                                            label: "Phone Number",
+                                            value: client?.phone || "Not Provided",
+                                        },
+                                        {
+                                            label: "User Role",
+                                            value: clientRole?.role || "Client",
+                                        },
+                                        {
+                                            label: "Account Status",
+                                            value: client?.status || "Active",
+                                        },
 
-                                    <Card>
-                                        <CardContent className="p-4">
-                                            <p className="text-slate-500 text-sm">
-                                                User ID
-                                            </p>
-                                            <p className="font-mono text-xs break-all mt-2">
-                                                {client?.id}
-                                            </p>
-                                        </CardContent>
-                                    </Card>
+                                        {
+                                            label: "Total Consultations",
+                                            value: consultations.length,
+                                        },
 
-                                    <Card>
-                                        <CardContent className="p-4">
-                                            <p className="text-slate-500 text-sm">
-                                                Role
-                                            </p>
-                                            <p className="font-semibold mt-2 capitalize">
-                                                {clientRole?.role || "Client"}
-                                            </p>
-                                        </CardContent>
-                                    </Card>
 
-                                    <Card>
-                                        <CardContent className="p-4">
-                                            <p className="text-slate-500 text-sm">
-                                                Wallet Balance
-                                            </p>
-                                            <p className="font-semibold mt-2">
-                                                ₹{wallet?.balance?.toFixed(2) || "0.00"}
-                                            </p>
-                                        </CardContent>
-                                    </Card>
 
-                                    <Card>
-                                        <CardContent className="p-4">
-                                            <p className="text-slate-500 text-sm">
-                                                Last Updated
+                                        {
+                                            label: "Total Amount Spent",
+                                            value: `₹${payments
+                                                .filter((p) => p.status === "completed")
+                                                .reduce((sum, p) => sum + (p.amount || 0), 0)
+                                                .toFixed(2)}`,
+                                            valueClass: "text-emerald-600 font-bold",
+                                        },
+                                        {
+                                            label: "Total Payments",
+                                            value: payments.length,
+                                        },
+                                        {
+                                            label: "Date of Birth",
+                                            value: client?.date_of_birth
+                                                ? new Date(client.date_of_birth).toLocaleDateString()
+                                                : "N/A",
+                                        },
+                                        {
+                                            label: "Joined On",
+                                            value: client?.created_at
+                                                ? new Date(client.created_at).toLocaleString()
+                                                : "N/A",
+                                        },
+                                        {
+                                            label: "Last Updated",
+                                            value: client?.updated_at
+                                                ? new Date(client.updated_at).toLocaleString()
+                                                : "N/A",
+                                        },
+                                        {
+                                            label: "User ID",
+                                            value: client?.id || "N/A",
+                                            mono: true,
+                                        },
+                                    ].map((item) => (
+                                        <div
+                                            key={item.label}
+                                            className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition-all duration-300"
+                                        >
+                                            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                                                {item.label}
                                             </p>
-                                            <p className="font-semibold mt-2">
-                                                {client?.updated_at
-                                                    ? new Date(
-                                                        client.updated_at
-                                                    ).toLocaleString()
-                                                    : "N/A"}
-                                            </p>
-                                        </CardContent>
-                                    </Card>
 
+                                            <p
+                                                className={`mt-2 text-sm text-slate-800 ${item.valueClass || "font-medium"
+                                                    } ${item.mono
+                                                        ? "font-mono text-xs break-all"
+                                                        : "break-words"
+                                                    }`}
+                                            >
+                                                {item.value}
+                                            </p>
+                                        </div>
+                                    ))}
                                 </div>
-
                             </CardContent>
-
                         </Card>
-
                     </TabsContent>
                 </Tabs >
             </div>

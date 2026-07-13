@@ -17,7 +17,7 @@ const Terms = () => {
     { id: 'payments', title: '5. Billing & Rates', icon: Wallet },
     { id: 'conduct', title: '6. Conduct Rules', icon: XCircle },
     { id: 'liability', title: '7. Liability', icon: AlertTriangle },
-    { id: 'disputes', title: '8. Jurisdiction', icon: ShieldCheck },
+    // { id: 'disputes', title: '8. Jurisdiction', icon: ShieldCheck },
   ];
 
   useEffect(() => {
@@ -276,7 +276,7 @@ const Terms = () => {
               </section>
 
               {/* 8. Governing Law & Operational Disputes */}
-              <section id="disputes" className="scroll-mt-28">
+              {/* <section id="disputes" className="scroll-mt-28">
                 <div className="flex items-center gap-2.5 mb-3.5">
                   <div className="p-1.5 bg-slate-50 rounded-lg text-slate-900 border border-slate-100">
                     <ShieldCheck className="h-4 w-4" />
@@ -288,11 +288,11 @@ const Terms = () => {
                   <h4 className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider mb-1.5">Compliance Directory</h4>
                   <p className="text-sm font-semibold text-white">VakeelGo Technologies Corp.</p>
                   <div className="text-xs text-slate-300 mt-2 space-y-1">
-                    <p>Contact Email: <span className="text-white underline underline-offset-4 decoration-slate-800 font-medium">legal@VakeelGo.com</span></p>
-                    <p className="text-slate-500 text-[11px] pt-2.5 mt-2.5 border-t border-slate-900">Corporate Address: 123 Legal Avenue, New York, NY 10001</p>
+                    <p>Contact Email: <span className="text-white underline underline-offset-4 decoration-slate-800 font-medium">vakeelGo.official@gmail.com</span></p>
+                    <p className="text-slate-500 text-[11px] pt-2.5 mt-2.5 border-t border-slate-900">Corporate Address: Basavanna Nagar - 560066, Bangalore</p>
                   </div>
                 </div>
-              </section>
+              </section> */}
             </div>
 
           </div>

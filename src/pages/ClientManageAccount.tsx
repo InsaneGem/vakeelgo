@@ -323,7 +323,10 @@ const ClientManageAccount = () => {
                 <div>
 
                   <h3 className="font-semibold text-lg mt-2">{profile.full_name}</h3>
-                  <p className="text-sm text-muted-foreground">{profile.email}</p>
+                  {/* <p className="text-sm text-muted-foreground">{profile.email}</p> */}
+                  <p className="text-xs sm:text-sm text-muted-foreground break-all">
+                    {profile.email}
+                  </p>
                   <Badge variant="secondary" className="gap-1 mt-1.5">
                     <Shield className="h-3 w-3" />
                     Client

@@ -142,46 +142,6 @@ export const seeMoreButtonStyle = [
 
 
 
-// export const lawyerCardStyle = [
-
-//     "relative rounded-lg border overflow-hidden",
-//     "flex flex-col h-full min-h-[205px]",
-//     "cursor-pointer",
-//     "mt-2",
-
-//     // Premium golden background
-//     "bg-gradient-to-r",
-//     "from-amber-200",
-//     "via-yellow-200",
-//     "to-amber-300",
-
-//     // KEEP SAME COLORS ON HOVER
-//     "hover:from-amber-200",
-//     "hover:via-yellow-200",
-//     "hover:to-amber-300",
-
-//     // Dark premium text
-//     "text-amber-900",
-//     "hover:text-amber-900",
-
-//     // Premium shadow
-//     "shadow-md",
-//     "hover:shadow-lg",
-
-//     // ONLY slight front movement
-//     "hover:-translate-y-1",
-//     "hover:scale-[1.01]",
-
-//     // NO brightness/color change
-//     "hover:brightness-100",
-
-//     "border-amber-300/40",
-
-//     "transition-all",
-//     "duration-300",
-//     "ease-out",
-
-// ].join(" ");
 
 export const OtherCardStyle = [
 
@@ -224,47 +184,6 @@ export const OtherCardStyle = [
 
 ].join(" ");
 
-// export const lawyerCardStyle = [
-
-//     "relative rounded-lg border overflow-hidden",
-//     "flex flex-col h-full min-h-[205px]",
-//     "cursor-pointer",
-//     "mt-2",
-
-//     // Royal Purple + White luxury background
-//     "bg-gradient-to-br",
-//     "from-[#FFFFFF]",
-//     "via-[#F7F3FF]",
-//     "to-[#E8DDFF]",
-
-//     // Maintain same colors on hover
-//     "hover:from-[#FFFFFF]",
-//     "hover:via-[#F7F3FF]",
-//     "hover:to-[#E8DDFF]",
-
-//     // Premium royal purple text
-//     "text-[#312E81]",
-//     "hover:text-[#312E81]",
-
-//     // Luxury purple shadow
-//     "shadow-[0_10px_30px_rgba(124,58,237,0.10)]",
-//     "hover:shadow-[0_20px_45px_rgba(124,58,237,0.18)]",
-
-//     // Elegant lavender border
-//     "border-[#C4B5FD]",
-
-//     // Premium interaction
-//     "hover:-translate-y-1",
-//     "hover:scale-[1.01]",
-
-//     // Prevent color shift
-//     "hover:brightness-100",
-
-//     "transition-all",
-//     "duration-300",
-//     "ease-out",
-
-// ].join(" ");
 
 export const lawyerCardStyle = [
 
@@ -349,31 +268,74 @@ export const transactionCardStyle = [
 
 
 
+// export const smallCardStyle = [
+//     "rounded-2xl",
+//     "border",
+
+//     // Professional blue-white gradient
+//     "bg-gradient-to-br",
+//     "from-white",
+//     "via-blue-50",
+//     "to-blue-100",
+
+//     // Keep same colors on hover
+//     "hover:from-white",
+//     "hover:via-blue-50",
+//     "hover:to-blue-100",
+
+//     // Professional dark text
+//     "text-slate-900",
+//     "hover:text-slate-900",
+
+//     // Elegant shadow
+//     "shadow-[0_8px_25px_rgba(30,64,175,0.08)]",
+//     "hover:shadow-[0_15px_35px_rgba(30,64,175,0.15)]",
+
+//     // Soft blue border
+//     "border-blue-200",
+
+//     // Subtle interaction
+//     "hover:-translate-y-1",
+//     "hover:scale-[1.01]",
+
+//     // Prevent brightness shift
+//     "hover:brightness-100",
+
+//     // Smooth animation
+//     "transition-all",
+//     "duration-300",
+//     "ease-out",
+
+//     // Premium glass effect
+//     "backdrop-blur-sm",
+// ].join(" ");
+
 export const smallCardStyle = [
     "rounded-2xl",
     "border",
 
-    // Professional blue-white gradient
+    // Premium navy-to-ivory gradient (legal/corporate palette)
     "bg-gradient-to-br",
     "from-white",
-    "via-blue-50",
-    "to-blue-100",
+    "via-slate-50",
+    "to-amber-50/60",
 
     // Keep same colors on hover
     "hover:from-white",
-    "hover:via-blue-50",
-    "hover:to-blue-100",
+    "hover:via-slate-50",
+    "hover:to-amber-50/60",
 
-    // Professional dark text
+    // Rich charcoal-navy text (authoritative, readable)
     "text-slate-900",
     "hover:text-slate-900",
 
-    // Elegant shadow
-    "shadow-[0_8px_25px_rgba(30,64,175,0.08)]",
-    "hover:shadow-[0_15px_35px_rgba(30,64,175,0.15)]",
+    // Layered shadow: navy depth + gold-tinted top sheen + subtle brass edge
+    "shadow-[0_8px_25px_rgba(15,23,42,0.10),inset_0_1px_0_rgba(255,255,255,0.9),inset_0_-1px_0_rgba(180,140,60,0.12)]",
+    "hover:shadow-[0_20px_45px_rgba(15,23,42,0.20),0_3px_10px_rgba(180,140,60,0.15),inset_0_1px_0_rgba(255,255,255,0.95),inset_0_-1px_0_rgba(180,140,60,0.25)]",
 
-    // Soft blue border
-    "border-blue-200",
+    // Muted gold/brass border — signals trust & prestige
+    "border-amber-200/70",
+    "hover:border-amber-300/90",
 
     // Subtle interaction
     "hover:-translate-y-1",
