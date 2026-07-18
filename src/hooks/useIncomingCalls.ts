@@ -169,7 +169,14 @@ export const useIncomingCalls = () => {
 
               playRingtone();
 
-              if (Notification.permission === 'granted') {
+              // if (Notification.permission === 'granted') {
+              //   new Notification(`Incoming ${callType} call`, {
+              //     body: `${callerName} is calling you`,
+              //     icon: '/favicon.ico',
+              //     tag: 'incoming-call',
+              //   });
+              // }
+              if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
                 new Notification(`Incoming ${callType} call`, {
                   body: `${callerName} is calling you`,
                   icon: '/favicon.ico',
@@ -196,8 +203,12 @@ export const useIncomingCalls = () => {
         .subscribe();
     };
 
+    // setupChannel();
+    // if (Notification.permission === 'default') Notification.requestPermission();
     setupChannel();
-    if (Notification.permission === 'default') Notification.requestPermission();
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
 
     return () => {
       if (channel) supabase.removeChannel(channel);

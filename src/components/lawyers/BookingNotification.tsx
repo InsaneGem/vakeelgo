@@ -213,7 +213,13 @@ export const BookingNotificationProvider = ({ children }: BookingNotificationPro
               } catch { }
 
               // 🔔 browser notification
-              if (Notification.permission === 'granted') {
+              // if (Notification.permission === 'granted') {
+              //   new Notification('New Consultation Request', {
+              //     body: `${clientProfile?.full_name || 'Client'} requested ${consultation.type} consultation`
+              //   });
+              // }
+              // 🔔 browser notification
+              if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
                 new Notification('New Consultation Request', {
                   body: `${clientProfile?.full_name || 'Client'} requested ${consultation.type} consultation`
                 });
@@ -259,7 +265,11 @@ export const BookingNotificationProvider = ({ children }: BookingNotificationPro
 
 
       // 🔔 request permission
-      if (Notification.permission === 'default') {
+      // if (Notification.permission === 'default') {
+      //   Notification.requestPermission();
+      // }
+      // 🔔 request permission
+      if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
         Notification.requestPermission();
       }
 
