@@ -414,7 +414,7 @@ const ClientManageAccount = () => {
                     </PopoverTrigger>
 
                     <PopoverContent
-                      className="w-[320px] p-4 rounded-3xl border border-border bg-background shadow-lg"
+                      className="w-[320px] max-w-[calc(100vw-2rem)] p-4 rounded-3xl border border-border bg-background shadow-lg"
                       align="start"
                     >
                       <div className="mb-3">

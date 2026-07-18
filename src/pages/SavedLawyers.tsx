@@ -71,6 +71,20 @@ const SavedLawyers = () => {
             setLoading(false);
         };
         fetchSavedLawyers();
+        // Realtime: keep online/offline/busy status in sync for every
+        // saved lawyer shown on this page, without needing a refresh.
+        const savedLawyersStatusChannel = supabase
+            .channel('saved-lawyers-availability')
+            .on(
+                'postgres_changes',
+                { event: 'UPDATE', schema: 'public', table: 'lawyer_profiles' },
+                () => fetchSavedLawyers()
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(savedLawyersStatusChannel);
+        };
     }, [savedIds]);
     const filtered = lawyers.filter(l => {
         const q = searchQuery.toLowerCase();

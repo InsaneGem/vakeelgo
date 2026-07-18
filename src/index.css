@@ -120,7 +120,7 @@
   }
 }
 
-@layer base {
+/* @layer base {
   * {
     @apply border-border;
   }
@@ -128,6 +128,47 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Playfair Display', serif;
+  }
+} */
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body {
+    /* Safety net: prevents any single overflowing element (fixed-width
+       decorative block, long unbroken string, wide table, etc.) from
+       creating page-wide horizontal scroll/blank-looking gutters on
+       small screens. Elements that intentionally need horizontal
+       scroll (tables, carousels) already wrap themselves in
+       overflow-x-auto and are unaffected by this. */
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', sans-serif;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  img,
+  video,
+  svg {
+    max-width: 100%;
+    height: auto;
   }
 
   h1,

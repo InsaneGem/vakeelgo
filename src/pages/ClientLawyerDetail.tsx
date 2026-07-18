@@ -112,6 +112,14 @@ const ClientLawyerDetail = () => {
     currentPage * REVIEWS_PER_PAGE
   );
 
+  // useEffect(() => {
+  //   if (!user) {
+  //     navigate('/login');
+  //     return;
+  //   }
+  //   if (id) fetchLawyerDetails();
+  // }, [id, user]);
+
   useEffect(() => {
     if (!user) {
       navigate('/login');
@@ -119,6 +127,40 @@ const ClientLawyerDetail = () => {
     }
     if (id) fetchLawyerDetails();
   }, [id, user]);
+
+  // Realtime: keep this lawyer's availability/busy status in sync while
+  // the client is viewing their profile, without needing a page refresh.
+  useEffect(() => {
+    if (!id) return;
+
+    const lawyerStatusChannel = supabase
+      .channel(`lawyer-profile-status-${id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'lawyer_profiles',
+          filter: `id=eq.${id}`,
+        },
+        (payload) => {
+
+
+          console.log('[REALTIME] event received at', new Date().toISOString(), payload.new);
+          setLawyer((prev) =>
+            prev ? { ...prev, ...(payload.new as LawyerData) } : (payload.new as LawyerData)
+          );
+        }
+      )
+      // .subscribe();
+      .subscribe((status) => {
+        console.log('[REALTIME] subscription status:', status, new Date().toISOString());
+      });
+
+    return () => {
+      supabase.removeChannel(lawyerStatusChannel);
+    };
+  }, [id]);
 
 
   const fetchLawyerDetails = async () => {
