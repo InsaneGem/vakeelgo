@@ -3,8 +3,47 @@ import { Scale, Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instagram } fr
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
+// export const Footer = () => {
+//   // Fetch real-time stats from database
+//   const { data: stats } = useQuery({
+//     queryKey: ['footer-stats'],
+//     queryFn: async () => {
+//       const [lawyersResult, consultationsResult, reviewsResult] = await Promise.all([
+//         supabase.from('lawyer_profiles').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
+//         supabase.from('consultations').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
+//         supabase.from('reviews').select('rating'),
+//       ]);
+//       // Log to see exact API errors or counts
+//       console.log("Lawyers error/data:", lawyersResult.error, lawyersResult.count);
+//       console.log("Consultations error/data:", consultationsResult.error, consultationsResult.count);
+//       console.log("Reviews error/data:", reviewsResult.error, reviewsResult.data);
+
+//       const lawyerCount = lawyersResult.count || 0;
+//       const consultationCount = consultationsResult.count || 0;
+//       const reviews = reviewsResult.data || [];
+//       const avgRating = reviews.length > 0
+//         ? (reviews.reduce((acc, r) => acc + (r.rating || 0), 0) / reviews.length).toFixed(1)
+//         : '4.9';
+
+//       return {
+//         lawyers: lawyerCount > 0 ? `${lawyerCount}+` : '500+',
+//         consultations: consultationCount > 0 ? `${(consultationCount / 1000).toFixed(0)}K+` : '50K+',
+//         rating: avgRating,
+//         clients: consultationCount > 0 ? `${Math.floor(consultationCount * 0.8)}+` : '10K+'
+//       };
+//     },
+//     staleTime: 1000 * 60 * 5,
+//   });
+
 export const Footer = () => {
-  // Fetch real-time stats from database
+  // Helper to format counts smoothly (e.g., 2 -> "2+", 1500 -> "1.5K+")
+  const formatCount = (count: number, defaultText: string) => {
+    if (!count || count === 0) return defaultText;
+    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M+`;
+    if (count >= 1000) return `${(count / 1000).toFixed(1)}K+`;
+    return `${count}+`;
+  };
+
   const { data: stats } = useQuery({
     queryKey: ['footer-stats'],
     queryFn: async () => {
@@ -17,19 +56,22 @@ export const Footer = () => {
       const lawyerCount = lawyersResult.count || 0;
       const consultationCount = consultationsResult.count || 0;
       const reviews = reviewsResult.data || [];
+
       const avgRating = reviews.length > 0
-        ? (reviews.reduce((acc, r) => acc + (r.rating || 0), 0) / reviews.length).toFixed(1)
+        ? (reviews.reduce((acc, r) => acc + (Number(r.rating) || 0), 0) / reviews.length).toFixed(1)
         : '4.9';
 
       return {
-        lawyers: lawyerCount > 0 ? `${lawyerCount}+` : '500+',
-        consultations: consultationCount > 0 ? `${(consultationCount / 1000).toFixed(0)}K+` : '50K+',
+        lawyers: formatCount(lawyerCount, '500+'),
+        consultations: formatCount(consultationCount, '50K+'),
         rating: avgRating,
-        clients: consultationCount > 0 ? `${Math.floor(consultationCount * 0.8)}+` : '10K+'
+        clients: formatCount(Math.floor(consultationCount * 0.8) || consultationCount, '10K+'),
       };
     },
     staleTime: 1000 * 60 * 5,
   });
+
+  // ... rest of your component
 
   const currentYear = new Date().getFullYear();
 

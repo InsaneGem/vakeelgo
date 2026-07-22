@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-// import { LucideIcon, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { LawyerLayout } from '@/components/layout/LawyerLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -29,10 +28,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { OnboardingAlert } from '@/components/dashboard/OnboardingAlert';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-// import LawyerConsultation from './../consultation/LawyerConsultation';
 import LawyerConsultations from './LawyerConsultations';
 import { LucideIcon } from 'lucide-react';
-// import {cn}
 import { cn } from '@/lib/utils';
 import { rejectButtonStyle, acceptButtonStyle, lawyerCardStyle, smallCardStyle, seeMoreButtonStyle, transactionCardStyle } from '@/lib/buttonStyles';
 
@@ -62,6 +59,7 @@ interface ConsultationWithClient {
   payment_status?: string | null;
 
 }
+const INACTIVITY_TIMEOUT_MS = 30000;
 const LawyerDashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -125,7 +123,6 @@ const LawyerDashboard = () => {
     video_price_per_minute: number | null;
     languages: string[] | null;
   } | null>(null);
-  // const [profile, setProfile] = useState<{ full_name: string } | null>(null);
   const [profile, setProfile] = useState<{ full_name: string; avatar_url: string | null } | null>(null);
   const [pendingConsultations, setPendingConsultations] = useState<ConsultationWithClient[]>([]);
   const [activeConsultations, setActiveConsultations] = useState<ConsultationWithClient[]>([]);
@@ -155,13 +152,7 @@ const LawyerDashboard = () => {
         label: 'Bar Council Number',
         check: (lawyerProfile.bar_council_number?.trim().length || 0) > 0
       },
-      // {
-      //   key: 'price_per_minute',
-      //   label: 'Pricing',
-      //   check:
-      //     lawyerProfile.price_per_minute !== null &&
-      //     lawyerProfile.price_per_minute !== undefined,
-      // },
+
       {
         key: 'pricing',
         label: 'Pricing',
@@ -263,7 +254,6 @@ const LawyerDashboard = () => {
 
       console.log('TIMER FIRED');
       console.log('isAvailable =', stats.isAvailable);
-      // if (!stats.isAvailable) return;
       if (!isAvailableRef.current) return;
 
       wasOnlineBeforeInactiveRef.current = true;
@@ -318,7 +308,7 @@ const LawyerDashboard = () => {
 
       inactivityTimerRef.current = setTimeout(() => {
         goOfflineIfInactive();
-      }, 60000);
+      }, INACTIVITY_TIMEOUT_MS);
     };
 
     const events = [
@@ -353,86 +343,6 @@ const LawyerDashboard = () => {
   useEffect(() => {
     isAvailableRef.current = stats.isAvailable;
   }, [stats.isAvailable]);
-
-  // useEffect(() => {
-  //   if (!user) return;
-
-  //   const markOnline = async () => {
-  //     if (!autoOfflineRef.current) return;
-
-  //     const { error } = await supabase
-  //       .from('lawyer_profiles')
-  //       .update({
-  //         is_available: true,
-  //         is_busy: false,
-  //       })
-  //       .eq('user_id', user.id);
-
-  //     if (!error) {
-  //       autoOfflineRef.current = false;
-
-  //       setStats(prev => ({
-  //         ...prev,
-  //         isAvailable: true,
-  //       }));
-  //     }
-  //   };
-
-  //   const markOffline = async () => {
-  //     const { error } = await supabase
-  //       .from('lawyer_profiles')
-  //       .update({
-  //         is_available: false,
-  //         is_busy: false,
-  //       })
-  //       .eq('user_id', user.id);
-
-  //     if (!error) {
-  //       autoOfflineRef.current = true;
-
-  //       setStats(prev => ({
-  //         ...prev,
-  //         isAvailable: false,
-  //       }));
-  //     }
-  //   };
-
-  //   const resetTimer = () => {
-  //     if (inactivityTimerRef.current) {
-  //       clearTimeout(inactivityTimerRef.current);
-  //     }
-
-  //     markOnline();
-
-  //     inactivityTimerRef.current = setTimeout(() => {
-  //       markOffline();
-  //     }, 60000);
-  //   };
-
-  //   const events = [
-  //     'mousemove',
-  //     'mousedown',
-  //     'keydown',
-  //     'scroll',
-  //     'touchstart'
-  //   ];
-
-  //   events.forEach(event =>
-  //     window.addEventListener(event, resetTimer)
-  //   );
-
-  //   resetTimer();
-
-  //   return () => {
-  //     events.forEach(event =>
-  //       window.removeEventListener(event, resetTimer)
-  //     );
-
-  //     if (inactivityTimerRef.current) {
-  //       clearTimeout(inactivityTimerRef.current);
-  //     }
-  //   };
-  // }, [user]);
 
   const fetchDashboardData = async () => {
     if (!user) return;
@@ -470,6 +380,7 @@ const LawyerDashboard = () => {
       isAvailable: lawyerProfileData?.is_available || false,
       status: lawyerProfileData?.status || 'pending',
     });
+    wasOnlineBeforeInactiveRef.current = !!lawyerProfileData?.auto_offline;
 
     // Set lawyer profile for completion calculation
     if (lawyerProfileData) {
@@ -522,22 +433,11 @@ const LawyerDashboard = () => {
     setLoading(false);
   };
 
-  // const toggleAvailability = async () => {
-  //   if (!user) return;
-  //   const newStatus = !stats.isAvailable;
-
-  //   const { error } = await supabase.from('lawyer_profiles').update({ is_available: newStatus, is_busy: false, }).eq('user_id', user.id);
-
-  //   if (!error) {
-  //     setStats(prev => ({ ...prev, isAvailable: newStatus }));
-  //     toast({ title: newStatus ? '✅ You are now online' : '⏸️ You are now offline' });
-  //   }
-  // };
 
   const toggleAvailability = async () => {
     if (!user) return;
 
-    // autoOfflineRef.current = false;
+
 
     const newStatus = !stats.isAvailable;
 
@@ -579,7 +479,7 @@ const LawyerDashboard = () => {
     if (!error) {
       toast({
         title: action === 'accept' ? '✅ Consultation accepted!' : '❌ Consultation declined',
-        // description: action === 'accept' ? 'Redirecting to consultation...' : 'The client has been notified.',
+
         description: action === 'accept'
           ? 'The client will now be prompted to complete payment.'
           : 'The client has been notified.',
